@@ -3,10 +3,17 @@
   export let title = '';
   export let onClose: () => void = () => {};
   function backdrop(e: MouseEvent){ if(e.target === e.currentTarget) onClose(); }
+  function backdropKey(e: KeyboardEvent) {
+    if (e.target !== e.currentTarget) return;
+    if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onClose();
+    }
+  }
 </script>
 
 {#if open}
-  <div class="shade" on:click={backdrop}>
+  <div class="shade" role="button" tabindex="0" on:click={backdrop} on:keydown={backdropKey}>
     <div class="panel" role="dialog" aria-modal="true" aria-label={title}>
       <header><h3>{title}</h3><button class="x" on:click={onClose} aria-label="Close">✕</button></header>
       <section><slot /></section>
