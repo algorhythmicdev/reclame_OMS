@@ -1,5 +1,8 @@
 <script>
-  import { base } from '$app/paths'; import { page } from '$app/stores'; $: id=$page.params.id;
+  import { base } from '$app/paths';
+  import { page } from '$app/stores';
+  import Stepper from '$lib/ui/Stepper.svelte';
+  $: id=$page.params.id;
   const sample={'PO-250375':{client:'ABTB BIJEN',title:'4500mm Long Frame',due:'2025-10-26',progress:65,
     materials:[{part:'Face',material:'Acrylic',thickness:'3mm',color:'White'},{part:'Back',material:'ACP',thickness:'3mm',color:'Brushed aluminum'},{part:'Face Frame',material:'Aluminum',thickness:'2mm',color:'Natural'}],
     file:`${base}/files/PO-250375_ABTB-BIJEN_4500mm.pdf`,steps:[{name:'CAD',done:true},{name:'CNC',done:true},{name:'Sanding',done:false},{name:'Welding',done:false},{name:'Painting',done:false},{name:'Assembly',done:false},{name:'QC',done:false}]}};
@@ -10,7 +13,9 @@
     <div class="progress" style="margin-top:8px"><span style={`width:${data.progress}%`}></span></div>
     <div class="grid" style="grid-template-columns:1fr 1fr;margin-top:16px">
       <div><h3>Materials</h3><ul>{#each data.materials as m}<li>{m.part}: {m.material} {m.thickness} • {m.color}</li>{/each}</ul></div>
-      <div><h3>Steps</h3><ul>{#each data.steps as s}<li>{s.done ? '✅' : '⬜'} {s.name}</li>{/each}</ul></div>
+      <div><h3>Steps</h3>
+        <Stepper steps={data.steps} />
+      </div>
     </div>
     {#if data.file}
       <div class="card" style="margin-top:16px;background:var(--bg-2)">

@@ -1,0 +1,19 @@
+<script lang="ts">
+  export let value: string;
+  export let options: { label: string; value: string }[] = [];
+  export let ariaLabel = 'select';
+</script>
+
+<select bind:value aria-label={ariaLabel} class="rf-select">
+  {#each options as o}
+    <option value={o.value}>{o.label}</option>
+  {/each}
+</select>
+
+<style>
+.rf-select{
+  padding:.55rem .7rem; border-radius:12px;
+  border:1px solid rgba(255,255,255,.12);
+  background:var(--bg-2); color:var(--text);
+}
+</style>
