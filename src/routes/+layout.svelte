@@ -1,4 +1,5 @@
 <script>
+  import { onMount } from 'svelte';
   import { page } from '$app/stores';
   import { base } from '$app/paths';
   import { Home, Rocket, Calendar, PackageSearch, Folder, MessagesSquare, Boxes, Settings } from 'lucide-svelte';
@@ -6,6 +7,20 @@
   const links=[{href:'/',label:'Dashboard',icon:Home},{href:'/launchpad',label:'Launchpad',icon:Rocket},{href:'/calendar',label:'Calendar',icon:Calendar},{href:'/orders',label:'Orders',icon:PackageSearch},{href:'/files',label:'Files',icon:Folder},{href:'/chat',label:'Chat',icon:MessagesSquare},{href:'/inventory',label:'Inventory',icon:Boxes},{href:'/settings',label:'Settings',icon:Settings}];
   if(typeof window!=='undefined'){const s=localStorage.getItem('rf_theme'); if(s) theme=s; document.documentElement.setAttribute('data-theme',theme);}
   const setTheme=(t)=>{theme=t;localStorage.setItem('rf_theme',t);document.documentElement.setAttribute('data-theme',t);}
+  let logoFailed=true;
+  let logoSrc='';
+  onMount(async()=>{
+    const url=`${base}/brand/logo.png`;
+    try{
+      const res=await fetch(url,{method:'HEAD'});
+      if(res.ok){
+        logoSrc=url;
+        logoFailed=false;
+      }
+    }catch(e){
+      logoFailed=true;
+    }
+  });
 </script>
 <link rel="stylesheet" href="{base}/brand.css" />
 <a href="#main" class="tag" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;">Skip to content</a>
@@ -13,7 +28,11 @@
   <aside class="sidebar" style="width:300px;padding:20px;background:var(--bg-1);border-right:1px solid rgba(255,255,255,.08)">
     <div class="row" style="justify-content:space-between">
       <div class="row">
-        <img src="{base}/brand/logo.png" alt="Reclame Fabriek logo" style="width:44px;height:44px;border-radius:10px;object-fit:contain;background:#fff" />
+        {#if !logoFailed && logoSrc}
+          <img src={logoSrc} alt="Reclame Fabriek logo" style="width:44px;height:44px;border-radius:10px;object-fit:contain;background:#fff" />
+        {:else}
+          <div class="logo-fallback" role="img" aria-label="Reclame Fabriek logo" style="width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:900;background:linear-gradient(135deg,var(--brand-magenta),var(--brand-cyan));color:#000">RF</div>
+        {/if}
         <div><div style="font-weight:900">Reclame Fabriek</div><div class="muted" style="font-size:.8rem">Production Console</div></div>
       </div>
       <div class="tag" style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--brand-magenta),var(--brand-cyan))"></div>

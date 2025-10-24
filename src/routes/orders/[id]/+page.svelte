@@ -12,7 +12,16 @@
       <div><h3>Materials</h3><ul>{#each data.materials as m}<li>{m.part}: {m.material} {m.thickness} • {m.color}</li>{/each}</ul></div>
       <div><h3>Steps</h3><ul>{#each data.steps as s}<li>{s.done ? '✅' : '⬜'} {s.name}</li>{/each}</ul></div>
     </div>
-    {#if data.file}<div class="card" style="margin-top:16px;background:var(--bg-2)"><h3>Source PDF</h3><iframe src={data.file} style="width:100%;height:420px;border:1px solid rgba(255,255,255,.1);border-radius:10px"></iframe></div>{/if}
+    {#if data.file}
+      <div class="card" style="margin-top:16px;background:var(--bg-2)">
+        <h3>Source PDF</h3>
+        <iframe
+          src={data.file}
+          title={`Preview of ${data.title ?? 'source document'}`}
+          style="width:100%;height:420px;border:1px solid rgba(255,255,255,.1);border-radius:10px"
+        ></iframe>
+      </div>
+    {/if}
   </div>
   <aside class="grid"><div class="card"><h3>Comments</h3><p class="muted">Mocked chat for this order. See <a href="/chat">global chat</a>.</p></div>
     <div class="card"><h3>Quick Actions</h3><div class="row"><button class="tag">Mark step done</button><button class="tag">Notify team</button></div></div></aside>
