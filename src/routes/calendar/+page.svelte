@@ -1,6 +1,8 @@
 <script>
+  import { base } from '$app/paths';
   let today=new Date(); let year=today.getFullYear(); let month=today.getMonth();
-  const events=[{date:'2025-10-26',title:'Load: PO-250375',link:'/orders/PO-250375'},{date:'2025-10-30',title:'Paint QC: PO-250420',link:'/orders/PO-250420'},{date:'2025-11-03',title:'Client pickup: PO-250501',link:'/orders/PO-250501'}];
+  const baseEvents=[{date:'2025-10-26',title:'Load: PO-250375',path:'/orders/PO-250375'},{date:'2025-10-30',title:'Paint QC: PO-250420',path:'/orders/PO-250420'},{date:'2025-11-03',title:'Client pickup: PO-250501',path:'/orders/PO-250501'}];
+  const events = baseEvents.map((event) => ({ ...event, link: `${base}${event.path}` }));
   const daysInMonth=(y,m)=>new Date(y,m+1,0).getDate(); const firstDay=(y,m)=>new Date(y,m,1).getDay()||7;
   const next=()=>{if(month===11){month=0;year++}else month++}; const prev=()=>{if(month===0){month=11;year--}else month--};
   const fmt=(y,m,d)=>`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; const getEvents=(y,m,d)=>events.filter(e=>e.date===fmt(y,m,d));

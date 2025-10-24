@@ -1,20 +1,27 @@
 <script lang="ts">
   import Input from './Input.svelte';
   import Modal from './Modal.svelte';
+  import { base } from '$app/paths';
   export let open = false;
   export let onClose = () => {};
   let q = '';
 
-  const items = [
-    { label: 'Go: Dashboard', href: '/' },
-    { label: 'Go: Launchpad', href: '/launchpad' },
-    { label: 'Go: Calendar', href: '/calendar' },
-    { label: 'Go: Orders', href: '/orders' },
-    { label: 'Go: Files', href: '/files' },
-    { label: 'Go: Chat', href: '/chat' },
-    { label: 'Go: Inventory', href: '/inventory' },
-    { label: 'Go: Settings', href: '/settings' }
+  const baseItems = [
+    { label: 'Go: Dashboard', path: '/' },
+    { label: 'Go: Launchpad', path: '/launchpad' },
+    { label: 'Go: Calendar', path: '/calendar' },
+    { label: 'Go: Orders', path: '/orders' },
+    { label: 'Go: Files', path: '/files' },
+    { label: 'Go: Chat', path: '/chat' },
+    { label: 'Go: Inventory', path: '/inventory' },
+    { label: 'Go: Settings', path: '/settings' }
   ];
+  const withBase = (path: string) => {
+    if (!base) return path;
+    if (path === '/') return base || '/';
+    return `${base}${path}`;
+  };
+  $: items = baseItems.map((item) => ({ ...item, href: withBase(item.path) }));
   $: list = items.filter(i => i.label.toLowerCase().includes(q.toLowerCase()));
 </script>
 

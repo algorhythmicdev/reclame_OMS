@@ -11,7 +11,23 @@
   import { theme } from '$lib/stores/theme';
   let showNotif = false;
   let showSidebar = true; // toggle for small screens
-  const links=[{href:'/',label:'Dashboard',icon:Home},{href:'/launchpad',label:'Launchpad',icon:Rocket},{href:'/calendar',label:'Calendar',icon:Calendar},{href:'/orders',label:'Orders',icon:PackageSearch},{href:'/kanban',label:'Kanban',icon:LayoutGrid},{href:'/files',label:'Files',icon:Folder},{href:'/chat',label:'Chat',icon:MessagesSquare},{href:'/inventory',label:'Inventory',icon:Boxes},{href:'/settings',label:'Settings',icon:Settings}];
+  const navConfig = [
+    { segment: '/', label:'Dashboard', icon:Home },
+    { segment: '/launchpad', label:'Launchpad', icon:Rocket },
+    { segment: '/calendar', label:'Calendar', icon:Calendar },
+    { segment: '/orders', label:'Orders', icon:PackageSearch },
+    { segment: '/kanban', label:'Kanban', icon:LayoutGrid },
+    { segment: '/files', label:'Files', icon:Folder },
+    { segment: '/chat', label:'Chat', icon:MessagesSquare },
+    { segment: '/inventory', label:'Inventory', icon:Boxes },
+    { segment: '/settings', label:'Settings', icon:Settings }
+  ];
+  const withBase = (path: string) => {
+    if (!base) return path;
+    if (path === '/') return base || '/';
+    return `${base}${path}`;
+  };
+  $: links = navConfig.map((item) => ({ ...item, href: withBase(item.segment) }));
   let logoFailed=true;
   let logoSrc='';
   onMount(async()=>{
@@ -35,7 +51,7 @@
     return () => window.removeEventListener('keydown', h);
   });
 </script>
-<link rel="stylesheet" href="{base}/brand.css" />
+<link rel="stylesheet" href={`${base}/brand.css`} />
 <a href="#main" class="tag" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;">Skip to content</a>
 <div style="display:flex;min-height:100vh">
   <aside class="sidebar" data-open={showSidebar} style="width:300px;padding:20px;background:var(--bg-1);border-right:1px solid rgba(255,255,255,.08)">
@@ -52,7 +68,10 @@
     </div>
     <nav style="margin-top:24px;display:grid;gap:6px" aria-label="Primary">
       {#each links as L}
-        <a href={L.href} class:active={$page.url.pathname===L.href || ($page.url.pathname.startsWith(L.href) && L.href!=='/')}>
+        <a
+          href={L.href}
+          class:active={$page.url.pathname===L.href || ($page.url.pathname.startsWith(L.href) && L.segment!=='/')}
+        >
           <svelte:component this={L.icon} size={18} /> {L.label}
         </a>
       {/each}
@@ -73,7 +92,7 @@
 
       <div class="row" style="position:relative">
         <button class="tag" on:click={()=> showNotif = !showNotif} aria-expanded={showNotif} aria-controls="notif-pop">🔔 3</button>
-        <a class="tag" href="/chat" title="Messages">💬 1</a>
+        <a class="tag" href={withBase('/chat')} title="Messages">💬 1</a>
         <a class="tag" href="https://t.me" target="_blank" rel="noreferrer">Telegram</a>
 
         {#if showNotif}
