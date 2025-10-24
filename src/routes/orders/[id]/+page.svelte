@@ -3,6 +3,7 @@
   import { page } from '$app/stores';
   import Stepper from '$lib/ui/Stepper.svelte';
   $: id=$page.params.id;
+  const chatHref = `${base}/chat`;
   const sample={'PO-250375':{client:'ABTB BIJEN',title:'4500mm Long Frame',due:'2025-10-26',progress:65,
     materials:[{part:'Face',material:'Acrylic',thickness:'3mm',color:'White'},{part:'Back',material:'ACP',thickness:'3mm',color:'Brushed aluminum'},{part:'Face Frame',material:'Aluminum',thickness:'2mm',color:'Natural'}],
     file:`${base}/files/PO-250375_ABTB-BIJEN_4500mm.pdf`,steps:[{name:'CAD',done:true},{name:'CNC',done:true},{name:'Sanding',done:false},{name:'Welding',done:false},{name:'Painting',done:false},{name:'Assembly',done:false},{name:'QC',done:false}]}};
@@ -28,6 +29,6 @@
       </div>
     {/if}
   </div>
-  <aside class="grid"><div class="card"><h3>Comments</h3><p class="muted">Mocked chat for this order. See <a href="/chat">global chat</a>.</p></div>
+  <aside class="grid"><div class="card"><h3>Comments</h3><p class="muted">Mocked chat for this order. See <a href={chatHref}>global chat</a>.</p></div>
     <div class="card"><h3>Quick Actions</h3><div class="row"><button class="tag">Mark step done</button><button class="tag">Notify team</button></div></div></aside>
 </section>
