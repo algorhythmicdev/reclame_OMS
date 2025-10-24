@@ -1,16 +1,22 @@
 <script lang="ts">
   export let value: string = '';
   export let placeholder = '';
-  export let type = 'text';
+  export let type: string = 'text';
   export let ariaLabel = placeholder || 'input';
+
+  const handleInput = (event: Event) => {
+    const target = event.target as HTMLInputElement | null;
+    value = target ? target.value : '';
+  };
 </script>
 
 <input
-  bind:value
-  {type}
+  {value}
+  type={type}
   placeholder={placeholder}
   aria-label={ariaLabel}
-  class="rf-input" />
+  class="rf-input"
+  on:input={handleInput} />
 
 <style>
 .rf-input{

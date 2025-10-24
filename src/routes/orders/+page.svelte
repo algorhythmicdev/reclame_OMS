@@ -22,6 +22,6 @@
     <div style="width:280px"><Input bind:value={q} placeholder="Filter by client…" ariaLabel="Filter" /></div>
   </div>
   <div style="margin-top:12px">
-    <DataTable {columns}={cols} {rows}={orders} filterKey="client" filterText={q} />
+    <DataTable columns={cols} rows={orders} filterKey="client" filterText={q} />
   </div>
 </section>
