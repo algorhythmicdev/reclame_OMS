@@ -1,38 +1,4 @@
-Table of Contents
 
-Project Goals
-
-System Overview
-
-Tech Stack
-
-Monorepo Layout
-
-Local Development
-
-Build & Deploy
-
-Configuration
-
-Accessibility & UX
-
-Data Model (Mock)
-
-Feature Map
-
-Conventions
-
-Quality Gates
-
-Troubleshooting
-
-Roadmap
-
-Security & Privacy
-
-Contributing
-
-License
 
 Project Goals
 
