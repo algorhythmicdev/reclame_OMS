@@ -1,0 +1,20 @@
+{
+  "name": "reclame-fabriek-mockup",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@sveltejs/kit": "^2.7.4",
+    "@sveltejs/adapter-static": "^3.0.4",
+    "svelte": "^4.2.19",
+    "pdfjs-dist": "^4.8.69"
+  },
+  "devDependencies": {
+    "vite": "^5.4.10"
+  }
+}
