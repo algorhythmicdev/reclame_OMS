@@ -7,8 +7,56 @@ a{color:inherit}a:focus,button:focus,input:focus,select:focus,textarea:focus{out
 .card{background:var(--bg-1);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:16px}.muted{color:var(--muted)}
 .grid{display:grid;gap:16px}.row{display:flex;gap:12px;align-items:center}
 .tag{padding:6px 10px;border-radius:999px;background:var(--bg-2);border:1px solid rgba(255,255,255,.06);font-size:.85rem}
+.tag.is-active{background:linear-gradient(90deg,var(--brand-magenta),var(--brand-cyan));color:#000;border-color:transparent;font-weight:700}
 .progress{height:10px;background:var(--bg-2);border-radius:999px;overflow:hidden}.progress>span{display:block;height:100%;background:linear-gradient(90deg,var(--brand-amber),var(--brand-cyan))}
 .sidebar a{color:var(--text);text-decoration:none;opacity:.9;padding:10px 12px;border-radius:10px;display:flex;gap:10px;align-items:center}
 .sidebar a:hover{background:rgba(255,255,255,.06)}.sidebar a.active{opacity:1;font-weight:800;background:rgba(255,255,255,.08)}
 .tile{background:var(--bg-1);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:18px;display:flex;gap:12px;align-items:center}
 .kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}.kpi .item{background:var(--bg-1);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:14px}.kpi .value{font-size:1.6rem;font-weight:900}
+
+/* --- Shell layout (top launchbar + content + right rail) --- */
+.rf-shell {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  grid-template-columns: 1fr 320px; /* right rail width */
+  grid-template-areas:
+    "launchbar launchbar"
+    "content   right";
+  min-height: 100vh;
+}
+
+.rf-launchbar {
+  grid-area: launchbar;
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 14px;
+  background: var(--bg-1);
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+
+.rf-content {
+  grid-area: content;
+  padding: 16px;
+}
+
+.rf-right {
+  grid-area: right;
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  gap: 12px;
+  padding: 12px;
+  background: var(--bg-1);
+  border-left: 1px solid rgba(255,255,255,.08);
+}
+
+/* Panels on right rail */
+.rf-panel {
+  background: var(--bg-0);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 12px;
+  padding: 12px;
+  overflow: hidden;
+  display: flex; flex-direction: column;
+}
+
+/* Small utility */
+.rf-scroll { overflow: auto; }
