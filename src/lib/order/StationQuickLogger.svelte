@@ -1,7 +1,6 @@
 <script lang="ts">
   import { t } from 'svelte-i18n';
   import Select from '$lib/ui/Select.svelte';
-  import Input from '$lib/ui/Input.svelte';
   import Button from '$lib/ui/Button.svelte';
 
   export let onSubmit: (payload: { station: string; progress?: number; note?: string }) => void = () => {};
@@ -9,6 +8,7 @@
   let station = 'SANDING';
   let progress = 0;
   let note = '';
+  let noteInput: HTMLInputElement | null = null;
   const progressId = 'station-quick-progress';
 
   const STATIONS = ['CAD', 'CNC', 'SANDING', 'BENDING', 'WELDING', 'PAINT', 'ASSEMBLY', 'QC', 'LOGISTICS'].map((code) => ({
@@ -16,14 +16,28 @@
     value: code
   }));
 
+  function clamp(value: number) {
+    return Math.max(0, Math.min(100, value));
+  }
+
   function send() {
+    const trimmedNote = note.trim();
+    const hasNote = trimmedNote.length > 0;
+    const hasProgress = typeof progress === 'number' && progress > 0;
+    if (!hasNote && !hasProgress) return;
+
+    const normalized = hasProgress ? clamp(progress) : undefined;
     onSubmit({
       station,
-      progress: progress > 0 ? progress : undefined,
-      note: note || undefined
+      progress: normalized,
+      note: hasNote ? trimmedNote : undefined
     });
     progress = 0;
     note = '';
+  }
+
+  export function focus() {
+    noteInput?.focus();
   }
 </script>
 
@@ -36,7 +50,13 @@
       <input id={progressId} class="rf-input" type="number" min="0" max="100" bind:value={progress} />
     </div>
     <div style="grid-column:span 2">
-      <Input bind:value={note} placeholder={$t('station.quick_log_note_placeholder')} />
+      <input
+        class="rf-input"
+        bind:value={note}
+        placeholder={$t('station.quick_log_note_placeholder')}
+        aria-label={$t('station.quick_log_note_placeholder')}
+        bind:this={noteInput}
+      />
     </div>
   </div>
   <div class="row" style="margin-top:8px">

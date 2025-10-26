@@ -1,6 +1,6 @@
 <script lang="ts">
   import { base } from '$app/paths';
-  import { onMount } from 'svelte';
+  import { onMount, tick } from 'svelte';
   import { get } from 'svelte/store';
   import { t } from 'svelte-i18n';
 
@@ -20,7 +20,7 @@
   import GanttLine from '$lib/order/GanttLine.svelte';
   import { announce } from '$lib/a11y/live';
 
-  import type { Order, StationLog, Field, Badge } from '$lib/order/types.signage';
+  import type { Order, StationLog, Badge } from '$lib/order/types.signage';
   import {
     getOrder,
     createOrder,
@@ -74,8 +74,49 @@
   onMount(() => {
     setTabFromHash(window.location.hash);
     const handle = () => setTabFromHash(window.location.hash);
+    const onApproveSelected = () => {
+      if ($role !== 'Admin') return;
+      if (!selectedChangeRequestId) return;
+      approve(selectedChangeRequestId);
+    };
+    const onDeclineSelected = () => {
+      if ($role !== 'Admin') return;
+      if (!selectedChangeRequestId) return;
+      decline(selectedChangeRequestId);
+    };
+    const onAttachRevision = async () => {
+      if ($role !== 'Admin') return;
+      tab = 'revisions';
+      await tick();
+      revisionInput?.focus();
+    };
+    const onOpenCr = async () => {
+      if ($role === 'Admin') return;
+      tab = 'changes';
+      await tick();
+      changeFormRef?.focus();
+    };
+    const onFocusQuickLog = async () => {
+      if ($role === 'Admin') return;
+      tab = 'changes';
+      await tick();
+      quickLoggerRef?.focus();
+    };
+
     window.addEventListener('hashchange', handle);
-    return () => window.removeEventListener('hashchange', handle);
+    window.addEventListener('rf-approve-selected', onApproveSelected);
+    window.addEventListener('rf-decline-selected', onDeclineSelected);
+    window.addEventListener('rf-attach-revision', onAttachRevision);
+    window.addEventListener('rf-open-cr', onOpenCr);
+    window.addEventListener('rf-focus-quicklog', onFocusQuickLog);
+    return () => {
+      window.removeEventListener('hashchange', handle);
+      window.removeEventListener('rf-approve-selected', onApproveSelected);
+      window.removeEventListener('rf-decline-selected', onDeclineSelected);
+      window.removeEventListener('rf-attach-revision', onAttachRevision);
+      window.removeEventListener('rf-open-cr', onOpenCr);
+      window.removeEventListener('rf-focus-quicklog', onFocusQuickLog);
+    };
   });
 
   $: syncHash(tab);
@@ -104,6 +145,9 @@
   }
 
   let newPath = '';
+  let revisionInput: HTMLInputElement | null = null;
+  let changeFormRef: InstanceType<typeof ChangeRequestForm> | null = null;
+  let quickLoggerRef: InstanceType<typeof StationQuickLogger> | null = null;
   function attach() {
     if (!newPath.trim()) return;
     addRevision(o.id, { id: crypto.randomUUID(), name: newPath.split('/').pop()!, path: newPath, kind: 'pdf' }, 'admin');
@@ -145,21 +189,13 @@
     { label: 'SANDING', planned: [Date.parse('2025-10-22'), Date.parse('2025-10-23')] }
   ];
 
-  const mergeFields = (base: Field[], proposed?: Field[]) => {
-    const map = new Map(base.map((field) => [field.key, { ...field }]));
-    proposed?.forEach((field) => {
-      const existing = map.get(field.key) || { key: field.key };
-      map.set(field.key, { ...existing, ...field });
-    });
-    return Array.from(map.values());
-  };
-
   let selectedChangeRequestId: string | null = null;
   $: selectedChangeRequest = selectedChangeRequestId
     ? o.prs.find((item) => item.id === selectedChangeRequestId) ?? null
     : null;
-  $: compareFieldsRight = mergeFields(o.fields, selectedChangeRequest?.proposed.fields);
-  $: compareMaterialsRight = mergeFields(o.materials, selectedChangeRequest?.proposed.materials);
+  $: compareFieldsRight = selectedChangeRequest?.proposed.fields || o.fields;
+  $: compareMaterialsRight = selectedChangeRequest?.proposed.materials || o.materials;
+  $: compareProgressRight = selectedChangeRequest?.proposed.progress || o.progress;
 
   function handleQuickLog(payload: { station: string; progress?: number; note?: string }) {
     const changes: StationLog['changes'] = {};
@@ -210,8 +246,9 @@
         <h3 style="margin:10px 0 8px">{$t('order.materials')}</h3>
         <ul>{#each o.materials as material}<li><b>{material.label}:</b> {material.value}</li>{/each}</ul>
       </section>
-      <section class="card" aria-labelledby="progress-legend">
+      <section class="card" aria-labelledby="progress-legend" aria-describedby="progress-scale">
         <h3 id="progress-legend" style="margin:0 0 8px 0">{$t('order.progress')}</h3>
+        <p id="progress-scale" class="muted">{$t('order.progress_help')}</p>
         <ProgressLegend stages={stages()} />
       </section>
       <GanttLine items={ganttItems} />
@@ -221,11 +258,22 @@
 
 <section id="revisions" hidden={tab!=='revisions'} aria-label={$t('order.revisions')}>
   <div class="grid" style="grid-template-columns:2fr 1fr;align-items:start;gap:16px">
-    <RevisionsList items={o.revisions} currentId={o.defaultRevisionId} onUse={useRevision} />
+    <RevisionsList
+      items={o.revisions}
+      currentId={o.defaultRevisionId}
+      onUse={useRevision}
+      canManage={$role==='Admin'}
+    />
     {#if $role==='Admin'}
       <section class="card">
         <h3 style="margin:0 0 8px 0">{$t('order.attach_admin_heading')}</h3>
-        <input class="rf-input" placeholder={$t('order.attach_help')} bind:value={newPath} aria-label={$t('order.attach_help')} />
+        <input
+          class="rf-input"
+          placeholder={$t('order.attach_help')}
+          bind:value={newPath}
+          aria-label={$t('order.attach_help')}
+          bind:this={revisionInput}
+        />
         <div class="row" style="margin-top:8px"><button class="tag" on:click={attach}>{$t('order.attach')}</button></div>
       </section>
     {/if}
@@ -244,20 +292,14 @@
       />
       {#if selectedChangeRequest}
         <CompareView
-          headingKey="order.compare.fields"
-          fieldLabelKey="compare.field"
-          leftTitleKey="compare.before"
-          rightTitleKey="compare.after"
+          leftTitle={$t('compare.before')}
+          rightTitle={$t('compare.after')}
           leftFields={o.fields}
           rightFields={compareFieldsRight}
-        />
-        <CompareView
-          headingKey="order.compare.materials"
-          fieldLabelKey="compare.field"
-          leftTitleKey="compare.before"
-          rightTitleKey="compare.after"
-          leftFields={o.materials}
-          rightFields={compareMaterialsRight}
+          leftMaterials={o.materials}
+          rightMaterials={compareMaterialsRight}
+          leftProgress={o.progress}
+          rightProgress={compareProgressRight}
         />
       {:else}
         <div class="card">
@@ -269,8 +311,8 @@
 
     <div class="grid" style="gap:12px">
       {#if $role!=='Admin'}
-        <ChangeRequestForm onCreate={createCR} />
-        <StationQuickLogger onSubmit={handleQuickLog} />
+        <ChangeRequestForm onCreate={createCR} bind:this={changeFormRef} />
+        <StationQuickLogger onSubmit={handleQuickLog} bind:this={quickLoggerRef} />
       {:else}
         <section class="card">
           <h3 style="margin:0">{$t('order.create_change_request')}</h3>

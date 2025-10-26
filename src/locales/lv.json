@@ -31,6 +31,7 @@
     "fields": "Galvenie lauki",
     "materials": "Materiāli",
     "progress": "Procesa progress",
+    "progress_help": "Katrs posms rāda izpildes procentu no 0 līdz 100.",
     "currentPdf": "Aktuālais pasūtījuma PDF",
     "no_file": "Fails nav.",
     "attach_help": "Ielīmējiet PDF ceļu static/files/…",
