@@ -31,6 +31,7 @@
     "fields": "Key Fields",
     "materials": "Materials",
     "progress": "Process Progress",
+    "progress_help": "Each stage lists completion from 0 to 100 percent.",
     "currentPdf": "Current Order PDF",
     "no_file": "No file.",
     "attach_help": "Paste PDF path under static/files/…",
