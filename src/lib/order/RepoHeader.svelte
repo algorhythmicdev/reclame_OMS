@@ -1,6 +1,6 @@
 <script lang="ts">
   import Badge from '$lib/ui/Badge.svelte';
-  import { TERMS } from './names';
+  import { t } from 'svelte-i18n';
   export let id = ''; export let title=''; export let client=''; export let badges:string[]=[];
 </script>
 
@@ -15,8 +15,8 @@
     </div>
   </div>
   <div class="row">
-    <a class="tag" href="#logs">{TERMS.stationLogs}</a>
-    <a class="tag" href="#workstreams">{TERMS.workstreams}</a>
-    <a class="tag" href="#revisions">{TERMS.currentRevision}</a>
+    <a class="tag" href="#logs">{$t('terms.stationLogs')}</a>
+    <a class="tag" href="#workstreams">{$t('terms.workstreams')}</a>
+    <a class="tag" href="#revisions">{$t('terms.currentRevision')}</a>
   </div>
 </div>

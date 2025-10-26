@@ -1,0 +1,109 @@
+{
+  "app": { "title": "Reclame Fabriek — OMS" },
+  "terms": {
+    "station": "Станция",
+    "stationLog": "Журнал станции",
+    "stationLogs": "Журналы станций",
+    "changeRequest": "Запрос на изменение",
+    "changeRequests": "Запросы на изменение",
+    "workstream": "Поток работ",
+    "workstreams": "Потоки работ",
+    "approve": "Утвердить",
+    "decline": "Отклонить",
+    "attachRevision": "Привязать ревизию",
+    "currentRevision": "Текущая ревизия"
+  },
+  "nav": {
+    "dashboard": "Панель",
+    "launchpad": "Лончпад",
+    "calendar": "Календарь",
+    "orders": "Заказы",
+    "files": "Файлы",
+    "settings": "Настройки",
+    "kanban": "Производство"
+  },
+  "order": {
+    "overview": "Обзор",
+    "revisions": "Ревизии",
+    "changes": "Запросы на изменение",
+    "logs": "Журналы станций",
+    "workstreams": "Потоки работ",
+    "fields": "Ключевые поля",
+    "materials": "Материалы",
+    "progress": "Прогресс процесса",
+    "currentPdf": "Текущий PDF заказа",
+    "no_file": "Файл отсутствует.",
+    "attach_help": "Вставьте путь к PDF в static/files/…",
+    "attach": "Привязать",
+    "attach_admin_heading": "Привязать ревизию (админ)",
+    "current_revision": "Текущая ревизия",
+    "create_change_request": "Создать запрос на изменение",
+    "create_change_request_hint": "Переключитесь на роль станции.",
+    "timeline": "Хронология",
+    "badges": "Бейджи",
+    "quick_station_log": "Быстрый журнал станции",
+    "station_label": "Станция",
+    "progress_percent": "Прогресс (%)",
+    "note_required": "Примечание (обязательно для изменений)",
+    "log": "Записать",
+    "title_placeholder": "Заголовок",
+    "message_optional_placeholder": "Сообщение (необязательно)",
+    "new_due_date": "Новая дата сдачи",
+    "sanding_progress": "Прогресс шлифовки (%)",
+    "station_note": "Заметка станции",
+    "submit": "Отправить",
+    "changeRequests": {
+      "heading": "Запросы на изменение",
+      "empty": "Нет открытых запросов на изменение.",
+      "proposed": "Предлагаемые изменения",
+      "selected": "Выбранный запрос",
+      "select_prompt": "Выберите запрос, чтобы сравнить поля.",
+      "from": "от {author}",
+      "status": "Статус: {status}"
+    },
+    "compare": {
+      "fields": "Ключевые поля",
+      "materials": "Материалы"
+    },
+    "log_details": "Детали",
+    "log_recorded_by": "записал {author}",
+    "log_recorded_station": " · {station}"
+  },
+  "themes": {
+    "light": "LightVim",
+    "dark": "DarkVim",
+    "hc": "HighContrastVim"
+  },
+  "a11y": {
+    "toggle_right": "Показать/скрыть правую панель (Shift+R)",
+    "search": "Поиск: заказы, файлы, клиенты…",
+    "progress_region": "Суммарный прогресс процесса"
+  },
+  "toast": {
+    "approved": "Запрос утвержден",
+    "declined": "Запрос отклонен",
+    "revision_attached": "Ревизия добавлена",
+    "revision_switched": "Текущая ревизия изменена"
+  },
+  "launchpad": {
+    "themes": "Темы",
+    "language": "Язык"
+  },
+  "compare": {
+    "heading": "Сравнение",
+    "field": "Поле",
+    "before": "Текущее",
+    "after": "Предложено",
+    "empty": "Нет различий для отображения."
+  },
+  "badges": {
+    "heading": "Бейджи"
+  },
+  "station": {
+    "quick_log_note_placeholder": "Примечание (обязательно для изменений)",
+    "quick_log_heading": "Быстрая запись станции",
+    "station_label": "Станция",
+    "progress_label": "Прогресс (%)",
+    "log": "Записать"
+  }
+}

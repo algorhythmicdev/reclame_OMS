@@ -1,20 +1,41 @@
 <script lang="ts">
   import { base } from '$app/paths';
   import { page } from '$app/stores';
-  import { Grid, Calendar, FolderOpen, PackageSearch, MessageSquareMore, Settings, Search, Rocket } from 'lucide-svelte';
+  import { Grid, Calendar, FolderOpen, PackageSearch, Settings, Search, Rocket } from 'lucide-svelte';
   import RoleSwitch from './RoleSwitch.svelte';
+  import { t } from 'svelte-i18n';
 
   let q = '';
   const links = [
-    { href: '/', label: 'Dashboard', icon: Grid },
-    { href: '/calendar', label: 'Calendar', icon: Calendar },
-    { href: '/orders', label: 'Orders', icon: PackageSearch },
-    { href: '/files', label: 'Files', icon: FolderOpen },
-    { href: '/chat', label: 'Chat', icon: MessageSquareMore },
-    { href: '/settings', label: 'Settings', icon: Settings }
+    { href: '/', labelKey: 'nav.dashboard', icon: Grid },
+    { href: '/calendar', labelKey: 'nav.calendar', icon: Calendar },
+    { href: '/orders', labelKey: 'nav.orders', icon: PackageSearch },
+    { href: '/files', labelKey: 'nav.files', icon: FolderOpen },
+    { href: '/settings', labelKey: 'nav.settings', icon: Settings }
   ];
 
-  const resolveHref = (path: string) => `${base}${path}`;
+  const sanitizeBase = () => {
+    const trimmed = (base ?? '').trim();
+    if (!trimmed || trimmed === '/') return '';
+    return trimmed.endsWith('/') ? trimmed.slice(0, -1) : trimmed;
+  };
+
+  const normalizePath = (path: string) => {
+    if (!path) return '/';
+    return path.startsWith('/') ? path : `/${path}`;
+  };
+
+  const resolveHref = (path: string) => {
+    const normalizedBase = sanitizeBase();
+    const normalizedPath = normalizePath(path);
+    if (!normalizedBase) {
+      return normalizedPath;
+    }
+    if (normalizedPath === '/') {
+      return normalizedBase;
+    }
+    return `${normalizedBase}${normalizedPath}`;
+  };
   const normalize = (path: string) => {
     if (!path) return '/';
     const trimmed = path.replace(/\/+$/, '');
@@ -62,7 +83,7 @@
     <Rocket size={16} />
   </a>
 
-  <nav class="row" aria-label="Quick launch" style="gap:6px;flex-wrap:wrap">
+  <nav class="row" aria-label={$t('nav.launchpad')} style="gap:6px;flex-wrap:wrap">
     {#each links as L}
       {@const resolved = resolveHref(L.href)}
       {@const state = getActiveState(L.href)}
@@ -73,7 +94,7 @@
         href={resolved}
         aria-current={ariaCurrent(L.href)}
       >
-        <svelte:component this={L.icon} size={16} /> {L.label}
+        <svelte:component this={L.icon} size={16} /> {$t(L.labelKey)}
       </a>
     {/each}
   </nav>
@@ -84,7 +105,7 @@
         <Search size={16} />
         <input
           class="rf-input" style="border:none;background:transparent;padding:0"
-          type="search" placeholder="Search orders, files, clients…" aria-label="Search"
+          type="search" placeholder={$t('a11y.search')} aria-label={$t('a11y.search')}
           bind:value={q} />
       </div>
     </form>

@@ -1,0 +1,109 @@
+{
+  "app": { "title": "Reclame Fabriek — OMS" },
+  "terms": {
+    "station": "Station",
+    "stationLog": "Station Log",
+    "stationLogs": "Station Logs",
+    "changeRequest": "Change Request",
+    "changeRequests": "Change Requests",
+    "workstream": "Workstream",
+    "workstreams": "Workstreams",
+    "approve": "Approve",
+    "decline": "Decline",
+    "attachRevision": "Attach Revision",
+    "currentRevision": "Current Revision"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "launchpad": "Launchpad",
+    "calendar": "Calendar",
+    "orders": "Orders",
+    "files": "Files",
+    "settings": "Settings",
+    "kanban": "Production Board"
+  },
+  "order": {
+    "overview": "Overview",
+    "revisions": "Revisions",
+    "changes": "Change Requests",
+    "logs": "Station Logs",
+    "workstreams": "Workstreams",
+    "fields": "Key Fields",
+    "materials": "Materials",
+    "progress": "Process Progress",
+    "currentPdf": "Current Order PDF",
+    "no_file": "No file.",
+    "attach_help": "Paste PDF path under static/files/…",
+    "attach": "Attach",
+    "attach_admin_heading": "Attach Revision (Admin)",
+    "current_revision": "Current Revision",
+    "create_change_request": "Create Change Request",
+    "create_change_request_hint": "Switch role to Station.",
+    "timeline": "Timeline",
+    "badges": "Badges",
+    "quick_station_log": "Quick Station Log",
+    "station_label": "Station",
+    "progress_percent": "Progress (%)",
+    "note_required": "Note (required for changes)",
+    "log": "Log",
+    "title_placeholder": "Title",
+    "message_optional_placeholder": "Message (optional)",
+    "new_due_date": "New due date",
+    "sanding_progress": "Sanding progress (%)",
+    "station_note": "Station note",
+    "submit": "Submit",
+    "changeRequests": {
+      "heading": "Change Requests",
+      "empty": "No pending change requests.",
+      "proposed": "Proposed changes",
+      "selected": "Selected Change Request",
+      "select_prompt": "Select a change request to compare fields.",
+      "from": "from {author}",
+      "status": "Status: {status}"
+    },
+    "compare": {
+      "fields": "Key Fields",
+      "materials": "Materials"
+    },
+    "log_details": "Details",
+    "log_recorded_by": "recorded by {author}",
+    "log_recorded_station": " · {station}"
+  },
+  "themes": {
+    "light": "LightVim",
+    "dark": "DarkVim",
+    "hc": "HighContrastVim"
+  },
+  "a11y": {
+    "toggle_right": "Toggle right panel (Shift+R)",
+    "search": "Search orders, files, clients…",
+    "progress_region": "Overall process progress"
+  },
+  "toast": {
+    "approved": "Change Request approved",
+    "declined": "Change Request declined",
+    "revision_attached": "Revision attached",
+    "revision_switched": "Current revision changed"
+  },
+  "launchpad": {
+    "themes": "Themes",
+    "language": "Language"
+  },
+  "compare": {
+    "heading": "Compare",
+    "field": "Field",
+    "before": "Current",
+    "after": "Proposed",
+    "empty": "No differences to display."
+  },
+  "badges": {
+    "heading": "Badges"
+  },
+  "station": {
+    "quick_log_note_placeholder": "Note (required for changes)",
+    "quick_log_heading": "Quick Station Log",
+    "station_label": "Station",
+    "progress_label": "Progress (%)",
+    "log": "Log"
+  }
+}

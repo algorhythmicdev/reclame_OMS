@@ -1,0 +1,109 @@
+{
+  "app": { "title": "Reclame Fabriek — OMS" },
+  "terms": {
+    "station": "Stacija",
+    "stationLog": "Stacijas žurnāls",
+    "stationLogs": "Staciju žurnāli",
+    "changeRequest": "Izmaiņu pieprasījums",
+    "changeRequests": "Izmaiņu pieprasījumi",
+    "workstream": "Darba plūsma",
+    "workstreams": "Darba plūsmas",
+    "approve": "Apstiprināt",
+    "decline": "Noraidīt",
+    "attachRevision": "Pievienot revīziju",
+    "currentRevision": "Aktīvā revīzija"
+  },
+  "nav": {
+    "dashboard": "Panelis",
+    "launchpad": "Starts",
+    "calendar": "Kalendārs",
+    "orders": "Pasūtījumi",
+    "files": "Faili",
+    "settings": "Iestatījumi",
+    "kanban": "Ražošana"
+  },
+  "order": {
+    "overview": "Pārskats",
+    "revisions": "Revīzijas",
+    "changes": "Izmaiņu pieprasījumi",
+    "logs": "Staciju žurnāli",
+    "workstreams": "Darba plūsmas",
+    "fields": "Galvenie lauki",
+    "materials": "Materiāli",
+    "progress": "Procesa progress",
+    "currentPdf": "Aktuālais pasūtījuma PDF",
+    "no_file": "Fails nav.",
+    "attach_help": "Ielīmējiet PDF ceļu static/files/…",
+    "attach": "Pievienot",
+    "attach_admin_heading": "Pievienot revīziju (admins)",
+    "current_revision": "Aktīvā revīzija",
+    "create_change_request": "Izveidot izmaiņu pieprasījumu",
+    "create_change_request_hint": "Pārslēdzieties uz stacijas lomu.",
+    "timeline": "Laika līnija",
+    "badges": "Nozīmītes",
+    "quick_station_log": "Ātrais stacijas žurnāls",
+    "station_label": "Stacija",
+    "progress_percent": "Progress (%)",
+    "note_required": "Piezīme (obligāti izmaiņām)",
+    "log": "Reģistrēt",
+    "title_placeholder": "Nosaukums",
+    "message_optional_placeholder": "Ziņa (nav obligāta)",
+    "new_due_date": "Jaunais izpildes termiņš",
+    "sanding_progress": "Slīpēšanas progress (%)",
+    "station_note": "Stacijas piezīme",
+    "submit": "Iesniegt",
+    "changeRequests": {
+      "heading": "Izmaiņu pieprasījumi",
+      "empty": "Nav atvērti izmaiņu pieprasījumi.",
+      "proposed": "Piedāvātās izmaiņas",
+      "selected": "Izvēlētais pieprasījums",
+      "select_prompt": "Izvēlieties pieprasījumu, lai salīdzinātu laukus.",
+      "from": "no {author}",
+      "status": "Statuss: {status}"
+    },
+    "compare": {
+      "fields": "Galvenie lauki",
+      "materials": "Materiāli"
+    },
+    "log_details": "Detalizācija",
+    "log_recorded_by": "reģistrēja {author}",
+    "log_recorded_station": " · {station}"
+  },
+  "themes": {
+    "light": "LightVim",
+    "dark": "DarkVim",
+    "hc": "HighContrastVim"
+  },
+  "a11y": {
+    "toggle_right": "Pārslēgt labo paneli (Shift+R)",
+    "search": "Meklēt pasūtījumus, failus, klientus…",
+    "progress_region": "Kopējais procesa progress"
+  },
+  "toast": {
+    "approved": "Pieprasījums apstiprināts",
+    "declined": "Pieprasījums noraidīts",
+    "revision_attached": "Revīzija pievienota",
+    "revision_switched": "Aktīvā revīzija nomainīta"
+  },
+  "launchpad": {
+    "themes": "Tēmas",
+    "language": "Valoda"
+  },
+  "compare": {
+    "heading": "Salīdzinājums",
+    "field": "Lauks",
+    "before": "Pašreizējais",
+    "after": "Piedāvātais",
+    "empty": "Nav atšķirību."
+  },
+  "badges": {
+    "heading": "Nozīmītes"
+  },
+  "station": {
+    "quick_log_note_placeholder": "Piezīme (obligāti izmaiņām)",
+    "quick_log_heading": "Ātrā stacijas reģistrācija",
+    "station_label": "Stacija",
+    "progress_label": "Progress (%)",
+    "log": "Reģistrēt"
+  }
+}

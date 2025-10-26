@@ -138,3 +138,9 @@ export function removeBadge(orderId: string, b: Badge) {
   const o = DB[orderId]; if (!o) return;
   o.badges = o.badges.filter(x=>x!==b); persist();
 }
+
+export function setBadges(orderId: string, badges: Badge[]) {
+  const o = DB[orderId]; if (!o) return;
+  o.badges = [...badges];
+  persist();
+}

@@ -4,6 +4,7 @@
   import NotificationsFeed from '$lib/ui/NotificationsFeed.svelte';
   import ChatPane from '$lib/ui/ChatPane.svelte';
   import Toaster from '$lib/ui/Toaster.svelte';
+  import LiveRegion from '$lib/ui/LiveRegion.svelte';
 </script>
 
 <link rel="stylesheet" href={`${base}/brand.css`} />
@@ -25,3 +26,4 @@
 </div>
 
 <Toaster />
+<LiveRegion />
