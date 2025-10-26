@@ -2,6 +2,7 @@
   import { base } from '$app/paths';
   import { page } from '$app/stores';
   import { Grid, Calendar, FolderOpen, PackageSearch, MessageSquareMore, Settings, Search, Rocket } from 'lucide-svelte';
+  import RoleSwitch from './RoleSwitch.svelte';
 
   let q = '';
   const links = [
@@ -77,13 +78,16 @@
     {/each}
   </nav>
 
-  <form class="row" style="margin-left:auto;min-width:300px" role="search" on:submit|preventDefault>
-    <div class="tag" style="display:flex;gap:6px;align-items:center;width:100%">
-      <Search size={16} />
-      <input
-        class="rf-input" style="border:none;background:transparent;padding:0"
-        type="search" placeholder="Search orders, files, clients…" aria-label="Search"
-        bind:value={q} />
-    </div>
-  </form>
+  <div class="row" style="margin-left:auto;min-width:300px;gap:8px;align-items:center">
+    <form class="row" style="flex:1" role="search" on:submit|preventDefault>
+      <div class="tag" style="display:flex;gap:6px;align-items:center;width:100%">
+        <Search size={16} />
+        <input
+          class="rf-input" style="border:none;background:transparent;padding:0"
+          type="search" placeholder="Search orders, files, clients…" aria-label="Search"
+          bind:value={q} />
+      </div>
+    </form>
+    <RoleSwitch />
+  </div>
 </div>
