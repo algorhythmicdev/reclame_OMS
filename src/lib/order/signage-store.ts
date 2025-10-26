@@ -1,4 +1,4 @@
-import type { Order, Revision, ChangeRequest, StationLog } from './types.signage';
+import type { Order, Revision, ChangeRequest, StationLog, Badge } from './types.signage';
 import {
   getOrder,
   listOrders,
@@ -7,11 +7,14 @@ import {
   setDefaultRevision,
   openPR as openCR,
   mergePR as approveCR,
-  closePR as declineCR
+  closePR as declineCR,
+  setBadges as applyBadges,
+  addBadge,
+  removeBadge
 } from './vcs-store';
 
 // Re-export for read ops
-export { listOrders, getOrder, createOrder, addRevision, setDefaultRevision };
+export { listOrders, getOrder, createOrder, addRevision, setDefaultRevision, addBadge, removeBadge };
 
 // Signage-named operations
 export function openChangeRequest(
@@ -25,6 +28,10 @@ export function approveChangeRequest(orderId: string, crId: string, admin = 'adm
 }
 export function declineChangeRequest(orderId: string, crId: string) {
   declineCR(orderId, crId);
+}
+
+export function setBadges(orderId: string, badges: Badge[]) {
+  applyBadges(orderId, badges);
 }
 
 // Optional: log alias, if you ever need to create synthetic logs

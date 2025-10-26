@@ -1,12 +1,14 @@
 import { writable } from 'svelte/store';
 
+export type ThemeName = 'LightVim' | 'DarkVim' | 'HighContrastVim';
+
 const isBrowser = typeof window !== 'undefined';
-const startup = isBrowser ? localStorage.getItem('rf_theme') || 'dark' : 'dark';
+const startup = (isBrowser ? (localStorage.getItem('rf_theme') as ThemeName | null) : null) || 'DarkVim';
 
-export const theme = writable(startup);
+export const theme = writable<ThemeName>(startup);
 
-theme.subscribe((t) => {
+theme.subscribe((value) => {
   if (!isBrowser) return;
-  localStorage.setItem('rf_theme', t);
-  document.documentElement.setAttribute('data-theme', t);
+  localStorage.setItem('rf_theme', value);
+  document.documentElement.setAttribute('data-theme', value);
 });

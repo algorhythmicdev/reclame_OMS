@@ -1,6 +1,26 @@
-:root{--brand-magenta:#ff2d95;--brand-violet:#6f3cff;--brand-cyan:#00e5ff;--brand-amber:#ffb300;--bg-0:#0e0e12;--bg-1:#15151b;--bg-2:#1b1b25;--text:#e7e7ee;--muted:#a9a9b6;--focus:#8adfff}
-[data-theme="light"]{--bg-0:#fff;--bg-1:#f7f7fb;--bg-2:#ececf3;--text:#111114;--muted:#53535f}
-[data-theme="hc"]{--bg-0:#000;--bg-1:#000;--bg-2:#000;--text:#fff;--muted:#fff}
+:root{--brand-magenta:#ff2d95;--brand-violet:#6f3cff;--brand-cyan:#00e5ff;--brand-amber:#ffb300;--focus:#8adfff}
+:root,
+:root[data-theme="DarkVim"]{
+  --bg-0:#0f1117;
+  --bg-1:#141824;
+  --bg-2:#1b2030;
+  --text:#e7e7ee;
+  --muted:#9aa0ab;
+}
+:root[data-theme="LightVim"]{
+  --bg-0:#ffffff;
+  --bg-1:#f7f7fc;
+  --bg-2:#f0f0f7;
+  --text:#17181c;
+  --muted:#51535a;
+}
+:root[data-theme="HighContrastVim"]{
+  --bg-0:#000000;
+  --bg-1:#000000;
+  --bg-2:#0b0b0b;
+  --text:#ffffff;
+  --muted:#d9d9d9;
+}
 *{box-sizing:border-box}html,body,#app{height:100%}body{margin:0;background:var(--bg-0);color:var(--text);font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif}
 a{color:inherit}a:focus,button:focus,input:focus,select:focus,textarea:focus{outline:2px solid var(--focus);outline-offset:2px;border-radius:8px}
 .btn{background:linear-gradient(90deg,var(--brand-magenta),var(--brand-violet),var(--brand-cyan));color:#000;padding:.65rem 1rem;border:none;border-radius:.8rem;cursor:pointer;font-weight:800}
