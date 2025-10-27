@@ -2,18 +2,20 @@
   import { t } from 'svelte-i18n';
   import Select from '$lib/ui/Select.svelte';
   import Button from '$lib/ui/Button.svelte';
+  import { TERMS } from '$lib/order/names';
+  import type { StationCode } from '$lib/order/names';
 
   export let onSubmit: (payload: { station: string; progress?: number; note?: string }) => void = () => {};
 
-  let station = 'SANDING';
+  let station: StationCode = 'SANDING';
   let progress = 0;
   let note = '';
   let noteInput: HTMLInputElement | null = null;
   const progressId = 'station-quick-progress';
 
-  const STATIONS = ['CAD', 'CNC', 'SANDING', 'BENDING', 'WELDING', 'PAINT', 'ASSEMBLY', 'QC', 'LOGISTICS'].map((code) => ({
-    label: code,
-    value: code
+  const STATIONS = Object.entries(TERMS.stations).map(([code, label]) => ({
+    label,
+    value: code as StationCode
   }));
 
   function clamp(value: number) {
@@ -51,6 +53,7 @@
     </div>
     <div style="grid-column:span 2">
       <input
+        id="quicklog-note"
         class="rf-input"
         bind:value={note}
         placeholder={$t('station.quick_log_note_placeholder')}

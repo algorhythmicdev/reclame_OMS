@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { base } from '$app/paths';
   import { onMount } from 'svelte';
   import Launchbar from '$lib/ui/Launchbar.svelte';
@@ -8,20 +8,37 @@
   import LiveRegion from '$lib/ui/LiveRegion.svelte';
   import { role } from '$lib/ui/RoleSwitch.svelte';
   import { seed } from '$lib/dev/seed';
+  import CommandPalette from '$lib/ui/CommandPalette.svelte';
+
+  if (import.meta.env.DEV) {
+    seed(base);
+  }
+
+  let searchOpen = false;
+
+  const openSearch = () => {
+    searchOpen = true;
+  };
+
+  const closeSearch = () => {
+    searchOpen = false;
+  };
 
   onMount(() => {
-    if (import.meta.env.DEV) {
-      seed(base);
-    }
-
-    const handler = (e) => {
-      const target = e.target;
+    const handler = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
       if (target?.isContentEditable) return;
       const tag = target?.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
       const adm = $role === 'Admin';
       const key = e.key?.toLowerCase();
-      if (!key || !e.shiftKey) return;
+      if (!key) return;
+      if ((e.metaKey || e.ctrlKey) && key === 'k') {
+        e.preventDefault();
+        openSearch();
+        return;
+      }
+      if (!e.shiftKey) return;
       if (adm && key === 'a') window.dispatchEvent(new CustomEvent('rf-approve-selected'));
       if (adm && key === 'd') window.dispatchEvent(new CustomEvent('rf-decline-selected'));
       if (adm && key === 'u') window.dispatchEvent(new CustomEvent('rf-attach-revision'));
@@ -48,7 +65,7 @@
 
 <div id="main" class="rf-shell">
   <!-- Top launch bar -->
-  <Launchbar />
+  <Launchbar on:opensearch={openSearch} />
 
   <!-- Main page contents -->
   <div class="rf-content">
@@ -64,3 +81,4 @@
 
 <Toaster />
 <LiveRegion />
+<CommandPalette open={searchOpen} onClose={closeSearch} />

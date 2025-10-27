@@ -1,11 +1,13 @@
 <script lang="ts">
   import { base } from '$app/paths';
   import { page } from '$app/stores';
+  import { createEventDispatcher } from 'svelte';
   import { Grid, Calendar, FolderOpen, PackageSearch, Settings, Search, Rocket } from 'lucide-svelte';
   import RoleSwitch from './RoleSwitch.svelte';
   import { t } from 'svelte-i18n';
 
-  let q = '';
+  const dispatch = createEventDispatcher();
+  const openSearch = () => dispatch('opensearch');
   const links = [
     { href: '/', labelKey: 'nav.dashboard', icon: Grid },
     { href: '/calendar', labelKey: 'nav.calendar', icon: Calendar },
@@ -100,15 +102,19 @@
   </nav>
 
   <div class="row" style="margin-left:auto;min-width:300px;gap:8px;align-items:center">
-    <form class="row" style="flex:1" role="search" on:submit|preventDefault>
-      <div class="tag" style="display:flex;gap:6px;align-items:center;width:100%">
+    <button
+      class="tag"
+      type="button"
+      on:click={openSearch}
+      aria-label={$t('a11y.search')}
+      style="display:flex;gap:6px;align-items:center;width:100%;justify-content:space-between"
+    >
+      <span class="row" style="gap:6px;align-items:center">
         <Search size={16} />
-        <input
-          class="rf-input" style="border:none;background:transparent;padding:0"
-          type="search" placeholder={$t('a11y.search')} aria-label={$t('a11y.search')}
-          bind:value={q} />
-      </div>
-    </form>
+        <span>{$t('a11y.search')}</span>
+      </span>
+      <span class="muted" style="font-size:0.8rem">⌘K</span>
+    </button>
     <RoleSwitch />
   </div>
 </div>

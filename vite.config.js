@@ -32,5 +32,8 @@ export default defineConfig({
         replacement: resolvePath('./src/shims/svelte-runtime-ssr.js')
       }
     ]
+  },
+  test: {
+    environment: 'jsdom'
   }
 });
