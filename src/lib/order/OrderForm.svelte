@@ -5,6 +5,7 @@
   import PdfViewer from '$lib/pdf/PdfViewer.svelte';
   import ColorSwatch from '$lib/colors/ColorSwatch.svelte';
   import type { ColorSpec } from '$lib/colors/color-systems';
+  import { isKnownRal } from '$lib/colors/color-systems';
   import LoadingDatePicker from '$lib/order/LoadingDatePicker.svelte';
   import { createOrder } from '$lib/order/signage-store';
 
@@ -74,6 +75,16 @@
 
   function deleteRow(index: number) {
     materials = materials.filter((_, i) => i !== index);
+  }
+
+  function isHexValid(value: string | undefined) {
+    if (!value) return true;
+    return /^#?[0-9a-f]{6}$/i.test(value.trim());
+  }
+
+  function needsRalWarning(code: string | undefined) {
+    if (!code) return false;
+    return !isKnownRal(code.trim());
   }
 
   function close() {
@@ -159,7 +170,7 @@
 
           <div class="card">
             <h4>Colors & Materials</h4>
-            <div class="grid" style="grid-template-columns: 1fr 1fr 1fr 1fr auto; gap:8px">
+            <div class="materials-grid">
               {#each materials as row, index}
                 <Input bind:value={row.label} placeholder="Section" />
                 <Input bind:value={row.material} placeholder="Material" />
@@ -170,21 +181,34 @@
                   <option value="HEX">HEX</option>
                   <option value="Other">Other</option>
                 </select>
-                <Input bind:value={row.color.code} placeholder="Color code" />
-                <div style="grid-column: span 4">
-                  {#if row.color.system === 'HEX'}
-                    <Input bind:value={row.color.code} placeholder="#RRGGBB" />
-                  {:else}
+                <Input
+                  bind:value={row.color.code}
+                  placeholder={row.color.system === 'HEX' ? '#RRGGBB' : 'Color code'}
+                />
+
+                {#if row.color.system === 'HEX' && row.color.code && !isHexValid(row.color.code)}
+                  <div class="full warn">Invalid HEX</div>
+                {/if}
+
+                {#if row.color.system !== 'HEX'}
+                  <div class="full-block">
                     <Input bind:value={row.color.hex} placeholder="Optional HEX override" />
-                  {/if}
-                </div>
-                <div class="row" style="align-items:center; gap:6px">
+                    {#if row.color.hex && !isHexValid(row.color.hex)}
+                      <div class="warn">Invalid HEX</div>
+                    {/if}
+                    {#if row.color.system === 'RAL' && row.color.code && needsRalWarning(row.color.code)}
+                      <div class="warn">Unknown RAL code</div>
+                    {/if}
+                  </div>
+                {/if}
+
+                <div class="row full" style="align-items:center; gap:6px">
                   <ColorSwatch color={row.color} />
-                  <button class="tag" on:click={() => deleteRow(index)} aria-label="Remove">–</button>
+                  <button class="tag" type="button" on:click={() => deleteRow(index)} aria-label="Remove">–</button>
                 </div>
               {/each}
-              <div style="grid-column:1 / -1">
-                <button class="tag" on:click={addRow}>+ Add section</button>
+              <div class="full">
+                <button class="tag" type="button" on:click={addRow}>+ Add section</button>
               </div>
             </div>
           </div>
@@ -204,4 +228,17 @@
 .panel{background:var(--bg-1);border:1px solid rgba(255,255,255,.12);border-radius:14px;min-width:920px;max-width:95vw;max-height:90vh;padding:14px;overflow:auto}
 header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
 .x{background:transparent;border:none;color:var(--text);cursor:pointer;font-size:1.1rem}
+.materials-grid{
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:8px;
+}
+.materials-grid .full{grid-column:1 / -1}
+.materials-grid .full-block{
+  grid-column:1 / -1;
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+.warn{color:#ff5d5d;font-size:.8rem}
 </style>

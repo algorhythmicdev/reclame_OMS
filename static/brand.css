@@ -38,7 +38,7 @@ a{color:inherit}a:focus,button:focus,input:focus,select:focus,textarea:focus{out
 .rf-shell {
   display: grid;
   grid-template-rows: auto 1fr;
-  grid-template-columns: 1fr 320px; /* right rail width */
+  grid-template-columns: minmax(0, 1fr) 320px; /* right rail width */
   grid-template-areas:
     "launchbar launchbar"
     "content   right";
@@ -60,12 +60,17 @@ a{color:inherit}a:focus,button:focus,input:focus,select:focus,textarea:focus{out
 
 .rf-right {
   grid-area: right;
+  position: sticky;
+  top: 0;
+  align-self: start;
+  height: 100vh;
   display: grid;
-  grid-template-rows: 1fr 1fr;
+  grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
   gap: 12px;
   padding: 12px;
   background: var(--bg-1);
   border-left: 1px solid rgba(255,255,255,.08);
+  overflow: hidden;
 }
 
 /* Panels on right rail */
@@ -76,7 +81,11 @@ a{color:inherit}a:focus,button:focus,input:focus,select:focus,textarea:focus{out
   padding: 12px;
   overflow: hidden;
   display: flex; flex-direction: column;
+  min-height: 0;
 }
+
+.rf-right .rf-panel { min-height: 0; }
+.rf-panel .rf-scroll { flex: 1; min-height: 0; }
 
 /* Small utility */
 .rf-scroll { overflow: auto; }

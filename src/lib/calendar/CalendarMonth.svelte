@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, createEventDispatcher } from 'svelte';
   import { toggleDay, listAll, setCapacity, setNote, usage } from '$lib/loading/loading-store';
 
   export let year: number;
@@ -10,6 +10,7 @@
 
   let days: DayCell[] = [];
   let selectedISO: string | null = null;
+  const dispatch = createEventDispatcher<string>();
 
   function toISO(date: Date) {
     return date.toISOString().slice(0, 10);
@@ -34,10 +35,12 @@
   function clickDay(iso: string) {
     if (!adminMode) {
       selectedISO = iso;
+      dispatch('selectDay', iso);
       return;
     }
     toggleDay(iso);
     selectedISO = iso;
+    dispatch('selectDay', iso);
   }
 
   function meta(iso: string) {

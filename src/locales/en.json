@@ -126,5 +126,18 @@
     "loading": "Loading Date",
     "add_section": "Add section",
     "create": "Create Order"
+  },
+  "chat": {
+    "rooms": "Rooms",
+    "message_placeholder": "Message (use @name to mention)"
+  },
+  "loading": {
+    "assign": "Assign",
+    "schedule": "Schedule",
+    "export_csv": "Export CSV",
+    "updated": "Loading date updated"
+  },
+  "users": {
+    "current": "User"
   }
 }

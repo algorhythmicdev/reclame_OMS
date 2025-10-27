@@ -1,4 +1,4 @@
-import type { ChangeRequest, Badge } from './types.signage';
+import type { ChangeRequest, Badge, Field } from './types.signage';
 import {
   getOrder as _get,
   listOrders,
@@ -37,12 +37,21 @@ export function setBadges(orderId: string, badges: Badge[]) {
 export function setLoadingDate(orderId: string, dateISO: string, admin = 'admin') {
   const order = _get(orderId);
   if (!order) return;
+  const fields: Field[] = order.fields.map((field) => ({ ...field }));
+  const value = dateISO || '';
+  const idx = fields.findIndex((field) => field.key === 'loading' || field.label === 'Loading Date');
+  if (idx >= 0) {
+    fields[idx] = { ...fields[idx], value };
+  } else {
+    fields.push({ key: 'loading', label: 'Loading Date', value });
+  }
   const prId = _open(orderId, {
     title: 'Loading day assignment',
     author: admin,
-    proposed: { fields: [...order.fields] }
+    proposed: { fields, loadingDate: dateISO }
   });
   order.loadingDate = dateISO;
+  order.fields = fields;
   _merge(orderId, prId, admin);
 }
 

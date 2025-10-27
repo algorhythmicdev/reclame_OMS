@@ -18,10 +18,11 @@
   import StationQuickLogger from '$lib/order/StationQuickLogger.svelte';
   import BadgesManager from '$lib/order/BadgesManager.svelte';
   import GanttLine from '$lib/order/GanttLine.svelte';
-  import { announce } from '$lib/a11y/live';
-  import ProgressEditor from '$lib/order/ProgressEditor.svelte';
-  import MaterialsEditor from '$lib/order/MaterialsEditor.svelte';
-  import { TERMS } from '$lib/order/names';
+import { announce } from '$lib/a11y/live';
+import ProgressEditor from '$lib/order/ProgressEditor.svelte';
+import MaterialsEditor from '$lib/order/MaterialsEditor.svelte';
+import { TERMS } from '$lib/order/names';
+import LoadingDatePicker from '$lib/order/LoadingDatePicker.svelte';
 
   import type { Order, StationLog, Badge } from '$lib/order/types.signage';
   import {
@@ -32,15 +33,16 @@
     setBadges as setOrderBadges,
     openChangeRequest,
     approveChangeRequest,
-    declineChangeRequest
+    declineChangeRequest,
+    setLoadingDate
   } from '$lib/order/signage-store';
 
   export let params;
   const id = params.id;
 
-  let order: Order | null = getOrder(id);
-  if (!order) {
-    order = createOrder({
+  let existing = getOrder(id);
+  if (!existing) {
+    existing = createOrder({
       id,
       title: '4500mm Long Frame',
       client: 'ABTB BIJEN',
@@ -54,8 +56,9 @@
     });
   }
 
-  $: o = getOrder(id)!;
+  let o = getOrder(id)!;
   $: pdf = o.revisions.find((r) => r.id === o.defaultRevisionId)?.file;
+  let loadingSelection = o.loadingDate ?? '';
 
   let tab = 'overview';
   let tabs: { id: string; label: string }[] = [];
@@ -101,39 +104,56 @@
   }
 
   let newPath = '';
+  function refreshOrder() {
+    o = getOrder(id)!;
+    loadingSelection = o.loadingDate ?? '';
+  }
   function attach() {
     if (!newPath.trim()) return;
     addRevision(o.id, { id: crypto.randomUUID(), name: newPath.split('/').pop()!, path: newPath, kind: 'pdf' }, 'admin');
-    o = getOrder(id)!;
+    refreshOrder();
     newPath = '';
     announce(get(t)('toast.revision_attached'));
   }
   function useRevision(revisionId: string) {
     setDefaultRevision(o.id, revisionId, 'admin');
-    o = getOrder(id)!;
+    refreshOrder();
     announce(get(t)('toast.revision_switched'));
   }
 
   function createCR(title: string, changes: StationLog['changes'], message?: string) {
     openChangeRequest(o.id, { title, author: 'Station', proposed: changes, message });
-    o = getOrder(id)!;
+    refreshOrder();
   }
   function approve(crId: string) {
     approveChangeRequest(o.id, crId, 'admin');
-    o = getOrder(id)!;
+    refreshOrder();
     selectedCRId = null;
     announce(get(t)('toast.approved'));
   }
   function decline(crId: string) {
     declineChangeRequest(o.id, crId);
-    o = getOrder(id)!;
+    refreshOrder();
     selectedCRId = null;
     announce(get(t)('toast.declined'));
   }
 
   function updateBadges(badges: Badge[]) {
     setOrderBadges(o.id, badges);
-    o = getOrder(id)!;
+    refreshOrder();
+  }
+
+  function assignLoadingDate() {
+    const next = loadingSelection || '';
+    if ((o.loadingDate ?? '') === next) return;
+    setLoadingDate(o.id, next, 'admin');
+    refreshOrder();
+    announce(get(t)('loading.updated'));
+  }
+
+  function clearLoadingDate() {
+    loadingSelection = '';
+    assignLoadingDate();
   }
 
   const ganttItems = [
@@ -219,7 +239,7 @@
       author: 'Station',
       proposed: { progress: changes }
     });
-    o = getOrder(id)!;
+    refreshOrder();
   }
 
   function applyProgressAdmin(changes: Record<string, number>) {
@@ -229,7 +249,7 @@
       proposed: { progress: changes }
     });
     approveChangeRequest(o.id, prId, 'admin');
-    o = getOrder(id)!;
+    refreshOrder();
     announce(get(t)('toast.approved'));
   }
 
@@ -239,7 +259,7 @@
       author: 'Station',
       proposed: { materials: items }
     });
-    o = getOrder(id)!;
+    refreshOrder();
   }
 
   function applyMaterialsAdmin(items: { key: string; label: string; value: string }[]) {
@@ -249,7 +269,7 @@
       proposed: { materials: items }
     });
     approveChangeRequest(o.id, prId, 'admin');
-    o = getOrder(id)!;
+    refreshOrder();
     announce(get(t)('toast.approved'));
   }
 </script>
@@ -276,6 +296,19 @@
     </section>
 
     <aside class="grid" style="gap:12px">
+      {#if $role === 'Admin'}
+        <section class="card">
+          <h3 style="margin:0 0 8px 0">Loading Date</h3>
+          <LoadingDatePicker bind:selected={loadingSelection} />
+          <div class="row" style="margin-top:8px;gap:8px;flex-wrap:wrap;justify-content:space-between">
+            <span class="muted" style="font-size:.85rem">Current: {o.loadingDate || '—'}</span>
+            <div class="row" style="gap:6px">
+              <button class="tag" type="button" on:click={assignLoadingDate}>{$t('loading.assign')}</button>
+              <button class="tag" type="button" on:click={clearLoadingDate} disabled={!o.loadingDate}>Clear</button>
+            </div>
+          </div>
+        </section>
+      {/if}
       <section class="card">
         <h3 style="margin:0 0 8px 0">{$t('order.fields')}</h3>
         <ul>{#each o.fields as field}<li><b>{field.label}:</b> {field.value}</li>{/each}</ul>

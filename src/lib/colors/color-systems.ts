@@ -22,3 +22,7 @@ export function resolveHex(color: ColorSpec): string {
   }
   return color.hex || '#888888';
 }
+
+export function isKnownRal(code: string): boolean {
+  return Boolean(RAL[code]);
+}

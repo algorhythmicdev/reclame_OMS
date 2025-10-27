@@ -1,55 +1,161 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import Input from './Input.svelte';
-  let messages = [
-    { u:'CNC', m:'PO-250375 done, pallets to Sanding', t:'10:55' },
-    { u:'Sanding', m:'Received. Starting in 10.', t:'11:05' }
-  ];
-  let text = '';
+  import MentionInput from '$lib/chat/MentionInput.svelte';
+  import { rooms, messages, sendMessage } from '$lib/chat/chat-store';
+  import { users, currentUser } from '$lib/users/user-store';
+  import { t } from 'svelte-i18n';
+
+  $: $rooms, $messages, $users, $currentUser, $t;
+
+  let activeRoomId = 'general';
+  let scroller: HTMLDivElement | null = null;
+
+  $: activeRoom = $rooms.find((room) => room.id === activeRoomId) || $rooms[0];
+  $: roomMessages = $messages.filter((message) => message.roomId === activeRoomId);
+
+  function formatTime(iso: string) {
+    const date = new Date(iso);
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+
+  function authorName(id: string) {
+    return $users.find((user) => user.id === id)?.name ?? id;
+  }
+
+  function isMention(messageMentions: string[] | undefined) {
+    if (!messageMentions || messageMentions.length === 0) return false;
+    return messageMentions.includes($currentUser.id);
+  }
+
+  function commit(text: string, mentions: string[]) {
+    if (!activeRoom) return;
+    sendMessage(activeRoom.id, text, mentions);
+    setTimeout(() => {
+      if (scroller) {
+        scroller.scrollTop = scroller.scrollHeight;
+      }
+    });
+  }
+
+  function selectRoom(id: string) {
+    activeRoomId = id;
+    setTimeout(() => {
+      if (scroller) {
+        scroller.scrollTop = scroller.scrollHeight;
+      }
+    });
+  }
 
   onMount(() => {
-    try {
-      const saved = localStorage.getItem('rf_chat');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) {
-          messages = parsed;
-        }
-      }
-    } catch (error) {
-      console.warn('Unable to restore chat history from localStorage', error);
+    if (scroller) {
+      scroller.scrollTop = scroller.scrollHeight;
     }
   });
-
-  function persist() {
-    try {
-      localStorage.setItem('rf_chat', JSON.stringify(messages));
-    } catch (error) {
-      console.warn('Unable to persist chat history to localStorage', error);
-    }
-  }
-
-  function send() {
-    const m = text.trim();
-    if (!m) return;
-    messages = [...messages, { u:'Me', m, t: new Date().toLocaleTimeString() }];
-    persist();
-    text = '';
-  }
 </script>
 
-<div class="rf-panel">
-  <header style="font-weight:900;margin-bottom:8px">Team Chat</header>
-  <div class="rf-scroll" style="display:grid;gap:6px;min-height:0" role="log" aria-live="polite" aria-atomic="false">
-    {#each messages as r, i (i)}
-      <div class="card" style="background:var(--bg-2);padding:10px">
-        <div style="display:flex;justify-content:space-between"><b>{r.u}</b><span class="muted" style="font-size:.8rem">{r.t}</span></div>
-        <div style="margin-top:4px">{r.m}</div>
-      </div>
+<div class="rf-panel chat-panel">
+  <header class="chat-header">
+    <div>
+      <div class="chat-title">Team Chat</div>
+      {#if $currentUser}
+        <div class="muted" style="font-size:.8rem">
+          Signed in as <strong>{$currentUser.name}</strong>
+        </div>
+      {/if}
+    </div>
+    <div class="rooms" aria-label={$t('chat.rooms')}>
+      {#each $rooms as room (room.id)}
+        <button
+          type="button"
+          class="tag"
+          class:is-active={room.id === activeRoomId}
+          on:click={() => selectRoom(room.id)}
+        >
+          {room.name}
+        </button>
+      {/each}
+    </div>
+  </header>
+
+  <div
+    class="rf-scroll messages"
+    role="log"
+    aria-live="polite"
+    aria-atomic="false"
+    bind:this={scroller}
+  >
+    {#each roomMessages as message (message.id)}
+      <article class="card message" data-mention={isMention(message.mentions)}>
+        <header class="message-head">
+          <strong>{authorName(message.authorId)}</strong>
+          <span class="muted">{formatTime(message.ts)}</span>
+        </header>
+        <p class="message-body">{message.text}</p>
+        {#if message.mentions && message.mentions.length}
+          <div class="muted mentions">
+            Mentions:
+            {message.mentions
+              .map((id) => authorName(id))
+              .join(', ')}
+          </div>
+        {/if}
+      </article>
     {/each}
+    {#if roomMessages.length === 0}
+      <div class="muted">No messages yet.</div>
+    {/if}
   </div>
-  <form class="row" style="margin-top:8px" on:submit|preventDefault={send}>
-    <Input bind:value={text} placeholder="Type message…" ariaLabel="Message input" />
-    <button class="tag" type="submit">Send</button>
-  </form>
+
+  <MentionInput onCommit={commit} placeholder={$t('chat.message_placeholder')} />
 </div>
+
+<style>
+.chat-panel{
+  gap:12px;
+}
+.chat-header{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.chat-title{
+  font-weight:900;
+  margin-bottom:2px;
+}
+.rooms{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+}
+.rooms .tag{
+  border-radius:999px;
+  font-size:.75rem;
+}
+.messages{
+  display:grid;
+  gap:8px;
+  min-height:0;
+  max-height:100%;
+}
+.message{
+  background:var(--bg-2);
+  padding:10px;
+}
+.message-head{
+  display:flex;
+  justify-content:space-between;
+  font-size:.85rem;
+  margin-bottom:4px;
+}
+.message-body{
+  margin:0;
+  word-break:break-word;
+}
+.mentions{
+  margin-top:4px;
+  font-size:.75rem;
+}
+.message[data-mention="true"]{
+  outline:2px solid var(--brand-amber);
+}
+</style>

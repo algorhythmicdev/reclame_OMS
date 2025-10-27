@@ -126,5 +126,18 @@
     "loading": "Iekraušanas datums",
     "add_section": "Pievienot sadaļu",
     "create": "Izveidot pasūtījumu"
+  },
+  "chat": {
+    "rooms": "Istabas",
+    "message_placeholder": "Ziņa (izmanto @name pieminēšanai)"
+  },
+  "loading": {
+    "assign": "Piešķirt",
+    "schedule": "Grafiks",
+    "export_csv": "Eksportēt CSV",
+    "updated": "Iekraušanas datums atjaunots"
+  },
+  "users": {
+    "current": "Lietotājs"
   }
 }
