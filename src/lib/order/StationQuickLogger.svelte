@@ -13,8 +13,8 @@
   let noteInput: HTMLInputElement | null = null;
   const progressId = 'station-quick-progress';
 
-  const STATIONS = Object.entries(TERMS.stations).map(([code, label]) => ({
-    label,
+  $: stationOptions = Object.entries(TERMS.stations).map(([code, label]) => ({
+    label: $t(label),
     value: code as StationCode
   }));
 
@@ -46,7 +46,7 @@
 <div class="card">
   <h3 style="margin:0 0 8px 0">{$t('station.quick_log_heading')}</h3>
   <div class="grid" style="grid-template-columns:1fr 1fr;gap:12px">
-    <Select bind:value={station} options={STATIONS} ariaLabel={$t('station.station_label')} />
+    <Select bind:value={station} options={stationOptions} ariaLabel={$t('station.station_label')} />
     <div>
       <label class="muted" for={progressId}>{$t('station.progress_label')}</label>
       <input id={progressId} class="rf-input" type="number" min="0" max="100" bind:value={progress} />

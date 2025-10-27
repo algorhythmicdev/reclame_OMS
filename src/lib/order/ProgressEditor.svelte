@@ -1,8 +1,9 @@
 <script lang="ts">
-  import Button from '$lib/ui/Button.svelte';
-  import { TERMS } from '$lib/order/names';
-  import type { StationCode } from '$lib/order/names';
-  import { role } from '$lib/ui/RoleSwitch.svelte';
+import Button from '$lib/ui/Button.svelte';
+import { TERMS } from '$lib/order/names';
+import type { StationCode } from '$lib/order/names';
+import { role } from '$lib/ui/RoleSwitch.svelte';
+import { t } from 'svelte-i18n';
 
   export let value: Record<string, number> = {};
   export let onPropose: (changes: Record<string, number>) => void = () => {};
@@ -57,18 +58,16 @@
 
   const sliderId = (station: string) => `progress-${station.toLowerCase()}`;
 
-  const labelFor = (code: string) => TERMS.stations?.[code as keyof typeof TERMS.stations] ?? code;
-
   $: isAdmin = $role === 'Admin';
 </script>
 
 <div class="card">
-  <h3 style="margin:0 0 8px 0">Process Editor</h3>
+  <h3 style="margin:0 0 8px 0">{$t('progressEditor.title')}</h3>
   <div class="grid" style="grid-template-columns:1fr 1fr">
     {#each STATIONS as s}
       <div class="card" style="padding:10px">
         <div style="display:flex;justify-content:space-between;align-items:center">
-          <b id={`${sliderId(s)}-label`}>{labelFor(s)}</b>
+          <b id={`${sliderId(s)}-label`}>{$t(TERMS.stations[s])}</b>
           <span class="muted">{Math.round(edited[s] ?? 0)}%</span>
         </div>
         <input
@@ -86,15 +85,11 @@
     {/each}
   </div>
   <div class="row" style="margin-top:10px">
-    <Button variant="ghost" on:click={reset} disabled={!hasChanges}>Reset</Button>
+    <Button variant="ghost" on:click={reset} disabled={!hasChanges}>{$t('progressEditor.reset')}</Button>
     {#if isAdmin}
-      <Button disabled={!hasChanges} on:click={submitAdmin}>
-        Apply (Admin)
-      </Button>
+      <Button disabled={!hasChanges} on:click={submitAdmin}>{$t('progressEditor.applyAdmin')}</Button>
     {:else}
-      <Button disabled={!hasChanges} on:click={submitStation}>
-        Propose Update
-      </Button>
+      <Button disabled={!hasChanges} on:click={submitStation}>{$t('progressEditor.propose')}</Button>
     {/if}
   </div>
 </div>

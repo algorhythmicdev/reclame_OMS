@@ -56,10 +56,10 @@
 <div class="rf-panel chat-panel">
   <header class="chat-header">
     <div>
-      <div class="chat-title">Team Chat</div>
+      <div class="chat-title">{$t('chat.title')}</div>
       {#if $currentUser}
         <div class="muted" style="font-size:.8rem">
-          Signed in as <strong>{$currentUser.name}</strong>
+          {$t('chat.signed_in_as')} <strong>{$currentUser.name}</strong>
         </div>
       {/if}
     </div>
@@ -93,7 +93,7 @@
         <p class="message-body">{message.text}</p>
         {#if message.mentions && message.mentions.length}
           <div class="muted mentions">
-            Mentions:
+            {$t('chat.mentions')}:
             {message.mentions
               .map((id) => authorName(id))
               .join(', ')}
@@ -102,7 +102,7 @@
       </article>
     {/each}
     {#if roomMessages.length === 0}
-      <div class="muted">No messages yet.</div>
+      <div class="muted">{$t('chat.empty')}</div>
     {/if}
   </div>
 

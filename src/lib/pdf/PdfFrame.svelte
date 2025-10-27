@@ -1,19 +1,21 @@
 <script lang="ts">
   import PdfViewer from '$lib/pdf/PdfViewer.svelte';
+  import { t } from 'svelte-i18n';
+
   export let src = '';
 </script>
 
 <div class="pdf-frame card">
   <div class="frame-head">
-    <strong>PDF</strong>
+    <strong>{$t('pdf.label')}</strong>
     {#if src}
-      <a class="tag" href={src} target="_blank" rel="noreferrer">Open</a>
+      <a class="tag" href={src} target="_blank" rel="noreferrer">{$t('pdf.open')}</a>
     {/if}
   </div>
   {#if src}
     <PdfViewer {src} />
   {:else}
-    <div class="placeholder muted">Add a PDF path to preview.</div>
+    <div class="placeholder muted">{$t('pdf.placeholder')}</div>
   {/if}
 </div>
 

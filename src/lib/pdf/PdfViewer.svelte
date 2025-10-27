@@ -1,5 +1,7 @@
 <script>
   import { onMount } from 'svelte';
+  import { t } from 'svelte-i18n';
+
   export let src = '';
   let canvasEl;
   let pageNum = 1;
@@ -56,7 +58,7 @@
         return;
       }
       console.error('Unable to render PDF', err);
-      error = 'Unable to display PDF. Please check the file path.';
+      error = $t('pdf.error');
       renderTask = undefined;
     } finally {
       loading = false;
@@ -99,9 +101,9 @@
 </script>
 <div class="row" style="justify-content:space-between;margin-bottom:8px">
   <div class="row">
-    <button class="tag" on:click={prev}>Prev</button>
-    <div class="tag">Page {pageNum} / {pageCount}</div>
-    <button class="tag" on:click={next}>Next</button>
+    <button class="tag" on:click={prev}>{$t('pdf.prev')}</button>
+    <div class="tag">{$t('pdf.page', { current: pageNum, total: pageCount })}</div>
+    <button class="tag" on:click={next}>{$t('pdf.next')}</button>
   </div>
   <div class="row">
     <button

@@ -49,12 +49,12 @@
   }
 
   function stageLabel(state: StageState) {
-    return get(t)(`stages.${state}`);
+    return get(t)(STATE_LABEL[state]);
   }
 
   function stationName(station: StationTag) {
     const name = TERMS.stations as Record<string, string>;
-    return name?.[station] ?? station;
+    return get(t)(name?.[station] ?? station);
   }
 
   function submit(station: StationTag) {
@@ -72,7 +72,7 @@
 </script>
 
 <div class="card">
-  <h3 style="margin:0 0 8px 0">Stage Editor</h3>
+  <h3 style="margin:0 0 8px 0">{$t('stageEditor.title')}</h3>
   <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px">
     {#each STATIONS as station}
       {@const current = value?.[station] ?? DEFAULT_STATE}
@@ -81,7 +81,7 @@
           <b>{stationName(station)}</b>
           <span class="muted">{stageLabel(current)}</span>
         </div>
-        <label class="muted" for={`stage-${station}`}>Next state</label>
+        <label class="muted" for={`stage-${station}`}>{$t('stageEditor.next')}</label>
         <select
           class="rf-select"
           id={`stage-${station}`}
@@ -101,7 +101,7 @@
         ></textarea>
         <div class="row" style="justify-content:flex-end;margin-top:8px">
           <Button on:click={() => submit(station)} disabled={selected[station] === current}>
-            {isAdmin ? 'Apply' : 'Propose'}
+            {isAdmin ? $t('stageEditor.apply') : $t('stageEditor.propose')}
           </Button>
         </div>
       </div>

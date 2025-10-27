@@ -1,8 +1,7 @@
 <script lang="ts">
-  import BrandBar from '$lib/brand/BrandBar.svelte';
   import { base } from '$app/paths';
   import { onMount } from 'svelte';
-  import Launchbar from '$lib/ui/Launchbar.svelte';
+  import AppHeader from '$lib/ui/AppHeader.svelte';
   import NotificationsFeed from '$lib/ui/NotificationsFeed.svelte';
   import ChatPane from '$lib/ui/ChatPane.svelte';
   import Toaster from '$lib/ui/Toaster.svelte';
@@ -10,6 +9,7 @@
   import { role } from '$lib/ui/RoleSwitch.svelte';
   import { seed } from '$lib/dev/seed';
   import CommandPalette from '$lib/ui/CommandPalette.svelte';
+  import { t } from 'svelte-i18n';
 
   if (import.meta.env.DEV) {
     seed(base);
@@ -78,38 +78,40 @@
 <a href="#main" class="tag" style="position:absolute;left:-9999px;top:-9999px"
   on:focus={() => (event.currentTarget.style.cssText='position:static')}
   on:blur={() => (event.currentTarget.style.cssText='position:absolute;left:-9999px;top:-9999px')}>
-  Skip to content
+  {$t('a11y.skip')}
 </a>
 
-<BrandBar />
-<Launchbar on:opensearch={openSearch} />
 
-<div class="rf-shell">
-  <!-- Main content + right rail -->
-  <main id="main" class="rf-main">
-    <slot />
-  </main>
+<div class="rf-app">
+  <AppHeader on:opensearch={openSearch} />
 
-  <aside class="rf-right">
-    <!-- Notifications panel -->
-    <section class="rf-panel">
-      <header class="row" style="justify-content:space-between;padding:8px 10px;border-bottom:1px solid var(--border)">
-        <strong>Notifications</strong>
-      </header>
-      <div class="rf-scroll" aria-live="polite">
-        <NotificationsFeed />
-      </div>
-    </section>
-    <!-- Chat panel -->
-    <section class="rf-panel">
-      <header class="row" style="justify-content:space-between;padding:8px 10px;border-bottom:1px solid var(--border)">
-        <strong>Chat</strong>
-      </header>
-      <div class="rf-scroll">
-        <ChatPane />
-      </div>
-    </section>
-  </aside>
+  <div class="rf-shell">
+    <!-- Main content + right rail -->
+    <main id="main" class="rf-main">
+      <slot />
+    </main>
+
+    <aside class="rf-right">
+      <!-- Notifications panel -->
+      <section class="rf-panel">
+        <header class="row" style="justify-content:space-between;padding:8px 10px;border-bottom:1px solid var(--border)">
+          <strong>{$t('layout.notifications')}</strong>
+        </header>
+        <div class="rf-scroll" aria-live="polite">
+          <NotificationsFeed />
+        </div>
+      </section>
+      <!-- Chat panel -->
+      <section class="rf-panel">
+        <header class="row" style="justify-content:space-between;padding:8px 10px;border-bottom:1px solid var(--border)">
+          <strong>{$t('layout.chat')}</strong>
+        </header>
+        <div class="rf-scroll">
+          <ChatPane />
+        </div>
+      </section>
+    </aside>
+  </div>
 </div>
 
 <Toaster />
@@ -117,9 +119,37 @@
 <CommandPalette open={searchOpen} onClose={closeSearch} />
 
 <style>
-.rf-shell{
-  display:grid; grid-template-columns: 1fr minmax(340px, 380px); gap:12px;
-  padding: 12px;
+.rf-app{
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
 }
-.rf-main{ min-width:0; }
+
+.rf-shell{
+  flex:1;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(320px, 380px);
+  gap:12px;
+  padding:12px;
+  align-items:start;
+}
+
+.rf-main{
+  min-width:0;
+  min-height:0;
+}
+
+.rf-right{
+  align-self:start;
+}
+
+@media (max-width: 1100px){
+  .rf-shell{
+    grid-template-columns:1fr;
+  }
+
+  .rf-right{
+    position:static;
+  }
+}
 </style>

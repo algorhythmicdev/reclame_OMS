@@ -1,10 +1,12 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import CalendarMonth from '$lib/calendar/CalendarMonth.svelte';
-  import { listOrders } from '$lib/order/signage-store';
-  import { downloadCSV, toCSV } from '$lib/export/csv';
-  import { listAll } from '$lib/loading/loading-store';
-  import { t } from 'svelte-i18n';
+import { listOrders } from '$lib/order/signage-store';
+import { downloadCSV, toCSV } from '$lib/export/csv';
+import { listAll } from '$lib/loading/loading-store';
+import { get } from 'svelte/store';
+import { t } from 'svelte-i18n';
+import type { Order } from '$lib/order/types';
 
   let today = new Date();
   let y = today.getFullYear();
@@ -49,20 +51,25 @@
     return () => window.removeEventListener('storage', handler);
   });
 
+  let daySchedule: Order[] = [];
   $: daySchedule = selectedISO
     ? orders.filter((order) => order.loadingDate === selectedISO)
     : [];
 
   function exportCSV() {
     if (!selectedISO) return;
-    const rows = daySchedule.map((order) => ({
-      PO: order.id,
-      Client: order.client,
-      Title: order.title,
-      Due: order.due,
-      Loading: order.loadingDate ?? ''
-    }));
-    downloadCSV(`loading-${selectedISO}.csv`, toCSV(rows, ['PO', 'Client', 'Title', 'Due', 'Loading']));
+    const translate = get(t);
+    const columns = [
+      { label: translate('calendar.columns.po'), value: (order: Order) => order.id },
+      { label: translate('calendar.columns.client'), value: (order: Order) => order.client },
+      { label: translate('calendar.columns.title'), value: (order: Order) => order.title },
+      { label: translate('calendar.columns.due'), value: (order: Order) => order.due },
+      { label: translate('calendar.columns.loading'), value: (order: Order) => order.loadingDate ?? '' }
+    ];
+    const rows = daySchedule.map((order) =>
+      Object.fromEntries(columns.map((column) => [column.label, column.value(order)]))
+    );
+    downloadCSV(`loading-${selectedISO}.csv`, toCSV(rows, columns.map((column) => column.label)));
   }
 
   $: selectedMeta = selectedISO
@@ -78,7 +85,7 @@
       <div style="min-width:140px;text-align:center;font-weight:700">{y} · {m + 1}</div>
       <button class="tag" on:click={next}>▶</button>
       <button class="tag" on:click={() => (adminMode = !adminMode)} aria-pressed={adminMode}>
-        {$t('calendar.loading_mode')}: {adminMode ? 'ON' : 'OFF'}
+        {$t('calendar.loading_mode')}: {$t(adminMode ? 'calendar.loading_on' : 'calendar.loading_off')}
       </button>
     </div>
   </div>
@@ -93,7 +100,10 @@
         <h3 style="margin:0 0 4px 0">{$t('loading.schedule')}: {selectedISO}</h3>
         {#if selectedMeta}
           <div class="muted" style="font-size:.85rem">
-            Capacity {selectedMeta.capacity} · Note: {selectedMeta.note || '—'}
+            {$t('calendar.meta', {
+              capacity: selectedMeta.capacity,
+              note: selectedMeta.note || $t('calendar.note_empty')
+            })}
           </div>
         {/if}
       </div>
@@ -102,7 +112,12 @@
     <div class="rf-scroll" style="margin-top:8px;max-height:320px">
       <table class="rf-table">
         <thead>
-          <tr><th>PO</th><th>Client</th><th>Title</th><th>Due</th></tr>
+          <tr>
+            <th>{$t('calendar.columns.po')}</th>
+            <th>{$t('calendar.columns.client')}</th>
+            <th>{$t('calendar.columns.title')}</th>
+            <th>{$t('calendar.columns.due')}</th>
+          </tr>
         </thead>
         <tbody>
           {#each daySchedule as row}
@@ -114,7 +129,9 @@
             </tr>
           {/each}
           {#if daySchedule.length === 0}
-            <tr><td colspan="4" class="muted">No orders assigned.</td></tr>
+            <tr>
+              <td colspan="4" class="muted">{$t('calendar.empty')}</td>
+            </tr>
           {/if}
         </tbody>
       </table>

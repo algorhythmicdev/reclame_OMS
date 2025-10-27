@@ -1,8 +1,8 @@
 <script>
   import { base } from '$app/paths';
-import PdfFrame from '$lib/pdf/PdfFrame.svelte';
+  import PdfFrame from '$lib/pdf/PdfFrame.svelte';
   import Input from '$lib/ui/Input.svelte';
-  import Button from '$lib/ui/Button.svelte';
+  import { t } from 'svelte-i18n';
   let file = `${base}/files/PO-250375_ABTB-BIJEN_4500mm.pdf`;
   let valid = true;
   async function check() {
@@ -17,16 +17,16 @@ import PdfFrame from '$lib/pdf/PdfFrame.svelte';
 </script>
 
 <div class="row" style="justify-content:space-between">
-  <h2 style="margin:0">Files</h2>
+  <h2 style="margin:0">{$t('files.title')}</h2>
   <div class="row" role="search">
-    <div style="width:420px"><Input bind:value={file} ariaLabel="File path" /></div>
-    <a class="tag" href={file} download>Download</a>
+    <div style="width:420px"><Input bind:value={file} ariaLabel={$t('files.path_label')} /></div>
+    <a class="tag" href={file} download>{$t('files.download')}</a>
   </div>
 </div>
 
 {#if !valid}
   <div class="card file-error" style="margin-top:10px">
-    Cannot load file. Check path or upload to <code>static/files</code>.
+    {$t('files.error')}
   </div>
 {/if}
 

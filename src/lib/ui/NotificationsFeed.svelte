@@ -1,6 +1,7 @@
 <script lang="ts">
   import { notifications } from '$lib/notifications/store';
   import type { NotificationItem } from '$lib/notifications/store';
+  import { t } from 'svelte-i18n';
 
   export let items: NotificationItem[] = [];
 
@@ -8,7 +9,7 @@
 </script>
 
 <div class="rf-panel">
-  <header style="font-weight:900;margin-bottom:8px">Notifications</header>
+  <header style="font-weight:900;margin-bottom:8px">{$t('notifications.title')}</header>
   <div class="rf-scroll" style="display:grid;gap:8px" role="log" aria-live="polite" aria-atomic="false">
     {#each feed as n (n.id)}
       <div class="card" style="background:var(--bg-2);padding:10px">
@@ -18,6 +19,6 @@
         </div>
       </div>
     {/each}
-    {#if feed.length === 0}<div class="muted">No notifications yet.</div>{/if}
+    {#if feed.length === 0}<div class="muted">{$t('notifications.empty')}</div>{/if}
   </div>
 </div>
