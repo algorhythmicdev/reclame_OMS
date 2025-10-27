@@ -127,10 +127,31 @@
     resetForm();
     close();
   }
+
+  function handleBackdrop(event: MouseEvent) {
+    if (event.target === event.currentTarget) {
+      close();
+    }
+  }
+
+  function handleBackdropKey(event: KeyboardEvent) {
+    if (event.target !== event.currentTarget) return;
+    if (event.key === 'Escape' || event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      close();
+    }
+  }
 </script>
 
 {#if open}
-  <div class="shade" on:click={(event) => event.target === event.currentTarget && close()}>
+  <div
+    class="shade"
+    role="button"
+    tabindex="0"
+    aria-label="Close order form"
+    on:click={handleBackdrop}
+    on:keydown={handleBackdropKey}
+  >
     <div class="panel" role="dialog" aria-modal="true" aria-label="Order form">
       <header>
         <h3>New Order</h3>
@@ -159,12 +180,12 @@
                 <Input bind:value={title} placeholder="Title" />
               </div>
               <div>
-                <label class="muted">Due</label>
-                <input class="rf-input" type="date" bind:value={due} />
+                <label class="muted" for="order-due-input">Due</label>
+                <input id="order-due-input" class="rf-input" type="date" bind:value={due} />
               </div>
               <div>
-                <label class="muted">Loading Date</label>
-                <LoadingDatePicker bind:selected={loadingDate} />
+                <label class="muted" for="order-loading-input">Loading Date</label>
+                <LoadingDatePicker id="order-loading-input" bind:selected={loadingDate} ariaLabel="Loading date" />
               </div>
             </div>
           </div>

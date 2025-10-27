@@ -53,6 +53,21 @@
       ...stats
     };
   }
+
+  function handleCapacityChange(event: Event, iso: string | null) {
+    if (!iso) return;
+    const target = event.target as HTMLInputElement | null;
+    if (!target) return;
+    const value = Number.parseInt(target.value, 10);
+    setCapacity(iso, Number.isFinite(value) ? value : 0);
+  }
+
+  function handleNoteChange(event: Event, iso: string | null) {
+    if (!iso) return;
+    const target = event.target as HTMLInputElement | null;
+    if (!target) return;
+    setNote(iso, target.value);
+  }
 </script>
 
 <div class="cal">
@@ -84,9 +99,10 @@
 </div>
 
 {#if adminMode && selectedISO}
-  {@const info = meta(selectedISO)}
+  {@const currentISO = selectedISO}
+  {@const info = meta(currentISO)}
   <div class="card" style="margin-top:10px">
-    <h3 style="margin:0 0 8px 0">Loading day: {selectedISO}</h3>
+    <h3 style="margin:0 0 8px 0">Loading day: {currentISO}</h3>
     <div class="row" style="gap:8px;flex-wrap:wrap">
       <label>
         Capacity
@@ -95,7 +111,7 @@
           type="number"
           min="0"
           value={info.capacity}
-          on:change={(event) => setCapacity(selectedISO!, Number((event.target as HTMLInputElement).value))}
+          on:change={(event) => handleCapacityChange(event, currentISO)}
         />
       </label>
       <label>
@@ -104,7 +120,7 @@
           class="rf-input"
           type="text"
           value={info.note}
-          on:change={(event) => setNote(selectedISO!, (event.target as HTMLInputElement).value)}
+          on:change={(event) => handleNoteChange(event, currentISO)}
         />
       </label>
     </div>

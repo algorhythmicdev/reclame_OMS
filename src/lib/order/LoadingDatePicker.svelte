@@ -2,6 +2,8 @@
   import { upcoming, usage } from '$lib/loading/loading-store';
 
   export let selected = '';
+  export let id: string | undefined = undefined;
+  export let ariaLabel = 'Loading date';
 
   let options: { value: string; label: string; full: boolean }[] = [];
 
@@ -15,7 +17,7 @@
   });
 </script>
 
-<select class="rf-select" bind:value={selected} aria-label="Loading date">
+<select class="rf-select" bind:value={selected} {id} aria-label={ariaLabel}>
   <option value="">—</option>
   {#each options as option}
     <option value={option.value} disabled={option.full}>{option.label}</option>
