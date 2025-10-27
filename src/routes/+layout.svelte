@@ -1,4 +1,5 @@
 <script lang="ts">
+  import BrandBar from '$lib/brand/BrandBar.svelte';
   import { base } from '$app/paths';
   import { onMount } from 'svelte';
   import Launchbar from '$lib/ui/Launchbar.svelte';
@@ -51,34 +52,57 @@
   });
 </script>
 
-<link rel="stylesheet" href={`${base}/brand.css`} />
+<svelte:head>
+  <link rel="preload" href={`${base}/brand/logo-reclame-cube.webp`} as="image">
+  <link rel="stylesheet" href={`${base}/brand.css`}>
+</svelte:head>
 
-<a
-  href="#main"
-  class="tag"
-  style="position:absolute;left:-9999px;top:-9999px"
-  on:focus={(e) => (e.currentTarget.style.cssText = 'position:static')}
-  on:blur={(e) => (e.currentTarget.style.cssText = 'position:absolute;left:-9999px;top:-9999px')}
->
+<a href="#main" class="tag" style="position:absolute;left:-9999px;top:-9999px"
+  on:focus={() => (event.currentTarget.style.cssText='position:static')}
+  on:blur={() => (event.currentTarget.style.cssText='position:absolute;left:-9999px;top:-9999px')}>
   Skip to content
 </a>
 
-<div id="main" class="rf-shell">
-  <!-- Top launch bar -->
+<BrandBar>
   <Launchbar on:opensearch={openSearch} />
+</BrandBar>
 
-  <!-- Main page contents -->
-  <div class="rf-content">
+<div class="rf-shell">
+  <!-- Main content + right rail -->
+  <main id="main" class="rf-main">
     <slot />
-  </div>
+  </main>
 
-  <!-- Right rail: notifications + chat -->
-  <div class="rf-right" aria-label="Right rail">
-    <NotificationsFeed />
-    <ChatPane />
-  </div>
+  <aside class="rf-right">
+    <!-- Notifications panel -->
+    <section class="rf-panel">
+      <header class="row" style="justify-content:space-between;padding:8px 10px;border-bottom:1px solid var(--border)">
+        <strong>Notifications</strong>
+      </header>
+      <div class="rf-scroll" aria-live="polite">
+        <NotificationsFeed />
+      </div>
+    </section>
+    <!-- Chat panel -->
+    <section class="rf-panel">
+      <header class="row" style="justify-content:space-between;padding:8px 10px;border-bottom:1px solid var(--border)">
+        <strong>Chat</strong>
+      </header>
+      <div class="rf-scroll">
+        <ChatPane />
+      </div>
+    </section>
+  </aside>
 </div>
 
 <Toaster />
 <LiveRegion />
 <CommandPalette open={searchOpen} onClose={closeSearch} />
+
+<style>
+.rf-shell{
+  display:grid; grid-template-columns: 1fr minmax(340px, 380px); gap:12px;
+  padding: 12px;
+}
+.rf-main{ min-width:0; }
+</style>

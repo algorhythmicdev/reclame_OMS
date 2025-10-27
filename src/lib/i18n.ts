@@ -6,7 +6,7 @@ register('en', () => import('../locales/en.json'));
 register('ru', () => import('../locales/ru.json'));
 register('lv', () => import('../locales/lv.json'));
 
-export async function setupI18n(defaultLocale: 'en' | 'ru' | 'lv' = 'en') {
+export async function setupI18n(defaultLocale = 'en') {
   const saved = typeof window !== 'undefined' ? localStorage.getItem(KEY) : null;
   await init({
     fallbackLocale: 'en',
@@ -14,9 +14,7 @@ export async function setupI18n(defaultLocale: 'en' | 'ru' | 'lv' = 'en') {
   });
 }
 
-export function setLocale(code: 'en' | 'ru' | 'lv') {
+export function setLocale(code: 'en'|'ru'|'lv') {
   locale.set(code);
   if (typeof window !== 'undefined') localStorage.setItem(KEY, code);
 }
-
-export { locale };
