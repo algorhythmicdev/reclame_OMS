@@ -8,7 +8,7 @@ const base = process.env.BASE_PATH || '';
 const config = {
   preprocess: vitePreprocess(),
   kit: {
-    adapter: adapter(),
+    adapter: adapter({ fallback: '404.html' }),
     paths: { base },
     prerender: { handleHttpError: 'warn' }
   }

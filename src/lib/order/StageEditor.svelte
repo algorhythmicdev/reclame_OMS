@@ -52,6 +52,11 @@
     return get(t)(`stages.${state}`);
   }
 
+  function stationName(station: StationTag) {
+    const name = TERMS.stations as Record<string, string>;
+    return name?.[station] ?? station;
+  }
+
   function submit(station: StationTag) {
     const current = value?.[station] ?? DEFAULT_STATE;
     const next = selected[station] ?? current;
@@ -73,7 +78,7 @@
       {@const current = value?.[station] ?? DEFAULT_STATE}
       <div class="card station-box">
         <div class="row" style="justify-content:space-between;align-items:center">
-          <b>{TERMS.stations?.[station as keyof typeof TERMS.stations] ?? station}</b>
+          <b>{stationName(station)}</b>
           <span class="muted">{stageLabel(current)}</span>
         </div>
         <label class="muted" for={`stage-${station}`}>Next state</label>
