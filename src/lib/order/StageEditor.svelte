@@ -64,6 +64,10 @@
     }
     notes[station] = '';
   }
+
+  function stationLabel(station: StationTag) {
+    return (TERMS.stations && TERMS.stations[station]) ?? station;
+  }
 </script>
 
 <div class="card">
@@ -73,7 +77,7 @@
       {@const current = value?.[station] ?? DEFAULT_STATE}
       <div class="card station-box">
         <div class="row" style="justify-content:space-between;align-items:center">
-          <b>{TERMS.stations?.[station as keyof typeof TERMS.stations] ?? station}</b>
+          <b>{stationLabel(station)}</b>
           <span class="muted">{stageLabel(current)}</span>
         </div>
         <label class="muted" for={`stage-${station}`}>Next state</label>
