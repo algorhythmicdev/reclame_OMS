@@ -2,6 +2,8 @@
   import KpiCard from '$lib/ui/KpiCard.svelte';
   import ProgressBar from '$lib/ui/ProgressBar.svelte';
   import ApexCharts from 'svelte-apexcharts';
+  import { theme as themeStore } from '$lib/stores/theme';
+  import { withTheme } from '$lib/charts/theme';
   import { Package, Factory, Truck, TimerReset } from 'lucide-svelte';
 
   const kpi = [
@@ -12,27 +14,29 @@
   ];
 
   // Throughput line
-  const lineOptions = {
+  const baseLineOptions = {
     chart: { type: 'line', toolbar: { show: false } },
     stroke: { curve: 'smooth', width: 3 },
-    grid: { borderColor: 'rgba(255,255,255,.08)' },
     xaxis: { categories: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] }
   };
+  $: lineOptions = withTheme(baseLineOptions, $themeStore);
   const lineSeries = [{ name: 'Jobs', data: [3, 5, 4, 6, 7, 2, 5] }];
 
   // Status doughnut
-  const pieOptions = {
+  const basePieOptions = {
     labels: ['CAD', 'CNC', 'Sanding', 'Welding', 'Paint', 'Assembly', 'QC'],
     legend: { position: 'bottom' }
   };
+  $: pieOptions = withTheme(basePieOptions, $themeStore);
   const pieSeries = [2, 3, 4, 2, 3, 2, 2];
 
   // Material stock bars
-  const barOptions = {
+  const baseBarOptions = {
     chart: { type: 'bar', toolbar: { show: false } },
     plotOptions: { bar: { borderRadius: 6 } },
     xaxis: { categories: ['Aluminum', 'Acrylic', 'ACP', 'Paint', 'Vinyl'] }
   };
+  $: barOptions = withTheme(baseBarOptions, $themeStore);
   const barSeries = [{ name: 'Qty', data: [22, 12, 58, 16, 40] }];
 
   const progress = [

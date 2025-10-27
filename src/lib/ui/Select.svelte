@@ -12,8 +12,10 @@
 
 <style>
 .rf-select{
-  padding:.55rem .7rem; border-radius:12px;
-  border:1px solid rgba(255,255,255,.12);
-  background:var(--bg-2); color:var(--text);
+  padding:.55rem .7rem;
+  border-radius:10px;
+  border:1px solid var(--border);
+  background:var(--bg-0);
+  color:var(--text);
 }
 </style>

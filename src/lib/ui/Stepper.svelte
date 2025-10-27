@@ -15,8 +15,8 @@
 <style>
 .stepper{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .node{display:flex;align-items:center;gap:8px;position:relative}
-.dot{width:26px;height:26px;border-radius:999px;display:grid;place-items:center;background:var(--bg-2);border:1px solid rgba(255,255,255,.12)}
-.node[data-done="true"] .dot{background:linear-gradient(90deg,var(--brand-amber),var(--brand-cyan));color:#000;font-weight:900}
+.dot{width:26px;height:26px;border-radius:999px;display:grid;place-items:center;background:var(--bg-2);border:1px solid var(--border)}
+.node[data-done="true"] .dot{background:linear-gradient(90deg,var(--accent-1),var(--accent-2));color:#fff;font-weight:900;border:none}
 .label{font-weight:700}
-.line{width:36px;height:2px;background:rgba(255,255,255,.18)}
+.line{width:36px;height:2px;background:var(--border)}
 </style>

@@ -48,7 +48,7 @@
 
 <style>
 .rf-table{width:100%;border-collapse:collapse}
-th,td{padding:10px;border-bottom:1px solid rgba(255,255,255,.06);text-align:left}
+th,td{padding:10px;border-bottom:1px solid var(--border);text-align:left}
 th{cursor:pointer;color:var(--muted)}
-tr:hover td{background:rgba(255,255,255,.04)}
+tr:hover td{background:color-mix(in oklab,var(--border) 20%, transparent)}
 </style>

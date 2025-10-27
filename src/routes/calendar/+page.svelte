@@ -130,7 +130,7 @@
 :global(.rf-table th),
 :global(.rf-table td){
   padding:10px;
-  border-bottom:1px solid rgba(255,255,255,.06);
+  border-bottom:1px solid var(--border);
   text-align:left;
 }
 </style>

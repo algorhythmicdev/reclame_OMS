@@ -7,7 +7,7 @@
 
 <div class="card">
   <h3 style="margin:0 0 8px 0">{$t('users.current')}</h3>
-  <select class="rf-input" bind:value={$currentUserId} aria-label={$t('users.current')}>
+  <select class="rf-select" bind:value={$currentUserId} aria-label={$t('users.current')}>
     {#each $users as user}
       <option value={user.id}>{user.name} — {user.role}</option>
     {/each}

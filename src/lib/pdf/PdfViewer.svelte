@@ -122,10 +122,23 @@
   </div>
 </div>
 {#if error}
-  <div class="tag" style="margin-bottom:8px;color:#f87171;background:rgba(248,113,113,.12)">{error}</div>
+  <div class="tag tag-error" style="margin-bottom:8px">{error}</div>
 {/if}
 <canvas
+  class="viewer"
   bind:this={canvasEl}
   aria-busy={loading}
-  style="max-width:100%;border-radius:10px;border:1px solid rgba(255,255,255,.1)"
 ></canvas>
+
+<style>
+.tag-error{
+  background: color-mix(in oklab, var(--danger) 18%, transparent);
+  color: var(--danger);
+  border-color: color-mix(in oklab, var(--danger) 40%, transparent);
+}
+.viewer{
+  max-width:100%;
+  border-radius:10px;
+  border:1px solid var(--border);
+}
+</style>

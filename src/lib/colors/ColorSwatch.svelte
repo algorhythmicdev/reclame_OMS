@@ -8,7 +8,7 @@
 </script>
 
 <div class="sw" aria-label={`${color.system} ${color.code}`}>
-  <div class="chip" style={`background:${hex}`}></div>
+  <div class="color-chip" style={`background:${hex}`}></div>
   <div class="meta">
     <div><b>{color.system}</b> {color.code}</div>
     {#if color.hex && color.system !== 'HEX'}
@@ -19,6 +19,5 @@
 
 <style>
 .sw{ display:flex; gap:8px; align-items:center }
-.chip{ width:32px; height:24px; border-radius:6px; border:1px solid rgba(0,0,0,.2) }
 .meta .muted{ font-size:.85rem }
 </style>

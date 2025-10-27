@@ -1,20 +1,31 @@
 <script lang="ts">
-  export let stages: { name: string; value: number }[] = []; // 0..100
-  $: total = stages.reduce((a,b)=>a+b.value,0) / (stages.length || 1);
+  export let stages: { name: string; value: number }[] = [];
 </script>
 
-<div class="card" aria-label="Progress">
-  <div class="progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow={Math.round(total)} role="progressbar">
-    <span style="width:100%;background:transparent;position:relative;display:block">
-      {#each stages as s, i}
-        <span style={`position:absolute;left:${i* (100/stages.length)}%;width:${100/stages.length}%;
-          height:100%;background:linear-gradient(90deg,var(--brand-amber),var(--brand-cyan));opacity:${Math.max(0.2,s.value/100)}`}></span>
-      {/each}
-    </span>
-  </div>
-  <ul style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:6px;margin-top:8px">
+<section class="card" aria-labelledby="progress-legend" aria-describedby="progress-desc">
+  <h3 id="progress-legend">Process Progress</h3>
+  <p id="progress-desc" class="muted">Each bar shows completion from 0–100%.</p>
+  <div class="legend">
     {#each stages as s}
-      <li><b>{s.name}</b> — {s.value}%</li>
+      <div class="row" style="justify-content:space-between">
+        <span>{s.name}</span>
+        <span class="muted">{s.value}%</span>
+      </div>
+      <div
+        class="rf-progress"
+        role="progressbar"
+        aria-valuemin="0"
+        aria-valuemax="100"
+        aria-valuenow={s.value}
+        aria-label={`${s.name} progress`}
+      >
+        <div class="bar" style={`width:${Math.max(0, Math.min(100, s.value))}%`}></div>
+      </div>
     {/each}
-  </ul>
-</div>
+  </div>
+</section>
+
+<style>
+.legend{display:grid;gap:8px}
+.rf-progress{background:var(--bg-2)}
+</style>

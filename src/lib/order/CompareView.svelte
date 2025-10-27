@@ -81,5 +81,5 @@
 </div>
 
 <style>
-tr[data-changed="true"] td { background: rgba(255,179,0,.14); }
+tr[data-changed="true"] td { background: color-mix(in oklab, var(--warn) 18%, transparent); }
 </style>

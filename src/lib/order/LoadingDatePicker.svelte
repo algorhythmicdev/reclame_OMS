@@ -15,7 +15,7 @@
   });
 </script>
 
-<select class="rf-input" bind:value={selected} aria-label="Loading date">
+<select class="rf-select" bind:value={selected} aria-label="Loading date">
   <option value="">—</option>
   {#each options as option}
     <option value={option.value} disabled={option.full}>{option.label}</option>

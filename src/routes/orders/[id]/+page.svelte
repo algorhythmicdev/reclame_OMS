@@ -6,7 +6,7 @@
 
   import RepoHeader from '$lib/order/RepoHeader.svelte';
   import Tabs from '$lib/ui/Tabs.svelte';
-  import PdfViewer from '$lib/pdf/PdfViewer.svelte';
+import PdfFrame from '$lib/pdf/PdfFrame.svelte';
   import StationLogTimeline from '$lib/order/StationLogTimeline.svelte';
   import ChangeRequestList from '$lib/order/ChangeRequestList.svelte';
   import ChangeRequestForm from '$lib/order/ChangeRequestForm.svelte';
@@ -286,14 +286,16 @@ import LoadingDatePicker from '$lib/order/LoadingDatePicker.svelte';
 
 <section id="overview" hidden={tab!=='overview'} aria-label={$t('order.overview')}>
   <div class="grid" style="grid-template-columns:1.6fr 1fr;align-items:start;gap:16px">
-    <section class="card" aria-label={$t('order.currentPdf')}>
-      <h3 style="margin:0 0 8px 0">{$t('order.currentPdf')}</h3>
-      {#if pdf}
-        <PdfViewer src={pdf.path} />
-      {:else}
+    {#if pdf}
+      <section aria-label={$t('order.currentPdf')}>
+        <PdfFrame src={pdf.path} />
+      </section>
+    {:else}
+      <section class="card" aria-label={$t('order.currentPdf')}>
+        <h3 style="margin:0 0 8px 0">{$t('order.currentPdf')}</h3>
         <div class="muted">{$t('order.no_file')}</div>
-      {/if}
-    </section>
+      </section>
+    {/if}
 
     <aside class="grid" style="gap:12px">
       {#if $role === 'Admin'}

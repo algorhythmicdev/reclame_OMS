@@ -128,6 +128,6 @@ textarea.rf-input{
   cursor:pointer;
 }
 .mention-item:hover{
-  background:rgba(255,255,255,.08);
+  background:color-mix(in oklab, var(--border) 30%, transparent);
 }
 </style>

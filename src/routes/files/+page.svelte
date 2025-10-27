@@ -1,6 +1,6 @@
 <script>
   import { base } from '$app/paths';
-  import PdfViewer from '$lib/pdf/PdfViewer.svelte';
+import PdfFrame from '$lib/pdf/PdfFrame.svelte';
   import Input from '$lib/ui/Input.svelte';
   import Button from '$lib/ui/Button.svelte';
   let file = `${base}/files/PO-250375_ABTB-BIJEN_4500mm.pdf`;
@@ -25,11 +25,19 @@
 </div>
 
 {#if !valid}
-  <div class="card" style="margin-top:10px;background:#3d1616">
+  <div class="card file-error" style="margin-top:10px">
     Cannot load file. Check path or upload to <code>static/files</code>.
   </div>
 {/if}
 
-<div class="card" style="margin-top:12px;background:var(--bg-2)">
-  <PdfViewer src={file} />
+<div style="margin-top:12px">
+  <PdfFrame src={file} />
 </div>
+
+<style>
+.file-error{
+  background: color-mix(in oklab, var(--danger) 12%, var(--bg-1));
+  color: var(--danger);
+  border-color: color-mix(in oklab, var(--danger) 35%, transparent);
+}
+</style>

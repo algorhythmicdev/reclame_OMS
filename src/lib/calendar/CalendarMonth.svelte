@@ -115,8 +115,8 @@
 .cal{ display:grid; gap:8px }
 .head{ display:grid; grid-template-columns:repeat(7,1fr); gap:4px; text-align:center }
 .grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:6px }
-.cell{ position:relative; min-height:80px; border:1px solid rgba(255,255,255,.12); border-radius:10px; background:var(--bg-0); cursor:pointer }
-.cell[data-active="true"]{ outline:2px solid var(--brand-amber) }
+.cell{ position:relative; min-height:80px; border:1px solid var(--border); border-radius:10px; background:var(--bg-0); cursor:pointer }
+.cell[data-active="true"]{ outline:2px solid var(--accent-1) }
 .cell::after{
   content:"";
   position:absolute;
@@ -124,7 +124,7 @@
   right:0;
   bottom:0;
   height:4px;
-  background:linear-gradient(90deg,var(--brand-amber),var(--brand-cyan));
+  background:linear-gradient(90deg,var(--accent-1),var(--accent-2));
   transform-origin:left;
   transform:scaleX(var(--fill, 0));
 }

@@ -4,6 +4,6 @@
 </script>
 <section class="card"><div class="row" style="justify-content:space-between"><h2 style="margin:0">Inventory</h2><button class="tag" disabled>Add item</button></div>
   <div class="grid" style="margin-top:12px">{#each status as i}<div class="card" style="background:var(--bg-2)"><div class="row" style="justify-content:space-between">
-    <div><b>{i.sku}</b> — {i.name}</div><div class="row"><span class="tag">Qty {i.qty}</span><span class="tag">Min {i.min}</span><span class="tag" style="background:{i.ok?'#163d2b':'#3d1616'}">{i.ok?'OK':'LOW'}</span></div>
+    <div><b>{i.sku}</b> — {i.name}</div><div class="row"><span class="tag">Qty {i.qty}</span><span class="tag">Min {i.min}</span><span class="tag" class:badge-ok={i.ok} class:badge-danger={!i.ok}>{i.ok?'OK':'LOW'}</span></div>
   </div></div>{/each}</div>
 </section>

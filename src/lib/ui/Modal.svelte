@@ -62,7 +62,7 @@
   }
   .panel {
     background: var(--bg-1);
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    border: 1px solid var(--border);
     border-radius: 14px;
     min-width: 360px;
     max-width: 640px;

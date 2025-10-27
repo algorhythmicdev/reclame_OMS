@@ -156,6 +156,6 @@
   font-size:.75rem;
 }
 .message[data-mention="true"]{
-  outline:2px solid var(--brand-amber);
+  outline:2px solid var(--accent-1);
 }
 </style>

@@ -23,13 +23,17 @@
 
 <div
   aria-label={accessibleLabel}
-  class="progress"
+  class="rf-progress progress-bar"
   role="progressbar"
   aria-valuenow={numericValue}
   aria-valuemin="0"
   aria-valuemax="100"
   aria-valuetext={computedValueText}
 >
-  <span style={`width:${numericValue}%`}></span>
+  <div class="bar" style={`width:${numericValue}%`}></div>
 </div>
 <div class="muted" style="font-size:.85rem;margin-top:4px">{valueText ?? visibleSummary}</div>
+
+<style>
+.progress-bar{margin-top:4px}
+</style>

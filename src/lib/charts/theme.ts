@@ -3,40 +3,104 @@ import { get } from 'svelte/store';
 import { theme, type ThemeName } from '$lib/stores/theme';
 
 const FALLBACKS = {
-  text: '#e7e7ee',
-  grid: 'rgba(255,255,255,0.14)'
+  text: '#17181c',
+  muted: '#535764',
+  border: '#d6d8e1',
+  neutral: '#888888'
 };
 
-function readCssVariable(name: string) {
+const VAR_PATTERN = /^var\((--[^)]+)\)$/;
+
+export const seriesPalette = [
+  'var(--accent-1)',
+  'var(--accent-2)',
+  '#00a7d1',
+  '#ff7a59',
+  '#7bc96f',
+  '#c3a6ff'
+];
+
+function resolveToken(token: string) {
   if (typeof window === 'undefined') return undefined;
+  const match = VAR_PATTERN.exec(token.trim());
+  const varName = match ? match[1] : null;
+  const key = varName ?? token;
   const styles = getComputedStyle(document.documentElement);
-  const value = styles.getPropertyValue(name);
-  return value?.trim() || undefined;
+  const value = styles.getPropertyValue(key);
+  if (match && !value.trim()) return undefined;
+  const resolved = (value || (!match ? token : '')).trim();
+  return resolved || undefined;
 }
 
-function paletteFor(activeTheme?: ThemeName) {
-  const text = readCssVariable('--text') || FALLBACKS.text;
-  const muted = readCssVariable('--muted') || FALLBACKS.grid;
-  return { text, grid: muted, theme: activeTheme === 'LightVim' ? 'light' : 'dark' };
+function resolvePalette() {
+  return seriesPalette.map((token) => resolveToken(token) ?? FALLBACKS.neutral);
+}
+
+function resolveThemeName(name?: ThemeName) {
+  return name ?? get(theme);
 }
 
 export function withTheme(options: ApexOptions, activeTheme?: ThemeName): ApexOptions {
-  const palette = paletteFor(activeTheme ?? get(theme));
+  const current = resolveThemeName(activeTheme);
+  const mode = current === 'LightVim' ? 'light' : 'dark';
+  const colors = options.colors ?? resolvePalette();
+  const text = resolveToken('var(--text)') ?? FALLBACKS.text;
+  const muted = resolveToken('var(--muted)') ?? FALLBACKS.muted;
+  const border = resolveToken('var(--border)') ?? FALLBACKS.border;
+
+  const legend = {
+    ...options.legend,
+    labels: {
+      colors: text,
+      ...(options.legend?.labels ?? {})
+    }
+  };
+
+  const xaxis = Array.isArray(options.xaxis)
+    ? options.xaxis
+    : {
+        ...options.xaxis,
+        labels: {
+          style: { colors: muted },
+          ...(options.xaxis?.labels ?? {})
+        },
+        axisBorder: {
+          color: border,
+          ...(options.xaxis?.axisBorder ?? {})
+        },
+        axisTicks: {
+          color: border,
+          ...(options.xaxis?.axisTicks ?? {})
+        }
+      };
+
+  const yaxis = Array.isArray(options.yaxis)
+    ? options.yaxis
+    : {
+        ...options.yaxis,
+        labels: {
+          style: { colors: muted },
+          ...(options.yaxis?.labels ?? {})
+        }
+      };
+
   return {
     ...options,
-    chart: {
-      background: 'transparent',
-      foreColor: palette.text,
-      ...(options.chart ?? {})
+    theme: { mode, ...(options.theme ?? {}) },
+    colors,
+    stroke: {
+      width: 2,
+      ...(options.stroke ?? {})
     },
-    colors: options.colors ?? ['var(--brand-violet)', 'var(--brand-amber)'],
     grid: {
-      borderColor: palette.grid,
-      strokeDashArray: options.grid?.strokeDashArray ?? 3,
+      borderColor: border,
       ...(options.grid ?? {})
     },
+    legend,
+    xaxis,
+    yaxis,
     tooltip: {
-      theme: palette.theme,
+      theme: mode,
       ...(options.tooltip ?? {})
     }
   };

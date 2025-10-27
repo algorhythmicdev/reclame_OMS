@@ -2,7 +2,7 @@
   import { base } from '$app/paths';
   import Input from '$lib/ui/Input.svelte';
   import Button from '$lib/ui/Button.svelte';
-  import PdfViewer from '$lib/pdf/PdfViewer.svelte';
+  import PdfFrame from '$lib/pdf/PdfFrame.svelte';
   import ColorSwatch from '$lib/colors/ColorSwatch.svelte';
   import type { ColorSpec } from '$lib/colors/color-systems';
   import { isKnownRal } from '$lib/colors/color-systems';
@@ -138,14 +138,15 @@
       </header>
 
       <section class="grid" style="grid-template-columns:1.2fr 1fr; gap:12px">
-        <div class="card">
-          <h4>PDF Preview</h4>
-          {#if pdfPath}
-            <PdfViewer src={pdfPath} />
-          {:else}
-            <div class="muted">Paste a PDF path under <code>{base}/files/</code></div>
-          {/if}
-          <Input bind:value={pdfPath} placeholder={`${base}/files/PO-....pdf`} ariaLabel="PDF path" />
+        <div class="pdf-stack">
+          <PdfFrame src={pdfPath} />
+          <div class="card">
+            <h4>PDF Source</h4>
+            <div class="muted" style="font-size:.85rem;margin-bottom:6px">
+              Paste a PDF path under <code>{base}/files/</code>
+            </div>
+            <Input bind:value={pdfPath} placeholder={`${base}/files/PO-....pdf`} ariaLabel="PDF path" />
+          </div>
         </div>
 
         <div class="grid">
@@ -175,7 +176,7 @@
                 <Input bind:value={row.label} placeholder="Section" />
                 <Input bind:value={row.material} placeholder="Material" />
                 <Input bind:value={row.thickness} placeholder="Thickness (e.g., 3mm)" />
-                <select class="rf-input" bind:value={row.color.system}>
+                <select class="rf-select" bind:value={row.color.system}>
                   <option value="RAL">RAL</option>
                   <option value="Pantone">Pantone</option>
                   <option value="HEX">HEX</option>
@@ -225,9 +226,10 @@
 
 <style>
 .shade{position:fixed;inset:0;background:rgba(0,0,0,.45);display:grid;place-items:center;z-index:99}
-.panel{background:var(--bg-1);border:1px solid rgba(255,255,255,.12);border-radius:14px;min-width:920px;max-width:95vw;max-height:90vh;padding:14px;overflow:auto}
+.panel{background:var(--bg-1);border:1px solid var(--border);border-radius:14px;min-width:920px;max-width:95vw;max-height:90vh;padding:14px;overflow:auto}
 header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
 .x{background:transparent;border:none;color:var(--text);cursor:pointer;font-size:1.1rem}
+.pdf-stack{display:grid;gap:12px}
 .materials-grid{
   display:grid;
   grid-template-columns:repeat(5,minmax(0,1fr));
@@ -240,5 +242,5 @@ header{display:flex;justify-content:space-between;align-items:center;margin-bott
   flex-direction:column;
   gap:4px;
 }
-.warn{color:#ff5d5d;font-size:.8rem}
+.warn{color:var(--danger);font-size:.8rem}
 </style>

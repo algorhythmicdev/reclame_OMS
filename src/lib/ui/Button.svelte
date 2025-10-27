@@ -12,11 +12,30 @@
 
 <style>
 .btn-root{
-  font-weight:800; cursor:pointer; border:none; border-radius:.8rem;
-  padding:.65rem 1rem; background:var(--bg-2); color:var(--text);
+  font-weight:700;
+  cursor:pointer;
+  border:1px solid var(--border);
+  border-radius:.8rem;
+  padding:.65rem 1rem;
+  background:var(--bg-2);
+  color:var(--text);
+  transition:filter .15s ease;
 }
-.btn-root[data-variant="primary"]{ background:linear-gradient(90deg,var(--brand-magenta),var(--brand-violet),var(--brand-cyan)); color:#000; }
-.btn-root[data-variant="ghost"]{ background:transparent; border:1px solid rgba(255,255,255,.12); }
-.btn-root[data-variant="danger"]{ background:linear-gradient(90deg,#ff5d5d,#ffc0c0); color:#000; }
+.btn-root[data-variant="primary"]{
+  background:linear-gradient(90deg,var(--accent-1),var(--accent-2));
+  color:#fff;
+  border:none;
+}
+.btn-root[data-variant="ghost"]{
+  background:transparent;
+  border:1px solid var(--border);
+  color:var(--text);
+}
+.btn-root[data-variant="danger"]{
+  background:var(--danger);
+  color:#fff;
+  border:none;
+}
 .btn-root:disabled{ opacity:.6; cursor:not-allowed; }
+.btn-root:not(:disabled):hover{ filter:brightness(1.06); }
 </style>
