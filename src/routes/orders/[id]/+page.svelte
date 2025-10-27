@@ -6,23 +6,25 @@
 
   import RepoHeader from '$lib/order/RepoHeader.svelte';
   import Tabs from '$lib/ui/Tabs.svelte';
-import PdfFrame from '$lib/pdf/PdfFrame.svelte';
+  import PdfFrame from '$lib/pdf/PdfFrame.svelte';
   import StationLogTimeline from '$lib/order/StationLogTimeline.svelte';
   import ChangeRequestList from '$lib/order/ChangeRequestList.svelte';
   import ChangeRequestForm from '$lib/order/ChangeRequestForm.svelte';
   import RevisionsList from '$lib/order/RevisionsList.svelte';
-  import ProgressLegend from '$lib/ui/ProgressLegend.svelte';
   import BranchesTable from '$lib/order/BranchesTable.svelte';
   import { role } from '$lib/ui/RoleSwitch.svelte';
   import CompareView from '$lib/order/CompareView.svelte';
   import StationQuickLogger from '$lib/order/StationQuickLogger.svelte';
   import BadgesManager from '$lib/order/BadgesManager.svelte';
   import GanttLine from '$lib/order/GanttLine.svelte';
-import { announce } from '$lib/a11y/live';
-import ProgressEditor from '$lib/order/ProgressEditor.svelte';
-import MaterialsEditor from '$lib/order/MaterialsEditor.svelte';
-import { TERMS } from '$lib/order/names';
-import LoadingDatePicker from '$lib/order/LoadingDatePicker.svelte';
+  import { announce } from '$lib/a11y/live';
+  import MaterialsEditor from '$lib/order/MaterialsEditor.svelte';
+  import { TERMS } from '$lib/order/names';
+  import LoadingDatePicker from '$lib/order/LoadingDatePicker.svelte';
+  import StageLegend from '$lib/order/StageLegend.svelte';
+  import StageEditor from '$lib/order/StageEditor.svelte';
+  import ReworkQuick from '$lib/order/ReworkQuick.svelte';
+  import { adminSendToRework, adminApplyStage } from '$lib/order/signage-actions';
 
   import type { Order, StationLog, Badge } from '$lib/order/types.signage';
   import {
@@ -36,12 +38,17 @@ import LoadingDatePicker from '$lib/order/LoadingDatePicker.svelte';
     declineChangeRequest,
     setLoadingDate
   } from '$lib/order/signage-store';
+  import { blankStages, type StageState, type StationTag, type ReworkReason } from '$lib/order/stages';
 
   export let params;
   const id = params.id;
 
   let existing = getOrder(id);
   if (!existing) {
+    const stages = blankStages();
+    stages.CAD = 'COMPLETED';
+    stages.CNC = 'COMPLETED';
+    stages.SANDING = 'IN_PROGRESS';
     existing = createOrder({
       id,
       title: '4500mm Long Frame',
@@ -51,7 +58,8 @@ import LoadingDatePicker from '$lib/order/LoadingDatePicker.svelte';
       badges: ['OPEN', 'IN_PROGRESS'],
       fields: [{ key: 'priority', label: 'Priority', value: 'Normal' }],
       materials: [{ key: 'face', label: 'Face', value: 'Acrylic 3mm White' }],
-      progress: { CAD: 100, CNC: 100, SANDING: 40, BENDING: 0, WELDING: 0, PAINT: 0, ASSEMBLY: 0, QC: 0, LOGISTICS: 0 },
+      stages,
+      cycles: [],
       file: { id: 'f1', name: 'PO-250375_ABTB-BIJEN_4500mm.pdf', path: `${base}/files/PO-250375_ABTB-BIJEN_4500mm.pdf`, kind: 'pdf' }
     });
   }
@@ -96,13 +104,6 @@ import LoadingDatePicker from '$lib/order/LoadingDatePicker.svelte';
     'rf-attach-revision'
   ] as const;
 
-  function stages() {
-    return Object.entries(o.progress).map(([key, value]) => ({
-      name: TERMS.stations[key as keyof typeof TERMS.stations] ?? key,
-      value: Number(value)
-    }));
-  }
-
   let newPath = '';
   function refreshOrder() {
     o = getOrder(id)!;
@@ -123,6 +124,17 @@ import LoadingDatePicker from '$lib/order/LoadingDatePicker.svelte';
 
   function createCR(title: string, changes: StationLog['changes'], message?: string) {
     openChangeRequest(o.id, { title, author: 'Station', proposed: changes, message });
+    refreshOrder();
+  }
+  function applyStage(station: StationTag, state: StageState, note?: string) {
+    adminApplyStage(o.id, station, state, note, 'admin');
+    refreshOrder();
+  }
+  function proposeStage(station: StationTag, state: StageState, note?: string) {
+    createCR(`${station} → ${state}`, { stages: { [station]: state } }, note);
+  }
+  function sendRework(station: StationTag, reason: ReworkReason, note: string) {
+    adminSendToRework(o.id, station, reason, note, 'admin');
     refreshOrder();
   }
   function approve(crId: string) {
@@ -211,13 +223,12 @@ import LoadingDatePicker from '$lib/order/LoadingDatePicker.svelte';
   $: selectedChangeRequest = selectedCRId ? o.prs.find((item) => item.id === selectedCRId) ?? null : null;
   $: compareFieldsRight = selectedChangeRequest?.proposed.fields || o.fields;
   $: compareMaterialsRight = selectedChangeRequest?.proposed.materials || o.materials;
-  $: compareProgressRight = selectedChangeRequest?.proposed.progress || o.progress;
+  $: compareStagesRight = selectedChangeRequest?.proposed.stages
+    ? { ...o.stages, ...selectedChangeRequest.proposed.stages }
+    : o.stages;
 
   function handleQuickLog(payload: { station: string; progress?: number; note?: string }) {
     const changes: StationLog['changes'] = {};
-    if (payload.progress != null) {
-      changes.progress = { [payload.station]: payload.progress } as StationLog['changes']['progress'];
-    }
     if (payload.note) {
       changes.fields = [
         {
@@ -227,30 +238,10 @@ import LoadingDatePicker from '$lib/order/LoadingDatePicker.svelte';
         }
       ];
     }
-    if (!changes.progress && !changes.fields) return;
+    if (!changes.fields) return;
     const translate = get(t);
     const title = `${payload.station} ${translate('terms.changeRequest')}`;
     createCR(title, changes, payload.note);
-  }
-
-  function proposeProgress(changes: Record<string, number>) {
-    openChangeRequest(o.id, {
-      title: 'Progress update',
-      author: 'Station',
-      proposed: { progress: changes }
-    });
-    refreshOrder();
-  }
-
-  function applyProgressAdmin(changes: Record<string, number>) {
-    const prId = openChangeRequest(o.id, {
-      title: 'Admin progress update',
-      author: 'Admin',
-      proposed: { progress: changes }
-    });
-    approveChangeRequest(o.id, prId, 'admin');
-    refreshOrder();
-    announce(get(t)('toast.approved'));
   }
 
   function proposeMaterials(items: { key: string; label: string; value: string }[]) {
@@ -317,15 +308,15 @@ import LoadingDatePicker from '$lib/order/LoadingDatePicker.svelte';
         <h3 style="margin:10px 0 8px">{$t('order.materials')}</h3>
         <ul>{#each o.materials as material}<li><b>{material.label}:</b> {material.value}</li>{/each}</ul>
       </section>
-      <MaterialsEditor items={o.materials} onPropose={proposeMaterials} onApplyAdmin={applyMaterialsAdmin} />
-      <section class="card">
-        <h3 style="margin:0 0 8px 0">{$t('order.progress')}</h3>
-        <section aria-label={$t('a11y.progress_region')} aria-describedby="pdesc">
-          <p id="pdesc" class="muted">Values show current completion percentage per station (0–100).</p>
-          <ProgressLegend stages={stages()} />
+      {#if o.isRD}
+        <section class="card" style="background:color-mix(in oklab,var(--accent-2) 12%, var(--bg-1));">
+          <h3 style="margin:0 0 8px 0">{$t('rd.flag')}</h3>
+          <p class="muted" style="white-space:pre-wrap">{o.rdNotes || '—'}</p>
         </section>
-      </section>
-      <ProgressEditor value={o.progress} onPropose={proposeProgress} onApplyAdmin={applyProgressAdmin} />
+      {/if}
+      <MaterialsEditor items={o.materials} onPropose={proposeMaterials} onApplyAdmin={applyMaterialsAdmin} />
+      <StageLegend stages={o.stages} cycles={o.cycles ?? []} />
+      <StageEditor value={o.stages} onApplyAdmin={applyStage} onPropose={proposeStage} />
       <GanttLine items={ganttItems} />
     </aside>
   </div>
@@ -358,6 +349,9 @@ import LoadingDatePicker from '$lib/order/LoadingDatePicker.svelte';
 <section id="changes" hidden={tab!=='changes'} aria-label={$t('order.changes')}>
   <div class="grid" style="grid-template-columns:2fr 1fr;gap:16px">
     <div class="grid" style="gap:12px">
+      {#if $role === 'Admin'}
+        <ReworkQuick onSend={sendRework} />
+      {/if}
       <div class="card" style="margin-top:10px">
         <h3 style="margin:0 0 8px 0">Open Requests</h3>
         <ul style="display:grid;gap:6px">
@@ -395,8 +389,8 @@ import LoadingDatePicker from '$lib/order/LoadingDatePicker.svelte';
           rightFields={compareFieldsRight}
           leftMaterials={o.materials}
           rightMaterials={compareMaterialsRight}
-          leftProgress={o.progress}
-          rightProgress={compareProgressRight}
+          leftStages={o.stages}
+          rightStages={compareStagesRight}
         />
       {:else}
         <div class="card">

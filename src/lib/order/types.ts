@@ -1,9 +1,17 @@
-// --- Core types for "order as a repo"
-export type Station =
-  | 'CAD' | 'CNC' | 'SANDING' | 'BENDING' | 'WELDING'
-  | 'PAINT' | 'ASSEMBLY' | 'QC' | 'LOGISTICS';
+import type { StageMap, StageCycle, StageState, StationTag } from './stages';
 
-export type Badge = 'OPEN' | 'IN_PROGRESS' | 'BLOCKED' | 'READY_TO_SHIP' | 'DONE' | 'URGENT' | 'LOW_STOCK';
+// --- Core types for "order as a repo"
+export type Station = StationTag;
+
+export type Badge =
+  | 'OPEN'
+  | 'IN_PROGRESS'
+  | 'BLOCKED'
+  | 'READY_TO_SHIP'
+  | 'DONE'
+  | 'URGENT'
+  | 'LOW_STOCK'
+  | 'R&D';
 
 export type Field = { key: string; label: string; value: string };
 
@@ -26,6 +34,10 @@ export type Commit = {
     progress: Record<Station, number>;
     defaultRevisionId: string;
     loadingDate: string;
+    stages: Partial<StageMap>;
+    cycles: StageCycle[];
+    isRD: boolean;
+    rdNotes?: string;
   }>;
 };
 
@@ -51,14 +63,20 @@ export type Order = {
   client: string;
   due: string;                // ISO
   loadingDate?: string | null;
+  isRD?: boolean;
+  rdNotes?: string;
   badges: Badge[];
   // Working snapshot (applies default branch head + default revision)
   fields: Field[];
   materials: Field[];
-  progress: Record<Station, number>;
+  progress?: Record<Station, number>;
+  stages: StageMap;
+  cycles?: StageCycle[];
   defaultBranch: string;      // 'main'
   branches: Branch[];
   prs: PullRequest[];
   revisions: Revision[];      // file history, newest first
   defaultRevisionId: string;  // which revision is "current"
 };
+
+export type { StageMap, StageCycle, StageState, StationTag };

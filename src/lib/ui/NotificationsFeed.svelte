@@ -1,33 +1,10 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  export let items: { id: string; text: string; ts?: string }[] = [];
+  import { notifications } from '$lib/ui/notifications';
+  import type { NotificationItem } from '$lib/ui/notifications';
 
-  // maintain a local feed so we never mutate the exported prop directly
-  let feed = Array.isArray(items) ? [...items] : [];
-  let previousItems = items;
-  let ticker: ReturnType<typeof setInterval> | undefined;
+  export let items: NotificationItem[] = [];
 
-  const makeId = () => {
-    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
-      return crypto.randomUUID();
-    }
-    return `notif-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-  };
-
-  $: if (items !== previousItems) {
-    feed = Array.isArray(items) ? [...items] : [];
-    previousItems = items;
-  }
-
-  onMount(() => {
-    ticker = setInterval(() => {
-      const now = new Date().toLocaleTimeString();
-      feed = [{ id: makeId(), text: 'Heartbeat OK', ts: now }, ...feed].slice(0, 50);
-    }, 7000);
-    return () => {
-      if (ticker) clearInterval(ticker);
-    };
-  });
+  $: feed = Array.isArray(items) && items.length ? items : $notifications;
 </script>
 
 <div class="rf-panel">

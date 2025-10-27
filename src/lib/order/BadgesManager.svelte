@@ -22,6 +22,7 @@
     if (badge === 'URGENT') return 'danger';
     if (badge === 'READY_TO_SHIP') return 'success';
     if (badge === 'BLOCKED') return 'warn';
+    if (badge === 'R&D') return 'warn';
     return 'primary';
   };
 </script>

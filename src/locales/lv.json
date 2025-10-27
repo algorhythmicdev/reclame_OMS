@@ -139,5 +139,33 @@
   },
   "users": {
     "current": "Lietotājs"
+  },
+  "rework": {
+    "send": "Nosūtīt uz pārstrādi",
+    "reason": "Iemesls",
+    "note": "Piezīme ražošanai",
+    "x_repeat": "atkārtojums",
+    "reasons": {
+      "RECUT": "Pārgriezt",
+      "RESAND": "Pārsliet",
+      "REBEND": "Pārliekt",
+      "REWELD": "Pārmetināt",
+      "REPAINT": "Pārkrāsot",
+      "REASSEMBLE": "Pārsamontēt",
+      "RECHECK": "Atkārtoti pārbaudīt",
+      "CUSTOM": "Cits"
+    }
+  },
+  "rd": {
+    "flag": "R&D pasūtījums",
+    "notes": "R&D piezīmes (redzamas visām stacijām)"
+  },
+  "stages": {
+    "NOT_STARTED": "Nav sākts",
+    "QUEUED": "Paredzēts",
+    "IN_PROGRESS": "Procesā",
+    "BLOCKED": "Aizturēts",
+    "REWORK": "Pārstrāde",
+    "COMPLETED": "Pabeigts"
   }
 }

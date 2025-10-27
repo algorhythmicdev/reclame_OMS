@@ -6,6 +6,7 @@
   import type { Badge, Field, Order, Station } from '$lib/order/types';
   import { listOrders, createOrder } from '$lib/order/signage-store';
   import OrderForm from '$lib/order/OrderForm.svelte';
+import { blankStages, STATE_LABEL, type StageState } from '$lib/order/stages';
 
   type OrderRow = { id: string; client: string; title: string; status: string; due: string };
 
@@ -39,7 +40,9 @@
     badges: Badge[];
     fields: Field[];
     materials: Field[];
-    progress: Record<Station, number>;
+    stages: Record<Station, StageState>;
+    isRD?: boolean;
+    rdNotes?: string;
     fileName: string;
   };
 
@@ -55,7 +58,12 @@
       badges: ['OPEN', 'IN_PROGRESS'],
       fields: [{ key: 'priority', label: 'Priority', value: 'Normal' }],
       materials: [{ key: 'face', label: 'Face', value: 'Acrylic 3mm White' }],
-      progress: withProgress({ CAD: 100, CNC: 100, SANDING: 40 }),
+      stages: {
+        ...blankStages(),
+        CAD: 'COMPLETED',
+        CNC: 'COMPLETED',
+        SANDING: 'IN_PROGRESS'
+      },
       fileName: 'PO-250375_ABTB-BIJEN_4500mm.pdf'
     },
     {
@@ -67,7 +75,12 @@
       badges: ['OPEN'],
       fields: [{ key: 'priority', label: 'Priority', value: 'High' }],
       materials: [{ key: 'face', label: 'Face', value: 'Aluminium 4mm' }],
-      progress: withProgress({ CAD: 100, CNC: 65 }),
+      stages: {
+        ...blankStages(),
+        CAD: 'COMPLETED',
+        CNC: 'IN_PROGRESS',
+        SANDING: 'QUEUED'
+      },
       fileName: 'PO-250375_ABTB-BIJEN_4500mm.pdf'
     },
     {
@@ -76,24 +89,18 @@
       client: 'Burger King',
       due: '2025-11-03',
       loadingDate: '2025-11-01',
-      badges: ['OPEN', 'URGENT'],
+      badges: ['OPEN', 'R&D'],
       fields: [{ key: 'priority', label: 'Priority', value: 'Rush' }],
       materials: [{ key: 'face', label: 'Face', value: 'Acrylic 5mm Frosted' }],
-      progress: withProgress({ CAD: 45 }),
+      stages: {
+        ...blankStages(),
+        CAD: 'IN_PROGRESS'
+      },
+      isRD: true,
+      rdNotes: 'Prototype signage. Confirm LED layout before assembly.',
       fileName: 'PO-250375_ABTB-BIJEN_4500mm.pdf'
     }
   ];
-
-  function baseProgress(): Record<Station, number> {
-    return stations.reduce((acc, stage) => {
-      acc[stage] = 0;
-      return acc;
-    }, {} as Record<Station, number>);
-  }
-
-  function withProgress(overrides: Partial<Record<Station, number>>): Record<Station, number> {
-    return { ...baseProgress(), ...overrides };
-  }
 
   for (const seed of seeds) {
     createOrder({
@@ -104,7 +111,10 @@
       badges: seed.badges,
       fields: seed.fields,
       materials: seed.materials,
-      progress: seed.progress,
+      stages: seed.stages,
+      isRD: seed.isRD,
+      rdNotes: seed.rdNotes,
+      cycles: [],
       loadingDate: seed.loadingDate,
       file: {
         id: `${seed.id}-file`,
@@ -116,10 +126,11 @@
   }
 
   function statusFromOrder(order: Order): string {
-    const pending = stations.find((stage) => (order.progress?.[stage] ?? 0) < 100);
-    if (!pending) return 'Complete';
-    const value = order.progress?.[pending] ?? 0;
-    return value > 0 ? `${stationLabels[pending]} ${value}%` : stationLabels[pending];
+    const stagesMap = order.stages ?? blankStages();
+    const pending = stations.find((stage) => stagesMap[stage] !== 'COMPLETED');
+    if (!pending) return 'Completed';
+    const state = stagesMap[pending];
+    return `${stationLabels[pending]} · ${STATE_LABEL[state]}`;
   }
 
   function toRow(order: Order): OrderRow {

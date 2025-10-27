@@ -8,21 +8,11 @@
   import { isKnownRal } from '$lib/colors/color-systems';
   import LoadingDatePicker from '$lib/order/LoadingDatePicker.svelte';
   import { createOrder } from '$lib/order/signage-store';
+  import { blankStages } from '$lib/order/stages';
+  import { t } from 'svelte-i18n';
 
   export let open = false;
   export let onClose: () => void = () => {};
-
-  const defaultProgress = {
-    CAD: 0,
-    CNC: 0,
-    SANDING: 0,
-    BENDING: 0,
-    WELDING: 0,
-    PAINT: 0,
-    ASSEMBLY: 0,
-    QC: 0,
-    LOGISTICS: 0
-  };
 
   type MaterialRow = {
     key: string;
@@ -38,6 +28,8 @@
   let due = new Date().toISOString().slice(0, 10);
   let loadingDate = '';
   let pdfPath = '';
+  let isRD = false;
+  let rdNotes = '';
 
   let materials: MaterialRow[] = [
     { key: 'face', label: 'Face', material: 'Acrylic', thickness: '3mm', color: { system: 'RAL', code: 'RAL 9016' } },
@@ -52,6 +44,8 @@
     due = new Date().toISOString().slice(0, 10);
     loadingDate = '';
     pdfPath = '';
+    isRD = false;
+    rdNotes = '';
     materials = [
       { key: 'face', label: 'Face', material: 'Acrylic', thickness: '3mm', color: { system: 'RAL', code: 'RAL 9016' } },
       { key: 'back', label: 'Back', material: 'ACP', thickness: '3mm', color: { system: 'RAL', code: 'RAL 9005' } },
@@ -106,15 +100,20 @@
       value: `${item.material} ${item.thickness} – ${item.color.system} ${item.color.code}`
     }));
 
+    const stages = blankStages();
+
     createOrder({
       id,
       title,
       client,
       due,
-      badges: ['OPEN', 'IN_PROGRESS'],
+      badges: isRD ? ['OPEN', 'R&D'] : ['OPEN', 'IN_PROGRESS'],
       fields,
       materials: mats,
-      progress: { ...defaultProgress },
+      isRD,
+      rdNotes,
+      stages,
+      cycles: [],
       loadingDate,
       file: {
         id: crypto.randomUUID(),
@@ -187,6 +186,17 @@
                 <label class="muted" for="order-loading-input">Loading Date</label>
                 <LoadingDatePicker id="order-loading-input" bind:selected={loadingDate} ariaLabel="Loading date" />
               </div>
+              <div style="grid-column:span 2" class="row">
+                <label class="tag">
+                  <input type="checkbox" bind:checked={isRD} /> {$t('rd.flag')}
+                </label>
+              </div>
+              {#if isRD}
+                <div style="grid-column:span 2">
+                  <label class="muted" for="order-rd-notes">{$t('rd.notes')}</label>
+                  <textarea id="order-rd-notes" class="rf-input" rows="3" bind:value={rdNotes}></textarea>
+                </div>
+              {/if}
             </div>
           </div>
 

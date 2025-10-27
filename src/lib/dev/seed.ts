@@ -1,4 +1,5 @@
-import { createOrder, openChangeRequest, getOrder } from '$lib/order/signage-store';
+import { createOrder, getOrder } from '$lib/order/signage-store';
+import { blankStages, STATIONS } from '$lib/order/stages';
 
 export function seed(base: string) {
   const seedData = [
@@ -9,7 +10,17 @@ export function seed(base: string) {
       due: '2025-10-26',
       loadingDate: '2025-10-24',
       file: `${base}/files/PO-250375_ABTB-BIJEN_4500mm.pdf`,
-      progress: { CAD: 100, CNC: 100, SANDING: 40, BENDING: 0, WELDING: 0, PAINT: 0, ASSEMBLY: 0, QC: 0, LOGISTICS: 0 }
+      stages: {
+        CAD: 'COMPLETED',
+        CNC: 'COMPLETED',
+        SANDING: 'IN_PROGRESS',
+        BENDING: 'NOT_STARTED',
+        WELDING: 'NOT_STARTED',
+        PAINT: 'NOT_STARTED',
+        ASSEMBLY: 'NOT_STARTED',
+        QC: 'NOT_STARTED',
+        LOGISTICS: 'NOT_STARTED'
+      }
     },
     {
       id: 'PO-250420',
@@ -18,7 +29,17 @@ export function seed(base: string) {
       due: '2025-10-30',
       loadingDate: '2025-10-28',
       file: `${base}/files/PO-250420_KIA_Pylon.pdf`,
-      progress: { CAD: 100, CNC: 80, SANDING: 20, BENDING: 0, WELDING: 0, PAINT: 0, ASSEMBLY: 0, QC: 0, LOGISTICS: 0 }
+      stages: {
+        CAD: 'COMPLETED',
+        CNC: 'IN_PROGRESS',
+        SANDING: 'QUEUED',
+        BENDING: 'NOT_STARTED',
+        WELDING: 'NOT_STARTED',
+        PAINT: 'NOT_STARTED',
+        ASSEMBLY: 'NOT_STARTED',
+        QC: 'NOT_STARTED',
+        LOGISTICS: 'NOT_STARTED'
+      }
     }
   ];
 
@@ -37,24 +58,14 @@ export function seed(base: string) {
           badges: ['OPEN', 'IN_PROGRESS'],
           fields: [{ key: 'priority', label: 'Priority', value: 'Normal' }],
           materials: [{ key: 'face', label: 'Face', value: 'Acrylic 3mm White' }],
-          progress: s.progress,
+          stages: { ...blankStages(), ...s.stages },
+          cycles: [],
+          progress: Object.fromEntries(STATIONS.map((key) => [key, 0])),
           file: { id: crypto.randomUUID(), name: s.file.split('/').pop()!, path: s.file, kind: 'pdf' }
         });
 
     if (s.id === 'PO-250420') {
       targetId = order.id;
-    }
-  }
-
-  if (targetId) {
-    const order = getOrder(targetId);
-    const existing = order?.prs?.some((pr) => pr.title === 'Sanding +10%' && pr.status === 'open');
-    if (!existing) {
-      openChangeRequest(targetId, {
-        title: 'Sanding +10%',
-        author: 'SANDING',
-        proposed: { progress: { SANDING: 30 } }
-      });
     }
   }
 }

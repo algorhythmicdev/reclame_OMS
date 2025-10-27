@@ -139,5 +139,33 @@
   },
   "users": {
     "current": "User"
+  },
+  "rework": {
+    "send": "Send to Rework",
+    "reason": "Reason",
+    "note": "Note for production",
+    "x_repeat": "repeat",
+    "reasons": {
+      "RECUT": "Re-cut",
+      "RESAND": "Re-sand",
+      "REBEND": "Re-bend",
+      "REWELD": "Re-weld",
+      "REPAINT": "Re-paint",
+      "REASSEMBLE": "Re-assemble",
+      "RECHECK": "Re-check",
+      "CUSTOM": "Custom"
+    }
+  },
+  "rd": {
+    "flag": "R&D order",
+    "notes": "R&D notes (visible to all stations)"
+  },
+  "stages": {
+    "NOT_STARTED": "Not started",
+    "QUEUED": "Queued",
+    "IN_PROGRESS": "In progress",
+    "BLOCKED": "Blocked",
+    "REWORK": "Rework",
+    "COMPLETED": "Completed"
   }
 }

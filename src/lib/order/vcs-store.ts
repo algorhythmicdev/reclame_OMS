@@ -1,4 +1,5 @@
 import type { Order, Revision, PullRequest, Commit, Badge } from './types';
+import { blankStages, STATIONS } from './stages';
 
 const KEY = 'rf_orders_vcs';
 
@@ -6,12 +7,47 @@ let DB: Record<string, Order> = (typeof window !== 'undefined')
   ? JSON.parse(localStorage.getItem(KEY) || '{}')
   : {};
 
+function normalise(order: Order): Order {
+  let mutated = false;
+  if (!order.stages) {
+    order.stages = blankStages();
+    mutated = true;
+  }
+  if (!order.cycles) {
+    order.cycles = [];
+    mutated = true;
+  }
+  if (order.isRD === undefined) {
+    order.isRD = false;
+    mutated = true;
+  }
+  if (order.rdNotes === undefined) {
+    order.rdNotes = '';
+    mutated = true;
+  }
+  if (!order.progress) {
+    order.progress = Object.fromEntries(STATIONS.map((s) => [s, 0])) as Record<string, number>;
+    mutated = true;
+  }
+  if (mutated) {
+    persist();
+  }
+  return order;
+}
+
 function persist() { if (typeof window !== 'undefined') localStorage.setItem(KEY, JSON.stringify(DB)); }
 
-export function listOrders(): Order[] { return Object.values(DB); }
-export function getOrder(id: string): Order | null { return DB[id] ?? null; }
+export function listOrders(): Order[] { return Object.values(DB).map((o) => ({ ...normalise(o) })); }
+export function getOrder(id: string): Order | null {
+  const order = DB[id];
+  return order ? normalise(order) : null;
+}
 
-export function createOrder(seed: Omit<Order, 'branches'|'prs'|'revisions'|'defaultBranch'|'defaultRevisionId'> & { file: Revision['file'] }) {
+export function createOrder(
+  seed: Omit<Order, 'branches' | 'prs' | 'revisions' | 'defaultBranch' | 'defaultRevisionId'> & {
+    file: Revision['file'];
+  }
+) {
   if (DB[seed.id]) return DB[seed.id];
   const rev: Revision = {
     id: crypto.randomUUID(),
@@ -23,16 +59,23 @@ export function createOrder(seed: Omit<Order, 'branches'|'prs'|'revisions'|'defa
   };
   const initCommit: Commit = { id: 'init', ts: new Date().toISOString(), author: 'System', message: 'Order created', changes: {} };
 
+  const zeroProgress = (seed.progress ??
+    Object.fromEntries(STATIONS.map((s) => [s, 0]))) as Record<string, number>;
+
   const order: Order = {
     id: seed.id,
     title: seed.title,
     client: seed.client,
     due: seed.due,
     loadingDate: seed.loadingDate ?? '',
+    isRD: seed.isRD ?? false,
+    rdNotes: seed.rdNotes ?? '',
     badges: seed.badges,
     fields: seed.fields,
     materials: seed.materials,
-    progress: seed.progress,
+    progress: zeroProgress,
+    stages: seed.stages ?? blankStages(),
+    cycles: seed.cycles ?? [],
     defaultBranch: 'main',
     branches: [{ name: 'main', head: initCommit.id, commits: [initCommit], isDefault: true }],
     prs: [],
@@ -119,6 +162,10 @@ export function mergePR(orderId: string, prId: string, admin='admin') {
   if (pr.proposed.materials) o.materials = pr.proposed.materials;
   if (pr.proposed.badges) o.badges = pr.proposed.badges;
   if (pr.proposed.progress) o.progress = { ...o.progress, ...pr.proposed.progress };
+  if (pr.proposed.stages) o.stages = { ...o.stages, ...pr.proposed.stages };
+  if (pr.proposed.isRD !== undefined) o.isRD = pr.proposed.isRD;
+  if (pr.proposed.rdNotes !== undefined) o.rdNotes = pr.proposed.rdNotes;
+  if (pr.proposed.cycles) o.cycles = pr.proposed.cycles;
   if (pr.proposed.defaultRevisionId) o.defaultRevisionId = pr.proposed.defaultRevisionId;
 
   pr.status = 'merged'; pr.mergedAt = new Date().toISOString(); pr.mergedBy = admin;
