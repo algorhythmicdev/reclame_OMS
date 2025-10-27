@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { notifications } from '$lib/ui/notifications';
-  import type { NotificationItem } from '$lib/ui/notifications';
+  import { notifications } from '$lib/notifications/store';
+  import type { NotificationItem } from '$lib/notifications/store';
 
   export let items: NotificationItem[] = [];
 

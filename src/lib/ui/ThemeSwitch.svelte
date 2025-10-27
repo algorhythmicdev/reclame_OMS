@@ -1,9 +1,15 @@
 <script lang="ts">
   import { theme, type ThemeName } from '$lib/stores/theme';
+  import { savePrefs } from '$lib/settings/service';
   let t: ThemeName;
   $: theme.subscribe(v => t = v);
 
   const themes: ThemeName[] = ['LightVim','DarkVim','HighContrastVim'];
+
+  function setTheme(newTheme: ThemeName) {
+    theme.set(newTheme);
+    savePrefs();
+  }
 </script>
 
 <div class="card">
@@ -13,7 +19,7 @@
       <button
         class="tag"
         aria-pressed={t===option}
-        on:click={() => theme.set(option)}
+        on:click={() => setTheme(option)}
       >{option}</button>
     {/each}
   </div>

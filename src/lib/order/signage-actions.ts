@@ -1,6 +1,6 @@
 import { getOrder, openChangeRequest, approveChangeRequest } from './signage-store';
 import type { StationTag, ReworkReason, StageCycle, StageState } from './stages';
-import { notify } from '$lib/ui/notifications';
+import { notify } from '$lib/notifications/store';
 import { sendMessage } from '$lib/chat/chat-store';
 
 function broadcast(orderId: string, station: StationTag, text: string, mentions: string[] = []) {
