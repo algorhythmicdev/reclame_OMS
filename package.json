@@ -7,7 +7,8 @@
     "dev": "vite dev",
     "build": "vite build",
     "preview": "vite preview",
-    "postinstall": "node scripts/ensure-untrack.mjs"
+    "postinstall": "node scripts/ensure-untrack.mjs",
+    "test": "node packages/vitest/bin.js"
   },
   "dependencies": {
     "@sveltejs/adapter-static": "^3.0.4",
@@ -21,6 +22,7 @@
     "svelte-i18n": "file:packages/svelte-i18n"
   },
   "devDependencies": {
-    "vite": "^5.4.10"
+    "vite": "^5.4.10",
+    "vitest": "file:packages/vitest"
   }
 }

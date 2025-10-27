@@ -1,6 +1,6 @@
 <script lang="ts">
   import { base } from '$app/paths';
-  import { onMount, tick } from 'svelte';
+  import { onMount, onDestroy } from 'svelte';
   import { get } from 'svelte/store';
   import { t } from 'svelte-i18n';
 
@@ -19,6 +19,9 @@
   import BadgesManager from '$lib/order/BadgesManager.svelte';
   import GanttLine from '$lib/order/GanttLine.svelte';
   import { announce } from '$lib/a11y/live';
+  import ProgressEditor from '$lib/order/ProgressEditor.svelte';
+  import MaterialsEditor from '$lib/order/MaterialsEditor.svelte';
+  import { TERMS } from '$lib/order/names';
 
   import type { Order, StationLog, Badge } from '$lib/order/types.signage';
   import {
@@ -71,54 +74,6 @@
     }
   }
 
-  onMount(() => {
-    setTabFromHash(window.location.hash);
-    const handle = () => setTabFromHash(window.location.hash);
-    const onApproveSelected = () => {
-      if ($role !== 'Admin') return;
-      if (!selectedChangeRequestId) return;
-      approve(selectedChangeRequestId);
-    };
-    const onDeclineSelected = () => {
-      if ($role !== 'Admin') return;
-      if (!selectedChangeRequestId) return;
-      decline(selectedChangeRequestId);
-    };
-    const onAttachRevision = async () => {
-      if ($role !== 'Admin') return;
-      tab = 'revisions';
-      await tick();
-      revisionInput?.focus();
-    };
-    const onOpenCr = async () => {
-      if ($role === 'Admin') return;
-      tab = 'changes';
-      await tick();
-      changeFormRef?.focus();
-    };
-    const onFocusQuickLog = async () => {
-      if ($role === 'Admin') return;
-      tab = 'changes';
-      await tick();
-      quickLoggerRef?.focus();
-    };
-
-    window.addEventListener('hashchange', handle);
-    window.addEventListener('rf-approve-selected', onApproveSelected);
-    window.addEventListener('rf-decline-selected', onDeclineSelected);
-    window.addEventListener('rf-attach-revision', onAttachRevision);
-    window.addEventListener('rf-open-cr', onOpenCr);
-    window.addEventListener('rf-focus-quicklog', onFocusQuickLog);
-    return () => {
-      window.removeEventListener('hashchange', handle);
-      window.removeEventListener('rf-approve-selected', onApproveSelected);
-      window.removeEventListener('rf-decline-selected', onDeclineSelected);
-      window.removeEventListener('rf-attach-revision', onAttachRevision);
-      window.removeEventListener('rf-open-cr', onOpenCr);
-      window.removeEventListener('rf-focus-quicklog', onFocusQuickLog);
-    };
-  });
-
   $: syncHash(tab);
 
   function syncHash(activeTab: string) {
@@ -129,25 +84,22 @@
     history.replaceState(null, '', `${pathname}${search}${target}`);
   }
 
+  const shortcutEvents = [
+    'rf-approve-selected',
+    'rf-decline-selected',
+    'rf-open-cr',
+    'rf-focus-quicklog',
+    'rf-attach-revision'
+  ] as const;
+
   function stages() {
-    const names: Record<string, string> = {
-      CAD: 'CAD',
-      CNC: 'CNC',
-      SANDING: 'Sanding',
-      BENDING: 'Bending',
-      WELDING: 'Welding',
-      PAINT: 'Paint',
-      ASSEMBLY: 'Assembly',
-      QC: 'QC',
-      LOGISTICS: 'Logistics'
-    };
-    return Object.entries(o.progress).map(([key, value]) => ({ name: names[key] || key, value: value as number }));
+    return Object.entries(o.progress).map(([key, value]) => ({
+      name: TERMS.stations[key as keyof typeof TERMS.stations] ?? key,
+      value: Number(value)
+    }));
   }
 
   let newPath = '';
-  let revisionInput: HTMLInputElement | null = null;
-  let changeFormRef: InstanceType<typeof ChangeRequestForm> | null = null;
-  let quickLoggerRef: InstanceType<typeof StationQuickLogger> | null = null;
   function attach() {
     if (!newPath.trim()) return;
     addRevision(o.id, { id: crypto.randomUUID(), name: newPath.split('/').pop()!, path: newPath, kind: 'pdf' }, 'admin');
@@ -168,13 +120,13 @@
   function approve(crId: string) {
     approveChangeRequest(o.id, crId, 'admin');
     o = getOrder(id)!;
-    selectedChangeRequestId = null;
+    selectedCRId = null;
     announce(get(t)('toast.approved'));
   }
   function decline(crId: string) {
     declineChangeRequest(o.id, crId);
     o = getOrder(id)!;
-    selectedChangeRequestId = null;
+    selectedCRId = null;
     announce(get(t)('toast.declined'));
   }
 
@@ -189,10 +141,53 @@
     { label: 'SANDING', planned: [Date.parse('2025-10-22'), Date.parse('2025-10-23')] }
   ];
 
-  let selectedChangeRequestId: string | null = null;
-  $: selectedChangeRequest = selectedChangeRequestId
-    ? o.prs.find((item) => item.id === selectedChangeRequestId) ?? null
-    : null;
+  let selectedCRId: string | null = null;
+  function selectCR(id: string) {
+    selectedCRId = id;
+  }
+
+  const handleHashChange = () => setTabFromHash(window.location.hash);
+
+  function onKeyActions(event: Event) {
+    const name = event.type;
+    if (name === 'rf-approve-selected' && selectedCRId) approve(selectedCRId);
+    if (name === 'rf-decline-selected' && selectedCRId) decline(selectedCRId);
+    if (name === 'rf-open-cr') {
+      tab = 'changes';
+      setTimeout(() => document.getElementById('cr-title')?.focus(), 0);
+    }
+    if (name === 'rf-focus-quicklog') {
+      tab = 'changes';
+      setTimeout(() => document.getElementById('quicklog-note')?.focus(), 0);
+    }
+    if (name === 'rf-attach-revision') {
+      tab = 'revisions';
+      setTimeout(() => document.getElementById('attach-path')?.focus(), 0);
+    }
+  }
+
+  onMount(() => {
+    if (typeof window === 'undefined') return;
+    setTabFromHash(window.location.hash);
+    window.addEventListener('hashchange', handleHashChange);
+    for (const name of shortcutEvents) {
+      window.addEventListener(name, onKeyActions as EventListener);
+    }
+  });
+
+  onDestroy(() => {
+    if (typeof window === 'undefined') return;
+    window.removeEventListener('hashchange', handleHashChange);
+    for (const name of shortcutEvents) {
+      window.removeEventListener(name, onKeyActions as EventListener);
+    }
+  });
+
+  $: openRequests = o.prs.filter((p) => p.status === 'open');
+  $: if (selectedCRId && !openRequests.some((p) => p.id === selectedCRId)) {
+    selectedCRId = null;
+  }
+  $: selectedChangeRequest = selectedCRId ? o.prs.find((item) => item.id === selectedCRId) ?? null : null;
   $: compareFieldsRight = selectedChangeRequest?.proposed.fields || o.fields;
   $: compareMaterialsRight = selectedChangeRequest?.proposed.materials || o.materials;
   $: compareProgressRight = selectedChangeRequest?.proposed.progress || o.progress;
@@ -215,6 +210,46 @@
     const translate = get(t);
     const title = `${payload.station} ${translate('terms.changeRequest')}`;
     createCR(title, changes, payload.note);
+  }
+
+  function proposeProgress(changes: Record<string, number>) {
+    openChangeRequest(o.id, {
+      title: 'Progress update',
+      author: 'Station',
+      proposed: { progress: changes }
+    });
+    o = getOrder(id)!;
+  }
+
+  function applyProgressAdmin(changes: Record<string, number>) {
+    const prId = openChangeRequest(o.id, {
+      title: 'Admin progress update',
+      author: 'Admin',
+      proposed: { progress: changes }
+    });
+    approveChangeRequest(o.id, prId, 'admin');
+    o = getOrder(id)!;
+    announce(get(t)('toast.approved'));
+  }
+
+  function proposeMaterials(items: { key: string; label: string; value: string }[]) {
+    openChangeRequest(o.id, {
+      title: 'Materials update',
+      author: 'Station',
+      proposed: { materials: items }
+    });
+    o = getOrder(id)!;
+  }
+
+  function applyMaterialsAdmin(items: { key: string; label: string; value: string }[]) {
+    const prId = openChangeRequest(o.id, {
+      title: 'Admin materials update',
+      author: 'Admin',
+      proposed: { materials: items }
+    });
+    approveChangeRequest(o.id, prId, 'admin');
+    o = getOrder(id)!;
+    announce(get(t)('toast.approved'));
   }
 </script>
 
@@ -246,11 +281,15 @@
         <h3 style="margin:10px 0 8px">{$t('order.materials')}</h3>
         <ul>{#each o.materials as material}<li><b>{material.label}:</b> {material.value}</li>{/each}</ul>
       </section>
-      <section class="card" aria-labelledby="progress-legend" aria-describedby="progress-scale">
-        <h3 id="progress-legend" style="margin:0 0 8px 0">{$t('order.progress')}</h3>
-        <p id="progress-scale" class="muted">{$t('order.progress_help')}</p>
-        <ProgressLegend stages={stages()} />
+      <MaterialsEditor items={o.materials} onPropose={proposeMaterials} onApplyAdmin={applyMaterialsAdmin} />
+      <section class="card">
+        <h3 style="margin:0 0 8px 0">{$t('order.progress')}</h3>
+        <section aria-label={$t('a11y.progress_region')} aria-describedby="pdesc">
+          <p id="pdesc" class="muted">Values show current completion percentage per station (0–100).</p>
+          <ProgressLegend stages={stages()} />
+        </section>
       </section>
+      <ProgressEditor value={o.progress} onPropose={proposeProgress} onApplyAdmin={applyProgressAdmin} />
       <GanttLine items={ganttItems} />
     </aside>
   </div>
@@ -268,11 +307,11 @@
       <section class="card">
         <h3 style="margin:0 0 8px 0">{$t('order.attach_admin_heading')}</h3>
         <input
+          id="attach-path"
           class="rf-input"
           placeholder={$t('order.attach_help')}
           bind:value={newPath}
           aria-label={$t('order.attach_help')}
-          bind:this={revisionInput}
         />
         <div class="row" style="margin-top:8px"><button class="tag" on:click={attach}>{$t('order.attach')}</button></div>
       </section>
@@ -283,12 +322,34 @@
 <section id="changes" hidden={tab!=='changes'} aria-label={$t('order.changes')}>
   <div class="grid" style="grid-template-columns:2fr 1fr;gap:16px">
     <div class="grid" style="gap:12px">
+      <div class="card" style="margin-top:10px">
+        <h3 style="margin:0 0 8px 0">Open Requests</h3>
+        <ul style="display:grid;gap:6px">
+          {#each openRequests as p}
+            <li class="row" style="justify-content:space-between">
+              <label class="row" style="gap:8px;cursor:pointer">
+                <input type="radio" name="selCR" checked={selectedCRId===p.id} on:change={() => selectCR(p.id)} />
+                <span>{p.title}</span>
+              </label>
+              {#if $role === 'Admin'}
+                <div class="row">
+                  <button class="tag" on:click={() => approve(p.id)}>Approve</button>
+                  <button class="tag" on:click={() => decline(p.id)}>Decline</button>
+                </div>
+              {/if}
+            </li>
+          {/each}
+          {#if openRequests.length===0}
+            <div class="muted">No open requests.</div>
+          {/if}
+        </ul>
+      </div>
       <ChangeRequestList
         items={o.prs}
         isAdmin={$role==='Admin'}
         onApprove={approve}
         onDecline={decline}
-        bind:selectedId={selectedChangeRequestId}
+        bind:selectedId={selectedCRId}
       />
       {#if selectedChangeRequest}
         <CompareView
@@ -311,8 +372,8 @@
 
     <div class="grid" style="gap:12px">
       {#if $role!=='Admin'}
-        <ChangeRequestForm onCreate={createCR} bind:this={changeFormRef} />
-        <StationQuickLogger onSubmit={handleQuickLog} bind:this={quickLoggerRef} />
+        <ChangeRequestForm onCreate={createCR} />
+        <StationQuickLogger onSubmit={handleQuickLog} />
       {:else}
         <section class="card">
           <h3 style="margin:0">{$t('order.create_change_request')}</h3>

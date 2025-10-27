@@ -43,6 +43,7 @@
   <h3 style="margin:0 0 8px 0">{$t('order.create_change_request')}</h3>
   <div class="grid" style="grid-template-columns:1fr 1fr">
     <input
+      id="cr-title"
       class="rf-input"
       bind:value={title}
       placeholder={$t('order.title_placeholder')}
