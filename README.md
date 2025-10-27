@@ -1,269 +1,253 @@
+Reclame OMS — Source of Truth (SoT) v1.0
 
+Scope. One canonical reference for Reclame OMS (Reclamefabriek’s order-management system). Covers brand and UX, functional flows, data model, accessibility, i18n, performance, deployment, QA, and contribution rules. Self-contained and agent-ready.
 
-Project Goals
+Audience. Admins, workstation operators, logistics, designers/CAD, fabrication leads, PMs, and engineers.
 
-Single pane of glass for the entire signage production workflow:
+Status. Living document; changes require a PR that explains the rationale.
 
-Intake → CAD → CNC → Sanding → Bending/Welding → (Re)sanding → Painting → Assembly → QC → Delivery.
+1) Brand, Voice, Positioning
 
-Human-centered ops: clear task handoffs; older-friendly UI; WCAG 2.2–aligned themes (Light / Dark / High-Contrast).
+What we are: An end-to-end production OS for visual signage: order intake → CAD → CNC → finishing (sanding/bending/welding/paint) → assembly → QC → logistics.
 
-Evidence & traceability: each step produces structured state updates (timestamps, operator, station, notes).
+Who we serve: Internal teams (Admin, CAD, Workstations, Logistics), with client-facing export artifacts (traveller, loading manifests).
 
-Paperless files: on-page PDF previews (CDR later via server-side conversion), AI-assisted forms (future).
+Voice: Straight, operations-first; label things the way the shop talks. No buzzwords. Every screen should answer: what should I do next?
 
-Cloudless LAN optional: Tailscale-friendly access to an on-prem server; can also be statically hosted.
+Primary outcomes/KPIs: On-time loads, fewer blockers, fewer reworks, and instant traceability of revisions/stage history.
 
-Deploy frictionless: GitHub Pages static deployment for demo/presentations; later move to a full backend.
+2) Information Architecture (IA)
 
-System Overview
+Top-level sections:
 
-This repo currently contains a static SvelteKit mockup of the production console.
-It showcases expected flows, screens, and interaction patterns. All lists and events use mock data.
+Launchpad. Entry hub with theme/lang switch, quick links, and KPIs.
 
-When a real backend arrives, SvelteKit endpoints (+server.ts) or an API layer will replace mocks.
+Orders. The core: repo-like “Order Records” that contain the order form + PDF/asset previews + revisions/branches + change requests (PR-style approvals) + stage status and rework cycles.
 
-Tech Stack
+Calendar. Admin-managed Loading Dates; assign orders to upcoming load slots; export daily manifests (CSV).
 
-Frontend: SvelteKit
- (static adapter)
+Stations. Per-station boards: CAD, CNC, SANDING, BENDING, WELDING, PAINT, ASSEMBLY, QC, LOGISTICS.
 
-Icons: lucide-svelte (and heroicons-svelte preinstalled)
+Dashboard. KPIs: blocked orders, top rework stations, R&D count, done/total, by-stage breakdown.
 
-PDF viewing: pdfjs-dist
+Assets. (Read-only) previews of PDFs/images tied to orders; no raw folder browsing for operators.
 
-CI/CD: GitHub Actions → GitHub Pages
+Settings. Users/roles, themes, languages, notification prefs.
 
-Branding: static/brand.css, static/brand/logo.png
+Right rail (persistent): Notifications (top), Chat (bottom). Both scroll internally; the page never resizes.
 
-Monorepo Layout
-.
-├─ src/
-│  ├─ lib/
-│  │  └─ pdf/PdfViewer.svelte          # PDF.js viewer
-│  └─ routes/
-│     ├─ +layout.svelte                # App shell, sidebar, header, themes
-│     ├─ +page.svelte                  # Dashboard (KPIs + active jobs)
-│     ├─ launchpad/+page.svelte        # Tiles to core areas
-│     ├─ calendar/+page.svelte         # Monthly planner (mock)
-│     ├─ orders/+page.svelte           # Orders list (mock)
-│     ├─ orders/[id]/+page.svelte      # Order detail (steps, materials, PDF)
-│     ├─ files/+page.svelte            # File viewer (PDF)
-│     ├─ chat/+page.svelte             # Mock chat (localStorage)
-│     ├─ inventory/+page.svelte        # Mock inventory
-│     └─ settings/+page.svelte         # Branding + integrations (placeholders)
-├─ static/
-│  ├─ brand.css                        # Design tokens, theme rules
-│  ├─ brand/logo.png                   # Reclame Fabriek logo (PNG)
-│  ├─ files/PO-250375_...pdf           # Sample job file
-│  └─ .nojekyll                        # Disable Jekyll on GH Pages
-├─ .github/workflows/deploy.yml        # GH Pages deploy pipeline
-├─ svelte.config.js                    # adapter-static, base paths, 404 fallback
-├─ vite.config.js                      # base path for static assets
-├─ package.json                        # scripts + dependencies
-└─ README.md                           # You are here
+Header actions: brand logo, notifications counter, small avatar + quick user switch (role aware).
 
-Local Development
+3) Reusable Modules & Components
 
-Requirements: Node.js 20+
+Order Form (admin-created):
 
-npm ci
-npm run dev
+Core fields: PO/ID, client, title, due date, Loading Date (chosen from Calendar’s load slots), R&D flag + R&D notes, materials (type/thickness/colors with RAL/Pantone/HEX), attachments (PDF primary).
 
+Stages (no percent bars): NOT_STARTED, QUEUED, IN_PROGRESS, BLOCKED, REWORK, COMPLETED for each station.
 
-Open http://localhost:5173.
+Rework cycles: per-station repeat log (RECUT / RESAND / REPAINT / … + note, user, timestamp).
 
-Build locally (simulate GitHub Pages base path):
+Assignees: users per station (drives mentions/notifications).
 
-# Replace <repo> with your repository name (e.g., reclame_OMS)
-BASE_PATH="/<repo>" npm run build
-npx serve build
-# Visit http://localhost:3000/<repo>/
+Badges: URGENT, R&D, READY_TO_SHIP, etc.
 
-Build & Deploy
-Static Build (SvelteKit)
+Change Requests (CRs). Station proposals become CRs (admin approves/applies). CR compare view highlights changed fields/materials/stages.
 
-Adapter: @sveltejs/adapter-static
+Calendar: Loading Dates. Admin toggles “Loading Mode,” marks capacity/notes per day. Orders select from upcoming load days. Daily Schedule view + Export CSV.
 
-SPA Fallback: 404.html (required for GH Pages deep-link refreshes)
+Chat v2. Rooms (General, Workstations, Logistics), @mentions with autocomplete, persistence-ready structure. System posts on rework/completions.
 
-GitHub Pages
+Notifications. Right-rail list; unseen counter in header; live region for screen readers.
 
-Default branch: main
+PDF Frame. Embedded PDF with “Open in new tab”; respects theme tokens.
 
-Workflow: .github/workflows/deploy.yml
+Charts/Metrics. Series palette sourced from CSS tokens; axes/legend colors match theme; lines/bars meet non-text contrast (≥3:1). 
+W3C
 
-Deploy trigger: push to main
+4) Content & Microcopy Rules
 
-The workflow sets BASE_PATH="/${{ github.event.repository.name }}" and publishes build/.
+Labels reflect shop terms (e.g., Send to Rework, Assign Loading Date, Station Log).
 
-Important: On GitHub Pages your app is served from:
-https://<user>.github.io/<repo>/
-This is why we use BASE_PATH and the SvelteKit base helper for assets.
+Button pairs: primary = action (“Apply change”), secondary = safe (“Cancel”).
 
-Configuration
-Environment (build-time)
+Errors are clear, actionable (“Provide HEX like #RRGGBB”).
 
-BASE_PATH (string) – Only for static hosting under a subpath (GitHub Pages).
-Example in CI: "/reclame_OMS"
+Empty states tell the next step (“No orders for this load day. Assign some from Orders.”).
 
-Asset URLs
+Avoid percentages for process: show stage names and counts (e.g., “CNC: Completed • x2 repeats”).
 
-Always use SvelteKit base for static assets:
+5) Design System (Tokens & Themes)
 
-<script>
-  import { base } from '$app/paths';
-</script>
+Tokens: --bg-0/1/2, --text, --muted, --border, --accent-1/2, status (--ok, --warn, --danger), --focus.
 
-<link rel="stylesheet" href="{base}/brand.css" />
-<img src="{base}/brand/logo.png" alt="Logo" />
-<iframe src="{base}/files/PO-250375_ABTB-BIJEN_4500mm.pdf" />
+Themes: LightVim, DarkVim, HighContrastVim, stored on <html data-theme=>.
 
+WCAG: Body text ≥ 4.5:1; large text ≥ 3:1; UI outlines/borders/focus/indicators ≥ 3:1; chart lines/keys ≥ 3:1. Validate each theme. 
+w3c.github.io
++1
 
-Internal page links can remain absolute (href="/orders"); SvelteKit rewrites them correctly.
+Motion: Respect prefers-reduced-motion; no essential info conveyed only by motion.
 
-Accessibility & UX
+6) Accessibility (WCAG 2.2 AA)
 
-Themes: Light / Dark / High-Contrast
+Semantic headings; ARIA where needed; visible focus; skip link.
 
-Focus indicators: visible outlines on keyboard navigation
+Right-rail scrolls inside fixed panels; no layout jump on notifications/chat.
 
-Skip link: “Skip to content” in layout
+Inputs: programmatic labels, help text, error summaries via ARIA live.
 
-Readable contrast: color tokens chosen to exceed WCAG AA whenever possible
+Non-text contrast for UI boundaries, focus rings, chart strokes (≥3:1). 
+W3C
 
-Touch targets: pill tag buttons with comfortable padding
+Axe-core automated checks in dev; fix color-contrast/focus violations before merge. 
+GitHub
 
-Data Model (Mock)
+7) Animations
 
-Replace with real API contracts later. For now, simple arrays:
+Subtle only; never required to understand state.
+
+Dialogs/menus: fade + scale; disable on reduced-motion.
+
+No parallax or marquee effects.
+
+8) Performance Budgets
+
+LCP < 2.5s, INP < 200ms, CLS < 0.1 on mid-tier mobile.
+
+Budget: ≤ 170KB JS on first route (gz), route-split heavy pages, lazy-load PDF viewer.
+
+9) Internationalization (EN/RU/LV)
+
+All UI strings externalized; builds fail if critical keys missing.
+
+Locale persistence + deep-link (?lang=ru).
+
+svelte-i18n or sveltekit-i18n are acceptable; both are SvelteKit-ready lightweight options. 
+GitHub
+
+10) Privacy, Security, Compliance
+
+CSP: default-src 'self'; script-src 'self'; img-src 'self' data: blob:; connect-src 'self' https://api.example.com; style-src 'self' 'unsafe-inline'; frame-ancestors 'none'. Tighten as backend lands; avoid inline scripts where possible. 
+MDN Web Docs
+
+Strong referrer policy, HSTS (once on custom domain), and no third-party scripts without review.
+
+11) Analytics & Telemetry
+
+Events: order_created, loading_assigned, stage_proposed, stage_applied, rework_sent, pdf_opened, theme_toggle, locale_toggle.
+
+Respect consent; no tracking in operator-only contexts unless strictly necessary.
+
+12) Tech Stack & Hosting
+
+Frontend: SvelteKit + TypeScript; adapter-static for a demo build on GitHub Pages.
+
+Set kit.paths.base = '/reclame_OMS'; add .nojekyll; add 404 fallback. 
+svelte.dev
++1
+
+UI: Tokenized CSS (brand.css), Lucide icons, Apex/ECharts for metrics.
+
+Backend (later): REST/WebSocket + Postgres/SQLite; object storage for files; workers for PDF/BOM extraction.
+
+CI: GH Actions build + Pages deploy with BASE_PATH=/reclame_OMS.
+
+13) Domain Model (Minimum Viable)
+type Station = 'CAD'|'CNC'|'SANDING'|'BENDING'|'WELDING'|'PAINT'|'ASSEMBLY'|'QC'|'LOGISTICS';
+type StageState = 'NOT_STARTED'|'QUEUED'|'IN_PROGRESS'|'BLOCKED'|'REWORK'|'COMPLETED';
+
+type FileRef = { id:string; name:string; path:string; kind:'pdf'|'img'|'other' };
+
+type ReworkReason = 'RECUT'|'RESAND'|'REBEND'|'REWELD'|'REPAINT'|'REASSEMBLE'|'RECHECK'|'CUSTOM';
+type StageCycle = { idx:number; station:Station; reason:ReworkReason; note?:string; at:string; by:string };
 
 type Order = {
-  id: string;             // e.g., "PO-250375"
-  client: string;         // e.g., "ABTB BIJEN"
-  title: string;          // e.g., "4500mm Long Frame"
-  status: string;         // e.g., "Sanding"
-  due: string;            // ISO date
-  materials?: { part: string; material: string; thickness: string; color: string }[];
-  steps?: { name: string; done: boolean }[];
-  file?: string;          // pdf path with {base}
+  id:string; title:string; client:string; due:string;
+  loadingDate?: string;
+  isRD?: boolean; rdNotes?: string;
+  badges: string[];
+  fields: { key:string; label:string; value:string }[];
+  materials: { key:string; label:string; value:string }[];
+  stages: Record<Station, StageState>;
+  cycles: StageCycle[];
+  assignees: Record<Station,string[]>;
+  revisions: { id:string; file:FileRef; message?:string; createdBy:string; createdAt:string }[];
+  defaultRevisionId:string;
 };
 
-Feature Map
+14) Key Flows
 
-Dashboard: KPIs, active jobs, stock snippets, notifications
+Create Order (Admin): upload PDF → fill form (R&D? materials/colors?) → assign Loading Date (or later) → set initial assignees.
 
-Calendar: mock workload planning, delivery scheduling
+Station Update: operator proposes stage change → CR appears → admin applies (or requests change) → system posts notification + chat message with @assignees.
 
-Orders: list + detail with process steps, materials breakdown, source PDF
+Send to Rework (Admin): choose station + reason + note → stage set to REWORK → cycle logged (x1, x2…) → chat + notification.
 
-Files: in-page PDF viewer (pdfjs-dist)
+Assign Loading: Admin marks load days in Calendar → orders select from list → exports daily manifest (CSV).
 
-Chat: team comms mock using localStorage
+Revisions/Branches: uploading a new PDF with same PO adds a revision on the order (admin can promote as current).
 
-Inventory: demo list with LOW/OK thresholds
+15) Deployment (GitHub Pages demo)
 
-Settings: branding and connectors placeholders (Telegram, n8n, OpenRouter)
+adapter-static with base path; include a 404.html fallback so deep links work; add .nojekyll. 
+svelte.dev
 
-Conventions
-Branching
+GH Action: set BASE_PATH=/reclame_OMS during build (see Svelte docs example). 
+svelte.dev
 
-main — stable, deploys to Pages
+16) Testing & Quality
 
-feat/<name> — features
+Unit/Integration: Order create/edit, CR lifecycle, stage transitions (allowed graph), Loading Dates assign/export.
 
-fix/<name> — hotfixes
+A11y: Keyboard nav, focus order, live region updates, non-text contrast, color contrast per theme; axe-core CI/dev gate. 
+GitHub
 
-docs/<name> — documentation
+Perf: LCP route budgets and code-split; no console errors; images lazy below the fold.
 
-Commits (Conventional)
+I18n: Missing-key check for EN/RU/LV; deep link preserves locale; theme independent.
 
-feat:, fix:, docs:, style:, refactor:, chore:, ci:
+Definition of Done: Criteria met; a11y checks pass; contrast ≥ AA across themes; screenshots updated; release notes line added.
 
-Example: fix: GH Pages 404 fallback + base path
+17) Contribution & Workflow
 
-PR Checklist
+Branching: Feature branches off main; small PRs.
 
- Build passes locally (BASE_PATH="/<repo>" npm run build)
+Commits: Conventional (feat/fix/chore/docs/refactor/perf/ci).
 
- No hardcoded absolute asset paths (/brand/..., /files/...)
+PR checklist: Screenshots, a11y notes (axe run), i18n keys, GH Pages preview link.
 
- Navigation & refresh work under /reclame_OMS/...
+18) Backlog (Agent-Ready)
 
- README updated if behavior changes
+Epic A — Shell
 
-Quality Gates
+Header actions (avatar switch, notif count) and right-rail polish.
 
-Static build check in CI (default with deploy)
+Theme/logo auto-swap (light variant) with contrast verification.
 
-Lighthouse (manual for now): verify color contrast & keyboard nav
+Epic B — Orders
 
-Type safety: prefer TS for new modules (can be introduced gradually)
+Compare View deltas (fields/materials/stages).
 
-Troubleshooting
-❌ 404 on GitHub Pages (refreshing subpages)
+Station logs: quick notes + photo attach (future backend).
 
-Cause: No SPA fallback on static hosting.
-Fix: adapter-static with fallback: '404.html' in svelte.config.js.
+Epic C — Calendar
 
-❌ CSS/JS don’t load in production (blank page)
+Load-day capacity limits and over-capacity warnings.
 
-Cause: Built as if served from root (/).
-Fix: Ensure both:
+Manifests with client phone/address and crate count.
 
-kit.paths.base uses BASE_PATH when not dev
+Epic D — R&D
 
-vite.base uses BASE_PATH too
+Experiment runs (trial revisions) and promotion workflow.
 
-❌ Logo/PDF not found
+Defect taxonomy per station with analytics.
 
-Cause: Asset URLs not prefixed with {base}.
-Fix: Use {base}/brand/logo.png, {base}/files/...pdf.
+Epic E — Scanning
 
-✅ Quick verification (local)
-rm -rf node_modules build
-npm ci
-BASE_PATH="/reclame_OMS" npm run build
-npx serve build
-# visit http://localhost:3000/reclame_OMS/ then navigate and refresh on subpages
+QR on traveller; scan-to-stage mobile panel for operators.
 
-Roadmap
+Epic F — Security
 
-Backend: REST/GraphQL or tRPC gateway; auth (OIDC)
-
-Stations app: kiosk mode screens per workstation with offline queues
-
-Inventory: supplier/vendor linkage, barcodes/QR, lot tracking, spoilage
-
-Scheduling: Gantt/resource lanes; drag-and-drop rescheduling
-
-CDR support: server-side conversion (CDR→PDF/SVG) for previews
-
-AI Assist: extract order specs from PDFs, fill forms, detect missing fields
-
-Notifications: Telegram/Matrix/N8N integrators; voice-to-action flow
-
-i18n: LV/NL/EN interfaces
-
-Security & Privacy
-
-No customer secrets in repo.
-
-Add .env for secrets when backend lands; never commit it.
-
-For on-prem, prefer Tailscale for secure remote access.
-
-Contributing
-
-Create a feature branch: git checkout -b feat/<name>
-
-Keep PRs small & reviewable
-
-Follow the PR checklist
-
-Update this README for any user-visible change
-
-License
-
-© Reclame Fabriek. All rights reserved.
-If you need a formal OSS license, propose one via PR (MIT/Apache-2.0 recommended for samples).
+Harden CSP, strict referrer policy, HSTS; minimal externals. 
+MDN Web Docs
