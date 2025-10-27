@@ -24,8 +24,10 @@
       .join('\n');
   }
 
-  const stationLabel = (station: StationTag) =>
-    TERMS.stations[station as keyof typeof TERMS.stations] ?? station;
+  function stationLabel(station: StationTag) {
+    const name = TERMS.stations as Record<string, string>;
+    return name?.[station] ?? station;
+  }
 </script>
 
 <div class="card">
@@ -35,7 +37,7 @@
       {@const state = stages?.[station] ?? 'NOT_STARTED'}
       <li class="row" style="justify-content:space-between; align-items:center">
         <span class="row" style="gap:6px">
-          <b>{stationLabel(station as StationTag)}</b>
+          <b>{stationLabel(station)}</b>
           {#if count(station) > 0}
             <span class="tag badge-warn" title={detail(station)}>x{count(station)} {$t('rework.x_repeat')}</span>
           {/if}
