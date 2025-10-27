@@ -37,6 +37,7 @@
               {#each $users as u}<option value={u.id}>{u.name} — {u.role}</option>{/each}
             </select>
           </div>
+          <a class="menu-row tag" href={`${base}/launchpad`} role="menuitem">Launchpad</a>
           <a class="menu-row tag" href={`${base}/settings`} role="menuitem">Settings</a>
         </div>
       {/if}
