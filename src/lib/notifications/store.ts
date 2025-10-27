@@ -4,6 +4,7 @@ export type NotificationItem = {
   id: string;
   text: string;
   ts: string;
+  seen: boolean;
 };
 
 const MAX_ITEMS = 50;
@@ -12,11 +13,7 @@ function timestamp() {
   return new Date().toLocaleTimeString();
 }
 
-const store = writable<NotificationItem[]>([]);
-
-export const notifications = {
-  subscribe: store.subscribe
-};
+export const notifications = writable<NotificationItem[]>([]);
 
 export function notify(text: string, ts: string = timestamp()) {
   const cryptoApi = typeof globalThis !== 'undefined' ? (globalThis as typeof globalThis & { crypto?: Crypto }).crypto : undefined;
@@ -26,11 +23,12 @@ export function notify(text: string, ts: string = timestamp()) {
   const item: NotificationItem = {
     id,
     text,
-    ts
+    ts,
+    seen: false
   };
-  store.update((items) => [item, ...items].slice(0, MAX_ITEMS));
+  notifications.update((items) => [item, ...items].slice(0, MAX_ITEMS));
 }
 
 export function clearNotifications() {
-  store.set([]);
+  notifications.set([]);
 }

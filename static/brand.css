@@ -28,29 +28,18 @@ body { margin: 0; font: 400 16px/1.55 system-ui, -apple-system, Segoe UI, Roboto
 }
 
 :root[data-theme="LightVim"]{
-  --bg-0:#ffffff;
-  --bg-1:#f7f7fa;
-  --bg-2:#ececf4;
-  --text:#17181c;
-  --muted:#535764;
-  --border:#d6d8e1;
-  --shadow-rgb: 10 12 18;
-  --accent-1: var(--brand-red-ink);
-  --accent-2: #804b25;
-  --chip: var(--brand-graphite);
+  --text:#17181c;                /* 19:1 on white */
+  --muted:#424655;               /* raise from #535764 if needed */
+  --border:#cfd2dd;              /* darker border so 3:1 vs bg-1 */
+  --link:#1d4ed8;                /* richer blue for 4.5:1 on bg-0 */
 }
 
 :root[data-theme="DarkVim"]{
-  --bg-0:#0f1117;
-  --bg-1:#151927;
-  --bg-2:#1c2234;
-  --text:#e7e8ee;
-  --muted:#9aa3b1;
-  --border:#2a3245;
-  --shadow-rgb: 0 0 0;
-  --accent-1:#ff6d6e;
-  --accent-2:#dbc6ac;
-  --chip:#cdd3de;
+  --text:#eef0f5;                /* 15:1 on #151927 */
+  --muted:#b7bfcc;               /* raise slightly from #9aa3b1 */
+  --border:#39425a;              /* 3:1 vs bg-1 */
+  --accent-1:#ff6d6e;            /* ≥3:1 on bg-1 for chips/buttons */
+  --focus:#00c2ff;               /* ≥3:1 focus ring vs bg */
 }
 
 :root[data-theme="HighContrastVim"]{
@@ -80,6 +69,8 @@ a:hover { filter: brightness(1.05); }
   outline-offset: 2px;
   border-radius: 6px;
 }
+button, [role="button"], a, input, select, textarea { outline-offset: 2px; }
+button:focus{ outline: 2px solid var(--focus); }
 
 .card {
   background: var(--bg-1);
