@@ -72,7 +72,6 @@
 </script>
 
 <svelte:head>
-  <link rel="preload" href={`${base}/brand/logo-reclame-cube.webp`} as="image">
   <link rel="stylesheet" href={`${base}/brand.css`}>
 </svelte:head>
 
@@ -82,9 +81,8 @@
   Skip to content
 </a>
 
-<BrandBar>
-  <Launchbar on:opensearch={openSearch} />
-</BrandBar>
+<BrandBar />
+<Launchbar on:opensearch={openSearch} />
 
 <div class="rf-shell">
   <!-- Main content + right rail -->

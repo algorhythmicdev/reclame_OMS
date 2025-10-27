@@ -1,30 +1,19 @@
 <script lang="ts">
   import { base } from '$app/paths';
-  import { theme, type ThemeName } from '$lib/stores/theme';
   import { currentUser, users, currentUserId } from '$lib/users/user-store';
   import { unseenCount } from '$lib/notifications/count';
 
-  let c = 0;
-  unseenCount.subscribe(v => c = v);
-
-  let t: ThemeName; theme.subscribe(v => t=v);
-  let showUserMenu = false;
+  let showUserMenu = false, c = 0;
+  unseenCount.subscribe((v) => (c = v));
   $: $currentUser, $users, $currentUserId;
 
-  function logoSrc() {
-    if (t === 'LightVim') return `${base}/brand/logo-reclame-cube-dark.webp`; // darker art
-    return `${base}/brand/logo-reclame-cube.webp`;
-  }
-
-  function pickUser(e: Event) {
-    const id = (e.target as HTMLSelectElement).value;
-    currentUserId.set(id);
-  }
+  const logo = () => `${base}/logo.png`;
+  const pickUser = (e: Event) => currentUserId.set((e.target as HTMLSelectElement).value);
 </script>
 
 <header class="brandbar">
-  <a href={`${base}/`} class="brand-link" aria-label="ReclamFabrik home">
-    <img src={logoSrc()} alt="Reclamefabriek · cube" class="brand-logo" width="220" height="64" decoding="async" />
+  <a href={`${base}/`} class="brand-link" aria-label="Reclame OMS">
+    <img src={logo()} alt="Reclame OMS" class="brand-logo" width="220" height="64" decoding="async" />
   </a>
 
   <!-- actions -->

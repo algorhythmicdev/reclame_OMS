@@ -81,7 +81,7 @@
 </script>
 
 <div class="rf-launchbar">
-  <a href={resolveHref('/')} class="tag" title="Launchpad" aria-label="Launchpad">
+  <a href={resolveHref('/launchpad')} class="tag" title="Launchpad" aria-label="Launchpad">
     <Rocket size={16} />
   </a>
 

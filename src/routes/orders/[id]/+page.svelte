@@ -43,12 +43,19 @@
   export let params;
   const id = params.id;
 
+  const fallbackFileMap: Record<string, string> = {
+    'PO-250375': 'PO-250375_ABTB-BIJEN_4500mm.pdf',
+    'PO-250420': 'NL REKLATEKST Wassink 7000 mm  PO-251076  Nov 14.pdf',
+    'PO-250501': 'NL LEVANTO ALBERT HEIJN  Lightbox 500 mm   PO-35818  Nov 14.pdf'
+  };
+
   let existing = getOrder(id);
   if (!existing) {
     const stages = blankStages();
     stages.CAD = 'COMPLETED';
     stages.CNC = 'COMPLETED';
     stages.SANDING = 'IN_PROGRESS';
+    const fileName = fallbackFileMap[id] ?? 'PO-250375_ABTB-BIJEN_4500mm.pdf';
     existing = createOrder({
       id,
       title: '4500mm Long Frame',
@@ -60,7 +67,7 @@
       materials: [{ key: 'face', label: 'Face', value: 'Acrylic 3mm White' }],
       stages,
       cycles: [],
-      file: { id: 'f1', name: 'PO-250375_ABTB-BIJEN_4500mm.pdf', path: `${base}/files/PO-250375_ABTB-BIJEN_4500mm.pdf`, kind: 'pdf' }
+      file: { id: 'f1', name: fileName, path: `${base}/files/${fileName}`, kind: 'pdf' }
     });
   }
 

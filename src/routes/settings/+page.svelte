@@ -1,10 +1,12 @@
 <script>
   import UserSwitch from '$lib/users/UserSwitch.svelte';
+  import ThemeSwitch from '$lib/ui/ThemeSwitch.svelte';
+  import LanguageSwitch from '$lib/ui/LanguageSwitch.svelte';
 </script>
 
 <section class="card">
   <h2 style="margin-top:0">Settings</h2>
-  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr))">
+  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:12px">
     <div class="card" style="background:var(--bg-2)">
       <h3>Branding</h3>
       <ul>
@@ -20,6 +22,8 @@
         <li>OpenRouter (mock)</li>
       </ul>
     </div>
+    <ThemeSwitch />
+    <LanguageSwitch />
     <UserSwitch />
   </div>
 </section>

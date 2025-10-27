@@ -15,7 +15,6 @@
     "@sveltejs/kit": "^2.7.4",
     "apexcharts": "file:packages/apexcharts",
     "esbuild": "^0.21.5",
-    "heroicons-for-svelte": "^0.0.10",
     "lucide-svelte": "^0.462.0",
     "pdfjs-dist": "^4.8.69",
     "svelte": "^4.2.19",

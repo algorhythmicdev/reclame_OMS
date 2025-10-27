@@ -1,34 +1,19 @@
 <script lang="ts">
-  import { assets } from '$app/paths';
+  import { assets, base } from '$app/paths';
   import { onMount } from 'svelte';
-  import DataTable from '$lib/ui/DataTable.svelte';
   import Input from '$lib/ui/Input.svelte';
   import type { Badge, Field, Order, Station } from '$lib/order/types';
   import { listOrders, createOrder } from '$lib/order/signage-store';
   import OrderForm from '$lib/order/OrderForm.svelte';
-import { blankStages, STATE_LABEL, type StageState } from '$lib/order/stages';
+  import { blankStages, STATE_LABEL, type StageState } from '$lib/order/stages';
 
-  type OrderRow = { id: string; client: string; title: string; status: string; due: string };
-
-  const columns = [
-    { key: 'id', label: 'PO', width: '140px' },
-    { key: 'client', label: 'Client' },
-    { key: 'title', label: 'Title' },
-    { key: 'status', label: 'Status', width: '160px' },
-    { key: 'due', label: 'Due', width: '120px' }
-  ];
-
-  const stations: Station[] = ['CAD', 'CNC', 'SANDING', 'BENDING', 'WELDING', 'PAINT', 'ASSEMBLY', 'QC', 'LOGISTICS'];
-  const stationLabels: Record<Station, string> = {
-    CAD: 'CAD',
-    CNC: 'CNC',
-    SANDING: 'Sanding',
-    BENDING: 'Bending',
-    WELDING: 'Welding',
-    PAINT: 'Paint',
-    ASSEMBLY: 'Assembly',
-    QC: 'QC',
-    LOGISTICS: 'Logistics'
+  type OrderRow = {
+    id: string;
+    client: string;
+    title: string;
+    stages: [Station, StageState][];
+    due: string;
+    href: string;
   };
 
   type OrderSeed = {
@@ -81,7 +66,7 @@ import { blankStages, STATE_LABEL, type StageState } from '$lib/order/stages';
         CNC: 'IN_PROGRESS',
         SANDING: 'QUEUED'
       },
-      fileName: 'PO-250375_ABTB-BIJEN_4500mm.pdf'
+      fileName: 'NL REKLATEKST Wassink 7000 mm  PO-251076  Nov 14.pdf'
     },
     {
       id: 'PO-250501',
@@ -98,7 +83,7 @@ import { blankStages, STATE_LABEL, type StageState } from '$lib/order/stages';
       },
       isRD: true,
       rdNotes: 'Prototype signage. Confirm LED layout before assembly.',
-      fileName: 'PO-250375_ABTB-BIJEN_4500mm.pdf'
+      fileName: 'NL LEVANTO ALBERT HEIJN  Lightbox 500 mm   PO-35818  Nov 14.pdf'
     }
   ];
 
@@ -125,27 +110,30 @@ import { blankStages, STATE_LABEL, type StageState } from '$lib/order/stages';
     });
   }
 
-  function statusFromOrder(order: Order): string {
-    const stagesMap = order.stages ?? blankStages();
-    const pending = stations.find((stage) => stagesMap[stage] !== 'COMPLETED');
-    if (!pending) return 'Completed';
-    const state = stagesMap[pending];
-    return `${stationLabels[pending]} · ${STATE_LABEL[state]}`;
-  }
-
   function toRow(order: Order): OrderRow {
+    const stagesMap = order.stages ?? blankStages();
     return {
       id: order.id,
       client: order.client,
       title: order.title,
-      status: statusFromOrder(order),
-      due: order.due
+      stages: Object.entries(stagesMap) as [Station, StageState][],
+      due: order.due,
+      href: `${base}/orders/${order.id}`
     };
   }
 
   let rows: OrderRow[] = [];
   let q = '';
   let formOpen = false;
+  let visible: OrderRow[] = [];
+  let qLower = '';
+
+  $: qLower = q.trim().toLowerCase();
+  $: visible = qLower
+    ? rows.filter((row) =>
+        `${row.id} ${row.client} ${row.title}`.toLowerCase().includes(qLower)
+      )
+    : rows;
 
   function refresh() {
     rows = listOrders()
@@ -176,7 +164,39 @@ import { blankStages, STATE_LABEL, type StageState } from '$lib/order/stages';
     </div>
   </div>
   <div style="margin-top:12px">
-    <DataTable columns={columns} rows={rows} filterKey="client" filterText={q} />
+    <div class="rf-scroll" style="max-height:60vh">
+      <table class="rf-table">
+        <thead>
+          <tr>
+            <th style="width:140px">PO</th>
+            <th>Client</th>
+            <th>Title</th>
+            <th style="width:220px">Stage summary</th>
+            <th style="width:120px">Due</th>
+          </tr>
+        </thead>
+        <tbody>
+          {#each visible as row (row.id)}
+            <tr>
+              <td><a href={row.href}>{row.id}</a></td>
+              <td>{row.client}</td>
+              <td>{row.title}</td>
+              <td>
+                <div class="row" style="flex-wrap:wrap;gap:6px">
+                  {#each row.stages.slice(0,3) as [station, state]}
+                    <span class="tag">{station}: {STATE_LABEL[state]}</span>
+                  {/each}
+                </div>
+              </td>
+              <td>{row.due}</td>
+            </tr>
+          {/each}
+          {#if visible.length === 0}
+            <tr><td colspan="5" class="muted">No orders found.</td></tr>
+          {/if}
+        </tbody>
+      </table>
+    </div>
   </div>
 </section>
 
