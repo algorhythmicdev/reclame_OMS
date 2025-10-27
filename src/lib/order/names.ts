@@ -1,14 +1,14 @@
 export const TERMS = {
   stations: {
-    CAD: 'CAD',
-    CNC: 'CNC',
-    SANDING: 'Sanding',
-    BENDING: 'Bending',
-    WELDING: 'Welding',
-    PAINT: 'Paint',
-    ASSEMBLY: 'Assembly',
-    QC: 'QC',
-    LOGISTICS: 'Logistics'
+    CAD: 'stations.CAD',
+    CNC: 'stations.CNC',
+    SANDING: 'stations.SANDING',
+    BENDING: 'stations.BENDING',
+    WELDING: 'stations.WELDING',
+    PAINT: 'stations.PAINT',
+    ASSEMBLY: 'stations.ASSEMBLY',
+    QC: 'stations.QC',
+    LOGISTICS: 'stations.LOGISTICS'
   }
 } as const;
 

@@ -1,5 +1,11 @@
 {
-  "app": { "title": "Reclame Fabriek — OMS" },
+  "app": {
+    "title": "Reclame Fabriek — OMS",
+    "brand": {
+      "label": "Reclame OMS",
+      "aria": "Reclame OMS"
+    }
+  },
   "terms": {
     "station": "Станция",
     "stationLog": "Журнал станции",
@@ -13,6 +19,17 @@
     "attachRevision": "Привязать ревизию",
     "currentRevision": "Текущая ревизия"
   },
+  "stations": {
+    "CAD": "CAD",
+    "CNC": "CNC",
+    "SANDING": "Шлифовка",
+    "BENDING": "Гибка",
+    "WELDING": "Сварка",
+    "PAINT": "Покраска",
+    "ASSEMBLY": "Сборка",
+    "QC": "QC",
+    "LOGISTICS": "Логистика"
+  },
   "nav": {
     "dashboard": "Панель",
     "launchpad": "Лончпад",
@@ -21,6 +38,38 @@
     "files": "Файлы",
     "settings": "Настройки",
     "kanban": "Производство"
+  },
+  "header": {
+    "actions": "Действия заголовка",
+    "theme": {
+      "label": "Тема",
+      "options": {
+        "LightVim": "LightVim",
+        "DarkVim": "DarkVim",
+        "HighContrastVim": "HighContrastVim"
+      }
+    },
+    "language": {
+      "label": "Язык",
+      "options": {
+        "en": "English",
+        "ru": "Русский",
+        "lv": "Latviešu"
+      }
+    },
+    "notifications": {
+      "label": "Уведомления",
+      "srCount": "{count} уведомлений"
+    },
+    "user": {
+      "label": "Пользователь",
+      "switch": "Сменить пользователя"
+    }
+  },
+  "roles": {
+    "label": "Роль",
+    "admin": "Админ",
+    "station": "Станция"
   },
   "order": {
     "overview": "Обзор",
@@ -32,6 +81,7 @@
     "materials": "Материалы",
     "progress": "Прогресс процесса",
     "progress_help": "Каждый этап показывает процент выполнения от 0 до 100.",
+    "progressbar_label": "Прогресс {name}",
     "currentPdf": "Текущий PDF заказа",
     "no_file": "Файл отсутствует.",
     "attach_help": "Вставьте путь к PDF в static/files/…",
@@ -64,11 +114,70 @@
     },
     "compare": {
       "fields": "Ключевые поля",
-      "materials": "Материалы"
+      "materials": "Материалы",
+      "stages": "Этапы"
     },
     "log_details": "Детали",
     "log_recorded_by": "записал {author}",
     "log_recorded_station": " · {station}"
+  },
+  "orderPage": {
+    "loading": {
+      "title": "Дата загрузки",
+      "clear": "Очистить",
+      "current": "Текущая:"
+    },
+    "requests": {
+      "title": "Открытые запросы",
+      "approve": "Утвердить",
+      "decline": "Отклонить",
+      "empty": "Нет открытых запросов."
+    }
+  },
+  "orderLists": {
+    "title": "Заказы",
+    "new": "Новый заказ",
+    "headers": {
+      "po": "PO",
+      "client": "Клиент",
+      "title": "Название",
+      "summary": "Сводка этапов",
+      "due": "Срок"
+    },
+    "empty": "Заказы не найдены.",
+    "filter_placeholder": "Фильтр по клиенту…",
+    "filter_label": "Фильтр"
+  },
+  "materialsEditor": {
+    "title": "Редактор материалов",
+    "delete": "Удалить строку",
+    "add": "Добавить материал",
+    "applyAdmin": "Применить (админ)",
+    "propose": "Предложить обновление",
+    "key": "Ключ",
+    "label": "Метка",
+    "value": "Значение",
+    "default_label": "Элемент"
+  },
+  "progressEditor": {
+    "title": "Редактор процесса",
+    "reset": "Сбросить",
+    "applyAdmin": "Применить (админ)",
+    "propose": "Предложить обновление"
+  },
+  "stageEditor": {
+    "title": "Редактор этапов",
+    "next": "Следующий статус",
+    "apply": "Применить",
+    "propose": "Предложить"
+  },
+  "revisions": {
+    "title": "Ревизии файлов",
+    "active": "Используется",
+    "use": "Использовать",
+    "download": "Скачать",
+    "empty": "Нет ревизий.",
+    "by": "от {author}"
   },
   "themes": {
     "light": "LightVim",
@@ -78,7 +187,8 @@
   "a11y": {
     "toggle_right": "Показать/скрыть правую панель (Shift+R)",
     "search": "Поиск: заказы, файлы, клиенты…",
-    "progress_region": "Суммарный прогресс процесса"
+    "progress_region": "Суммарный прогресс процесса",
+    "skip": "Перейти к содержимому"
   },
   "toast": {
     "approved": "Запрос утвержден",
@@ -90,12 +200,38 @@
     "themes": "Темы",
     "language": "Язык"
   },
+  "dashboard": {
+    "kpi": {
+      "active": "Активные заказы",
+      "rd": "R&D заказы",
+      "blocked": "Заблокированные заказы",
+      "rework": "Всего доработок"
+    },
+    "charts": {
+      "throughput": "Недельный выпуск",
+      "stages": "Этапы заказов",
+      "materials": "Запасы материалов (основные)"
+    },
+    "topRework": {
+      "label": "Станция с наибольшими доработками",
+      "none": "Нет"
+    },
+    "list": {
+      "title": "Активные заказы"
+    },
+    "series": {
+      "jobs": "Работы",
+      "qty": "Кол-во"
+    }
+  },
   "compare": {
     "heading": "Сравнение",
     "field": "Поле",
     "before": "Текущее",
     "after": "Предложено",
-    "empty": "Нет различий для отображения."
+    "empty": "Нет различий для отображения.",
+    "item": "Элемент",
+    "stage": "Этап"
   },
   "badges": {
     "heading": "Бейджи"
@@ -110,9 +246,31 @@
   "calendar": {
     "title": "Календарь",
     "loading_mode": "Режим загрузки",
+    "loading_on": "Вкл.",
+    "loading_off": "Выкл.",
     "capacity": "Вместимость",
     "note": "Заметка",
-    "loading_day": "День загрузки"
+    "loading_day": "День загрузки",
+    "loading_day_with_date": "День загрузки: {date}",
+    "meta": "Вместимость {capacity} · Заметка: {note}",
+    "note_empty": "—",
+    "days": {
+      "Mon": "Пн",
+      "Tue": "Вт",
+      "Wed": "Ср",
+      "Thu": "Чт",
+      "Fri": "Пт",
+      "Sat": "Сб",
+      "Sun": "Вс"
+    },
+    "columns": {
+      "po": "PO",
+      "client": "Клиент",
+      "title": "Название",
+      "due": "Срок",
+      "loading": "Загрузка"
+    },
+    "empty": "Нет назначенных заказов."
   },
   "orderform": {
     "title": "Новый заказ",
@@ -125,11 +283,52 @@
     "due": "Срок",
     "loading": "Дата загрузки",
     "add_section": "Добавить секцию",
-    "create": "Создать заказ"
+    "create": "Создать заказ",
+    "cancel": "Отмена",
+    "section_label": "Секция",
+    "material_label": "Материал",
+    "thickness_placeholder": "Толщина (напр., 3 мм)",
+    "color_placeholder": "Цветовой код",
+    "optional_hex": "Дополнительный HEX",
+    "invalid_hex": "Неверный HEX",
+    "unknown_ral": "Неизвестный код RAL",
+    "remove": "Удалить",
+    "pdf_source": "Источник PDF",
+    "pdf_hint": "Вставьте путь к PDF в {path}",
+    "pdf_path_label": "Путь к PDF",
+    "pdf_placeholder": "{base}/files/PO-....pdf",
+    "pdf_default_name": "order.pdf",
+    "close": "Закрыть",
+    "remove_short": "–",
+    "color_system": {
+      "ral": "RAL",
+      "pantone": "Pantone",
+      "hex": "HEX",
+      "other": "Другое"
+    },
+    "defaults": {
+      "face": "Лицевая часть",
+      "back": "Задняя часть",
+      "face_frame": "Лицевая рама",
+      "part": "Деталь",
+      "acrylic": "Акрил",
+      "aluminum": "Алюминий",
+      "acp": "АКП",
+      "natural": "Натуральный",
+      "thickness_2mm": "2 мм",
+      "thickness_3mm": "3 мм"
+    }
+  },
+  "actions": {
+    "cancel": "Отмена"
   },
   "chat": {
+    "title": "Командный чат",
     "rooms": "Комнаты",
-    "message_placeholder": "Сообщение (используйте @name для упоминания)"
+    "message_placeholder": "Сообщение (используйте @name для упоминания)",
+    "signed_in_as": "Вы вошли как",
+    "mentions": "Упоминания",
+    "empty": "Сообщений пока нет."
   },
   "loading": {
     "assign": "Назначить",
@@ -155,6 +354,89 @@
       "RECHECK": "Повторная проверка",
       "CUSTOM": "Другое"
     }
+  },
+  "commands": {
+    "title": "Поиск заказов",
+    "placeholder": "Поиск заказов, клиентов, полей…",
+    "aria": "Поиск заказов",
+    "match_label": "Совпадение",
+    "no_matches": "Совпадений нет",
+    "start_typing": "Начните печатать для поиска заказов.",
+    "tip": "Подсказка: нажмите ⌘K / Ctrl-K"
+  },
+  "inventory": {
+    "title": "Склад",
+    "add": "Добавить позицию",
+    "qty": "Кол-во",
+    "min": "Мин.",
+    "ok": "ОК",
+    "low": "МАЛО"
+  },
+  "notifications": {
+    "title": "Уведомления",
+    "empty": "Пока нет уведомлений."
+  },
+  "settings": {
+    "title": "Настройки",
+    "sections": {
+      "branding": "Брендинг",
+      "integrations": "Интеграции"
+    },
+    "branding": {
+      "logo": {
+        "label": "Логотип",
+        "path": "static/brand/logo.png",
+        "note": "(поместите PNG сюда)"
+      },
+      "colors": {
+        "label": "Цвета",
+        "path": "static/brand.css"
+      }
+    },
+    "integrations": {
+      "telegram": "Telegram (макет)",
+      "n8n": "n8n (макет)",
+      "openrouter": "OpenRouter (макет)"
+    }
+  },
+  "files": {
+    "title": "Файлы",
+    "download": "Скачать",
+    "error": "Не удаётся загрузить файл. Проверьте путь или загрузите в static/files.",
+    "path_label": "Путь к файлу"
+  },
+  "layout": {
+    "notifications": "Уведомления",
+    "chat": "Чат"
+  },
+  "pdf": {
+    "label": "PDF",
+    "open": "Открыть",
+    "placeholder": "Добавьте путь к PDF для предпросмотра.",
+    "prev": "Назад",
+    "next": "Вперёд",
+    "page": "Страница {current} из {total}",
+    "error": "Не удаётся показать PDF. Проверьте путь к файлу."
+  },
+  "branches": {
+    "title": "Ветки",
+    "headers": {
+      "name": "Название",
+      "head": "Главная",
+      "commits": "Коммиты",
+      "actions": "Действия"
+    },
+    "empty": "Пока нет веток.",
+    "default": "(по умолчанию)",
+    "set_default": "Сделать основной",
+    "delete": "Удалить",
+    "rollback": "Откат к старейшему"
+  },
+  "language": {
+    "title": "Язык"
+  },
+  "theme": {
+    "title": "Тема"
   },
   "rd": {
     "flag": "Заказ R&D",

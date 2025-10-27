@@ -1,5 +1,11 @@
 {
-  "app": { "title": "Reclame Fabriek — OMS" },
+  "app": {
+    "title": "Reclame Fabriek — OMS",
+    "brand": {
+      "label": "Reclame OMS",
+      "aria": "Reclame OMS"
+    }
+  },
   "terms": {
     "station": "Station",
     "stationLog": "Station Log",
@@ -13,6 +19,17 @@
     "attachRevision": "Attach Revision",
     "currentRevision": "Current Revision"
   },
+  "stations": {
+    "CAD": "CAD",
+    "CNC": "CNC",
+    "SANDING": "Sanding",
+    "BENDING": "Bending",
+    "WELDING": "Welding",
+    "PAINT": "Paint",
+    "ASSEMBLY": "Assembly",
+    "QC": "QC",
+    "LOGISTICS": "Logistics"
+  },
   "nav": {
     "dashboard": "Dashboard",
     "launchpad": "Launchpad",
@@ -21,6 +38,38 @@
     "files": "Files",
     "settings": "Settings",
     "kanban": "Production Board"
+  },
+  "header": {
+    "actions": "Header actions",
+    "theme": {
+      "label": "Theme",
+      "options": {
+        "LightVim": "LightVim",
+        "DarkVim": "DarkVim",
+        "HighContrastVim": "HighContrastVim"
+      }
+    },
+    "language": {
+      "label": "Language",
+      "options": {
+        "en": "English",
+        "ru": "Русский",
+        "lv": "Latviešu"
+      }
+    },
+    "notifications": {
+      "label": "Notifications",
+      "srCount": "{count} notifications"
+    },
+    "user": {
+      "label": "User",
+      "switch": "Switch user"
+    }
+  },
+  "roles": {
+    "label": "Role",
+    "admin": "Admin",
+    "station": "Station"
   },
   "order": {
     "overview": "Overview",
@@ -32,6 +81,7 @@
     "materials": "Materials",
     "progress": "Process Progress",
     "progress_help": "Each stage lists completion from 0 to 100 percent.",
+    "progressbar_label": "{name} progress",
     "currentPdf": "Current Order PDF",
     "no_file": "No file.",
     "attach_help": "Paste PDF path under static/files/…",
@@ -64,11 +114,70 @@
     },
     "compare": {
       "fields": "Key Fields",
-      "materials": "Materials"
+      "materials": "Materials",
+      "stages": "Stages"
     },
     "log_details": "Details",
     "log_recorded_by": "recorded by {author}",
     "log_recorded_station": " · {station}"
+  },
+  "orderPage": {
+    "loading": {
+      "title": "Loading Date",
+      "clear": "Clear",
+      "current": "Current:"
+    },
+    "requests": {
+      "title": "Open Requests",
+      "approve": "Approve",
+      "decline": "Decline",
+      "empty": "No open requests."
+    }
+  },
+  "orderLists": {
+    "title": "Orders",
+    "new": "New Order",
+    "headers": {
+      "po": "PO",
+      "client": "Client",
+      "title": "Title",
+      "summary": "Stage summary",
+      "due": "Due"
+    },
+    "empty": "No orders found.",
+    "filter_placeholder": "Filter by client…",
+    "filter_label": "Filter"
+  },
+  "materialsEditor": {
+    "title": "Materials Editor",
+    "delete": "Delete row",
+    "add": "Add material",
+    "applyAdmin": "Apply (Admin)",
+    "propose": "Propose Update",
+    "key": "Key",
+    "label": "Label",
+    "value": "Value",
+    "default_label": "Item"
+  },
+  "progressEditor": {
+    "title": "Process Editor",
+    "reset": "Reset",
+    "applyAdmin": "Apply (Admin)",
+    "propose": "Propose Update"
+  },
+  "stageEditor": {
+    "title": "Stage Editor",
+    "next": "Next state",
+    "apply": "Apply",
+    "propose": "Propose"
+  },
+  "revisions": {
+    "title": "File Revisions",
+    "active": "In use",
+    "use": "Use",
+    "download": "Download",
+    "empty": "No revisions.",
+    "by": "by {author}"
   },
   "themes": {
     "light": "LightVim",
@@ -78,7 +187,8 @@
   "a11y": {
     "toggle_right": "Toggle right panel (Shift+R)",
     "search": "Search orders, files, clients…",
-    "progress_region": "Overall process progress"
+    "progress_region": "Overall process progress",
+    "skip": "Skip to content"
   },
   "toast": {
     "approved": "Change Request approved",
@@ -90,12 +200,38 @@
     "themes": "Themes",
     "language": "Language"
   },
+  "dashboard": {
+    "kpi": {
+      "active": "Active Orders",
+      "rd": "R&D Orders",
+      "blocked": "Blocked Orders",
+      "rework": "Total Reworks"
+    },
+    "charts": {
+      "throughput": "Weekly Throughput",
+      "stages": "Order Stages",
+      "materials": "Material Stock (key items)"
+    },
+    "topRework": {
+      "label": "Top rework station",
+      "none": "None"
+    },
+    "list": {
+      "title": "Active Orders"
+    },
+    "series": {
+      "jobs": "Jobs",
+      "qty": "Qty"
+    }
+  },
   "compare": {
     "heading": "Compare",
     "field": "Field",
     "before": "Current",
     "after": "Proposed",
-    "empty": "No differences to display."
+    "empty": "No differences to display.",
+    "item": "Item",
+    "stage": "Stage"
   },
   "badges": {
     "heading": "Badges"
@@ -110,9 +246,31 @@
   "calendar": {
     "title": "Calendar",
     "loading_mode": "Loading Mode",
+    "loading_on": "On",
+    "loading_off": "Off",
     "capacity": "Capacity",
     "note": "Note",
-    "loading_day": "Loading day"
+    "loading_day": "Loading day",
+    "loading_day_with_date": "Loading day: {date}",
+    "meta": "Capacity {capacity} · Note: {note}",
+    "note_empty": "—",
+    "days": {
+      "Mon": "Mon",
+      "Tue": "Tue",
+      "Wed": "Wed",
+      "Thu": "Thu",
+      "Fri": "Fri",
+      "Sat": "Sat",
+      "Sun": "Sun"
+    },
+    "columns": {
+      "po": "PO",
+      "client": "Client",
+      "title": "Title",
+      "due": "Due",
+      "loading": "Loading"
+    },
+    "empty": "No orders assigned."
   },
   "orderform": {
     "title": "New Order",
@@ -125,11 +283,52 @@
     "due": "Due",
     "loading": "Loading Date",
     "add_section": "Add section",
-    "create": "Create Order"
+    "create": "Create Order",
+    "cancel": "Cancel",
+    "section_label": "Section",
+    "material_label": "Material",
+    "thickness_placeholder": "Thickness (e.g., 3mm)",
+    "color_placeholder": "Color code",
+    "optional_hex": "Optional HEX override",
+    "invalid_hex": "Invalid HEX",
+    "unknown_ral": "Unknown RAL code",
+    "remove": "Remove",
+    "pdf_source": "PDF Source",
+    "pdf_hint": "Paste a PDF path under {path}",
+    "pdf_path_label": "PDF path",
+    "pdf_placeholder": "{base}/files/PO-....pdf",
+    "pdf_default_name": "order.pdf",
+    "close": "Close",
+    "remove_short": "–",
+    "color_system": {
+      "ral": "RAL",
+      "pantone": "Pantone",
+      "hex": "HEX",
+      "other": "Other"
+    },
+    "defaults": {
+      "face": "Face",
+      "back": "Back",
+      "face_frame": "Face Frame",
+      "part": "Part",
+      "acrylic": "Acrylic",
+      "aluminum": "Aluminum",
+      "acp": "ACP",
+      "natural": "Natural",
+      "thickness_2mm": "2mm",
+      "thickness_3mm": "3mm"
+    }
+  },
+  "actions": {
+    "cancel": "Cancel"
   },
   "chat": {
+    "title": "Team Chat",
     "rooms": "Rooms",
-    "message_placeholder": "Message (use @name to mention)"
+    "message_placeholder": "Message (use @name to mention)",
+    "signed_in_as": "Signed in as",
+    "mentions": "Mentions",
+    "empty": "No messages yet."
   },
   "loading": {
     "assign": "Assign",
@@ -155,6 +354,89 @@
       "RECHECK": "Re-check",
       "CUSTOM": "Custom"
     }
+  },
+  "commands": {
+    "title": "Search Orders",
+    "placeholder": "Search orders, clients, fields…",
+    "aria": "Search orders",
+    "match_label": "Matched",
+    "no_matches": "No matches",
+    "start_typing": "Start typing to search orders.",
+    "tip": "Tip: Press ⌘K / Ctrl-K"
+  },
+  "inventory": {
+    "title": "Inventory",
+    "add": "Add item",
+    "qty": "Qty",
+    "min": "Min",
+    "ok": "OK",
+    "low": "LOW"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "empty": "No notifications yet."
+  },
+  "settings": {
+    "title": "Settings",
+    "sections": {
+      "branding": "Branding",
+      "integrations": "Integrations"
+    },
+    "branding": {
+      "logo": {
+        "label": "Logo",
+        "path": "static/brand/logo.png",
+        "note": "(place your PNG there)"
+      },
+      "colors": {
+        "label": "Colors",
+        "path": "static/brand.css"
+      }
+    },
+    "integrations": {
+      "telegram": "Telegram (mock)",
+      "n8n": "n8n (mock)",
+      "openrouter": "OpenRouter (mock)"
+    }
+  },
+  "files": {
+    "title": "Files",
+    "download": "Download",
+    "error": "Cannot load file. Check path or upload to static/files.",
+    "path_label": "File path"
+  },
+  "layout": {
+    "notifications": "Notifications",
+    "chat": "Chat"
+  },
+  "pdf": {
+    "label": "PDF",
+    "open": "Open",
+    "placeholder": "Add a PDF path to preview.",
+    "prev": "Prev",
+    "next": "Next",
+    "page": "Page {current} / {total}",
+    "error": "Unable to display PDF. Please check the file path."
+  },
+  "branches": {
+    "title": "Branches",
+    "headers": {
+      "name": "Name",
+      "head": "Head",
+      "commits": "Commits",
+      "actions": "Actions"
+    },
+    "empty": "No branches yet.",
+    "default": "(default)",
+    "set_default": "Make default",
+    "delete": "Delete",
+    "rollback": "Rollback to oldest"
+  },
+  "language": {
+    "title": "Language"
+  },
+  "theme": {
+    "title": "Theme"
   },
   "rd": {
     "flag": "R&D order",

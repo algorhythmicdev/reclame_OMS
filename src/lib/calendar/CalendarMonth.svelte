@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { onMount, createEventDispatcher } from 'svelte';
+import { onMount, createEventDispatcher } from 'svelte';
+import { t } from 'svelte-i18n';
   import { toggleDay, listAll, setCapacity, setNote, usage } from '$lib/loading/loading-store';
 
   export let year: number;
@@ -11,6 +12,7 @@
   let days: DayCell[] = [];
   let selectedISO: string | null = null;
   const dispatch = createEventDispatcher<string>();
+  const dayKeys = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const;
 
   function toISO(date: Date) {
     return date.toISOString().slice(0, 10);
@@ -72,7 +74,9 @@
 
 <div class="cal">
   <div class="head">
-    <div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div><div>Sun</div>
+    {#each dayKeys as key}
+      <div>{$t(`calendar.days.${key}`)}</div>
+    {/each}
   </div>
   <div class="grid">
     {#each days as day (day.iso)}
@@ -86,7 +90,7 @@
           on:click={() => clickDay(day.iso)}>
           <div class="date">{day.d.getDate()}</div>
           {#if info.active}
-            <div class="badge" aria-label="Loading day">
+            <div class="badge" aria-label={$t('calendar.loading_day')}>
               {info.assigned}/{info.capacity || '∞'}
             </div>
           {/if}
@@ -102,10 +106,10 @@
   {@const currentISO = selectedISO}
   {@const info = meta(currentISO)}
   <div class="card" style="margin-top:10px">
-    <h3 style="margin:0 0 8px 0">Loading day: {currentISO}</h3>
+    <h3 style="margin:0 0 8px 0">{$t('calendar.loading_day_with_date', { date: currentISO })}</h3>
     <div class="row" style="gap:8px;flex-wrap:wrap">
       <label>
-        Capacity
+        <span>{$t('calendar.capacity')}</span>
         <input
           class="rf-input"
           type="number"
@@ -115,7 +119,7 @@
         />
       </label>
       <label>
-        Note
+        <span>{$t('calendar.note')}</span>
         <input
           class="rf-input"
           type="text"

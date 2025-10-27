@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { STATE_TONE, STATIONS, type StageCycle, type StageMap, type StationTag } from './stages';
+  import { STATE_LABEL, STATE_TONE, STATIONS, type StageCycle, type StageMap, type StationTag } from './stages';
   import { TERMS } from '$lib/order/names';
   import { t } from 'svelte-i18n';
   import { get } from 'svelte/store';
@@ -26,12 +26,12 @@
 
   function stationLabel(station: StationTag) {
     const name = TERMS.stations as Record<string, string>;
-    return name?.[station] ?? station;
+    return get(t)(name?.[station] ?? station);
   }
 </script>
 
 <div class="card">
-  <h3 style="margin:0 0 8px 0">Process</h3>
+  <h3 style="margin:0 0 8px 0">{$t('order.progress')}</h3>
   <ul class="list">
     {#each STATIONS as station}
       {@const state = stages?.[station] ?? 'NOT_STARTED'}
@@ -42,7 +42,7 @@
             <span class="tag badge-warn" title={detail(station)}>x{count(station)} {$t('rework.x_repeat')}</span>
           {/if}
         </span>
-        <Badge tone={STATE_TONE[state]}>{get(t)(`stages.${state}`)}</Badge>
+        <Badge tone={STATE_TONE[state]}>{get(t)(STATE_LABEL[state])}</Badge>
       </li>
     {/each}
   </ul>

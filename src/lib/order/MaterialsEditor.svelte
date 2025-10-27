@@ -2,6 +2,7 @@
   import Button from '$lib/ui/Button.svelte';
   import Input from '$lib/ui/Input.svelte';
   import { role } from '$lib/ui/RoleSwitch.svelte';
+  import { t } from 'svelte-i18n';
 
   export type MaterialRow = { key: string; label: string; value: string };
 
@@ -19,7 +20,7 @@
 
   function add() {
     const nextIndex = rows.length + 1;
-    rows = [...rows, { key: `mat_${nextIndex}`, label: 'Item', value: '' }];
+    rows = [...rows, { key: `mat_${nextIndex}`, label: $t('materialsEditor.default_label'), value: '' }];
   }
 
   function del(index: number) {
@@ -57,23 +58,23 @@
 </script>
 
 <div class="card">
-  <h3 style="margin:0 0 8px 0">Materials Editor</h3>
+  <h3 style="margin:0 0 8px 0">{$t('materialsEditor.title')}</h3>
   <div class="grid" style="grid-template-columns:1fr 1fr 1fr auto; gap:8px">
     {#each rows as r, i}
-      <Input bind:value={r.key} placeholder="Key" ariaLabel="Key" />
-      <Input bind:value={r.label} placeholder="Label" ariaLabel="Label" />
-      <Input bind:value={r.value} placeholder="Value" ariaLabel="Value" />
-      <button class="tag" type="button" on:click={() => del(i)} aria-label="Delete row">–</button>
+      <Input bind:value={r.key} placeholder={$t('materialsEditor.key')} ariaLabel={$t('materialsEditor.key')} />
+      <Input bind:value={r.label} placeholder={$t('materialsEditor.label')} ariaLabel={$t('materialsEditor.label')} />
+      <Input bind:value={r.value} placeholder={$t('materialsEditor.value')} ariaLabel={$t('materialsEditor.value')} />
+      <button class="tag" type="button" on:click={() => del(i)} aria-label={$t('materialsEditor.delete')}>–</button>
     {/each}
     <div style="grid-column:1 / -1">
-      <button class="tag" type="button" on:click={add} aria-label="Add material">+ Add</button>
+      <button class="tag" type="button" on:click={add} aria-label={$t('materialsEditor.add')}>+ {$t('materialsEditor.add')}</button>
     </div>
   </div>
   <div class="row" style="margin-top:8px">
     {#if isAdmin}
-      <Button on:click={submitAdmin} disabled={!hasChanges}>Apply (Admin)</Button>
+      <Button on:click={submitAdmin} disabled={!hasChanges}>{$t('materialsEditor.applyAdmin')}</Button>
     {:else}
-      <Button on:click={submitCR} disabled={!hasChanges}>Propose Update</Button>
+      <Button on:click={submitCR} disabled={!hasChanges}>{$t('materialsEditor.propose')}</Button>
     {/if}
   </div>
 </div>

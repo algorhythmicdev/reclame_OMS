@@ -2,6 +2,7 @@
   import { base } from '$app/paths';
   import { currentUser, users, currentUserId } from '$lib/users/user-store';
   import { unseenCount } from '$lib/notifications/count';
+  import { t } from 'svelte-i18n';
 
   let showUserMenu = false, c = 0;
   unseenCount.subscribe((v) => (c = v));
@@ -12,15 +13,19 @@
 </script>
 
 <header class="brandbar">
-  <a href={`${base}/`} class="brand-link" aria-label="Reclame OMS">
-    <img src={logo()} alt="Reclame OMS" class="brand-logo" width="220" height="64" decoding="async" />
+  <a href={`${base}/`} class="brand-link" aria-label={$t('app.brand.aria')}>
+    <img src={logo()} alt={$t('app.brand.label')} class="brand-logo" width="220" height="64" decoding="async" />
   </a>
 
   <!-- actions -->
-  <div class="actions" role="group" aria-label="Header actions">
-    <a class="notif" aria-label={`Notifications${c? ` (${c})`:''}`} href={`${base}/notifications`}>
+  <div class="actions" role="group" aria-label={$t('header.actions')}>
+    <a
+      class="notif"
+      aria-label={c ? $t('header.notifications.srCount', { count: c }) : $t('header.notifications.label')}
+      href={`${base}/notifications`}
+    >
       {#if c}<span class="dot" aria-hidden="true"></span>{/if}
-      <span class="sr-only">{c} notifications</span>
+      <span class="sr-only">{$t('header.notifications.srCount', { count: c })}</span>
     </a>
 
     <div class="user">
@@ -30,15 +35,20 @@
       </button>
 
       {#if showUserMenu}
-        <div class="menu" role="menu" aria-label="User menu">
-          <div class="menu-row"><b>User</b></div>
+        <div class="menu" role="menu" aria-label={$t('header.user.label')}>
+          <div class="menu-row"><b>{$t('header.user.label')}</b></div>
           <div class="menu-row">
-            <select class="rf-input" on:change={pickUser} bind:value={$currentUserId} aria-label="Switch user">
-              {#each $users as u}<option value={u.id}>{u.name} — {u.role}</option>{/each}
+            <select class="rf-input" on:change={pickUser} bind:value={$currentUserId} aria-label={$t('header.user.switch')}>
+              {#each $users as u}
+                {@const roleKey = `roles.${u.role.toLowerCase()}`}
+                <option value={u.id}>
+                  {u.name} — {$t(roleKey) !== roleKey ? $t(roleKey) : u.role}
+                </option>
+              {/each}
             </select>
           </div>
-          <a class="menu-row tag" href={`${base}/launchpad`} role="menuitem">Launchpad</a>
-          <a class="menu-row tag" href={`${base}/settings`} role="menuitem">Settings</a>
+          <a class="menu-row tag" href={`${base}/launchpad`} role="menuitem">{$t('nav.launchpad')}</a>
+          <a class="menu-row tag" href={`${base}/settings`} role="menuitem">{$t('nav.settings')}</a>
         </div>
       {/if}
     </div>

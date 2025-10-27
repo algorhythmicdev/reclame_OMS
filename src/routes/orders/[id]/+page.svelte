@@ -298,13 +298,13 @@
     <aside class="grid" style="gap:12px">
       {#if $role === 'Admin'}
         <section class="card">
-          <h3 style="margin:0 0 8px 0">Loading Date</h3>
+          <h3 style="margin:0 0 8px 0">{$t('orderPage.loading.title')}</h3>
           <LoadingDatePicker bind:selected={loadingSelection} />
           <div class="row" style="margin-top:8px;gap:8px;flex-wrap:wrap;justify-content:space-between">
-            <span class="muted" style="font-size:.85rem">Current: {o.loadingDate || '—'}</span>
+            <span class="muted" style="font-size:.85rem">{$t('orderPage.loading.current')} {o.loadingDate || '—'}</span>
             <div class="row" style="gap:6px">
               <button class="tag" type="button" on:click={assignLoadingDate}>{$t('loading.assign')}</button>
-              <button class="tag" type="button" on:click={clearLoadingDate} disabled={!o.loadingDate}>Clear</button>
+              <button class="tag" type="button" on:click={clearLoadingDate} disabled={!o.loadingDate}>{$t('orderPage.loading.clear')}</button>
             </div>
           </div>
         </section>
@@ -360,7 +360,7 @@
         <ReworkQuick onSend={sendRework} />
       {/if}
       <div class="card" style="margin-top:10px">
-        <h3 style="margin:0 0 8px 0">Open Requests</h3>
+        <h3 style="margin:0 0 8px 0">{$t('orderPage.requests.title')}</h3>
         <ul style="display:grid;gap:6px">
           {#each openRequests as p}
             <li class="row" style="justify-content:space-between">
@@ -370,14 +370,14 @@
               </label>
               {#if $role === 'Admin'}
                 <div class="row">
-                  <button class="tag" on:click={() => approve(p.id)}>Approve</button>
-                  <button class="tag" on:click={() => decline(p.id)}>Decline</button>
+                  <button class="tag" on:click={() => approve(p.id)}>{$t('orderPage.requests.approve')}</button>
+                  <button class="tag" on:click={() => decline(p.id)}>{$t('orderPage.requests.decline')}</button>
                 </div>
               {/if}
             </li>
           {/each}
           {#if openRequests.length===0}
-            <div class="muted">No open requests.</div>
+            <div class="muted">{$t('orderPage.requests.empty')}</div>
           {/if}
         </ul>
       </div>

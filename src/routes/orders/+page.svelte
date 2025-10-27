@@ -6,6 +6,8 @@
   import { listOrders, createOrder } from '$lib/order/signage-store';
   import OrderForm from '$lib/order/OrderForm.svelte';
   import { blankStages, STATE_LABEL, type StageState } from '$lib/order/stages';
+  import { TERMS } from '$lib/order/names';
+  import { t } from 'svelte-i18n';
 
   type OrderRow = {
     id: string;
@@ -141,6 +143,8 @@
       .sort((a, b) => a.due.localeCompare(b.due));
   }
 
+  const stationLabel = (code: Station) => $t(TERMS.stations[code]);
+
   refresh();
 
   onMount(() => {
@@ -155,11 +159,11 @@
 
 <section class="card">
   <div class="row" style="justify-content:space-between">
-    <h2 style="margin:0">Orders</h2>
+    <h2 style="margin:0">{$t('orderLists.title')}</h2>
     <div class="row" style="gap:8px; align-items:center">
-      <button class="tag" on:click={() => (formOpen = true)}>New Order</button>
+      <button class="tag" on:click={() => (formOpen = true)}>{$t('orderLists.new')}</button>
       <div style="width:280px">
-        <Input bind:value={q} placeholder="Filter by client…" ariaLabel="Filter" />
+        <Input bind:value={q} placeholder={$t('orderLists.filter_placeholder')} ariaLabel={$t('orderLists.filter_label')} />
       </div>
     </div>
   </div>
@@ -168,11 +172,11 @@
       <table class="rf-table">
         <thead>
           <tr>
-            <th style="width:140px">PO</th>
-            <th>Client</th>
-            <th>Title</th>
-            <th style="width:220px">Stage summary</th>
-            <th style="width:120px">Due</th>
+            <th style="width:140px">{$t('orderLists.headers.po')}</th>
+            <th>{$t('orderLists.headers.client')}</th>
+            <th>{$t('orderLists.headers.title')}</th>
+            <th style="width:220px">{$t('orderLists.headers.summary')}</th>
+            <th style="width:120px">{$t('orderLists.headers.due')}</th>
           </tr>
         </thead>
         <tbody>
@@ -184,7 +188,7 @@
               <td>
                 <div class="row" style="flex-wrap:wrap;gap:6px">
                   {#each row.stages.slice(0,3) as [station, state]}
-                    <span class="tag">{station}: {STATE_LABEL[state]}</span>
+                    <span class="tag">{stationLabel(station)}: {$t(STATE_LABEL[state])}</span>
                   {/each}
                 </div>
               </td>
@@ -192,7 +196,7 @@
             </tr>
           {/each}
           {#if visible.length === 0}
-            <tr><td colspan="5" class="muted">No orders found.</td></tr>
+            <tr><td colspan="5" class="muted">{$t('orderLists.empty')}</td></tr>
           {/if}
         </tbody>
       </table>

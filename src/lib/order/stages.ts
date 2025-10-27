@@ -28,14 +28,14 @@ export type ReworkReason =
   | 'CUSTOM';
 
 export const REWORK_LABEL: Record<ReworkReason, string> = {
-  RECUT: 'Re-cut',
-  RESAND: 'Re-sand',
-  REBEND: 'Re-bend',
-  REWELD: 'Re-weld',
-  REPAINT: 'Re-paint',
-  REASSEMBLE: 'Re-assemble',
-  RECHECK: 'Re-check',
-  CUSTOM: 'Custom'
+  RECUT: 'rework.reasons.RECUT',
+  RESAND: 'rework.reasons.RESAND',
+  REBEND: 'rework.reasons.REBEND',
+  REWELD: 'rework.reasons.REWELD',
+  REPAINT: 'rework.reasons.REPAINT',
+  REASSEMBLE: 'rework.reasons.REASSEMBLE',
+  RECHECK: 'rework.reasons.RECHECK',
+  CUSTOM: 'rework.reasons.CUSTOM'
 };
 
 export type StageCycle = {
@@ -62,12 +62,12 @@ export const STATIONS: StationTag[] = [
 ];
 
 export const STATE_LABEL: Record<StageState, string> = {
-  NOT_STARTED: 'Not started',
-  QUEUED: 'Queued',
-  IN_PROGRESS: 'In progress',
-  BLOCKED: 'Blocked',
-  REWORK: 'Rework',
-  COMPLETED: 'Completed'
+  NOT_STARTED: 'stages.NOT_STARTED',
+  QUEUED: 'stages.QUEUED',
+  IN_PROGRESS: 'stages.IN_PROGRESS',
+  BLOCKED: 'stages.BLOCKED',
+  REWORK: 'stages.REWORK',
+  COMPLETED: 'stages.COMPLETED'
 };
 
 export const STATE_TONE: Record<

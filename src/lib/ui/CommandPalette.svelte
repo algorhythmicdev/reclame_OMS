@@ -3,6 +3,7 @@
   import Modal from './Modal.svelte';
   import { base } from '$app/paths';
   import { searchOrders } from '$lib/search/global-search';
+  import { t } from 'svelte-i18n';
 
   export let open = false;
   export let onClose = () => {};
@@ -21,13 +22,13 @@
   const toHref = (id: string) => withBase(`/orders/${id}`);
 </script>
 
-<Modal {open} title="Search Orders" {onClose}>
-  <Input bind:value={q} placeholder="Search orders, clients, fields…" ariaLabel="Search orders" />
+<Modal {open} title={$t('commands.title')} {onClose}>
+  <Input bind:value={q} placeholder={$t('commands.placeholder')} ariaLabel={$t('commands.aria')} />
   <div style="margin-top:10px;display:grid;gap:6px;max-height:300px;overflow:auto">
     {#if trimmed && hits.length===0}
-      <div class="muted">No matches</div>
+      <div class="muted">{$t('commands.no_matches')}</div>
     {:else if !trimmed}
-      <div class="muted">Start typing to search orders.</div>
+      <div class="muted">{$t('commands.start_typing')}</div>
     {:else}
       {#each hits as hit}
         <a
@@ -43,13 +44,13 @@
           <div style="display:flex;flex-direction:column;align-items:flex-start">
             <span><b>{hit.title}</b></span>
             <span class="muted">{hit.id} • {hit.client}</span>
-            <span class="muted" style="font-size:0.8rem">Matched: {hit.where.join(', ')}</span>
+            <span class="muted" style="font-size:0.8rem">{$t('commands.match_label')}: {hit.where.join(', ')}</span>
           </div>
         </a>
       {/each}
     {/if}
   </div>
   <svelte:fragment slot="footer">
-    <span class="muted">Tip: Press ⌘K / Ctrl-K</span>
+    <span class="muted">{$t('commands.tip')}</span>
   </svelte:fragment>
 </Modal>

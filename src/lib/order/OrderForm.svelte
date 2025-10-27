@@ -9,7 +9,8 @@
   import LoadingDatePicker from '$lib/order/LoadingDatePicker.svelte';
   import { createOrder } from '$lib/order/signage-store';
   import { blankStages } from '$lib/order/stages';
-  import { t } from 'svelte-i18n';
+import { get } from 'svelte/store';
+import { t } from 'svelte-i18n';
 
   export let open = false;
   export let onClose: () => void = () => {};
@@ -31,11 +32,35 @@
   let isRD = false;
   let rdNotes = '';
 
-  let materials: MaterialRow[] = [
-    { key: 'face', label: 'Face', material: 'Acrylic', thickness: '3mm', color: { system: 'RAL', code: 'RAL 9016' } },
-    { key: 'back', label: 'Back', material: 'ACP', thickness: '3mm', color: { system: 'RAL', code: 'RAL 9005' } },
-    { key: 'frame', label: 'Face Frame', material: 'Aluminum', thickness: '2mm', color: { system: 'Other', code: 'Natural' } }
-  ];
+  function createDefaultMaterials(): MaterialRow[] {
+    const translate = get(t);
+
+    return [
+      {
+        key: 'face',
+        label: translate('orderform.defaults.face'),
+        material: translate('orderform.defaults.acrylic'),
+        thickness: translate('orderform.defaults.thickness_3mm'),
+        color: { system: 'RAL', code: 'RAL 9016' }
+      },
+      {
+        key: 'back',
+        label: translate('orderform.defaults.back'),
+        material: translate('orderform.defaults.acp'),
+        thickness: translate('orderform.defaults.thickness_3mm'),
+        color: { system: 'RAL', code: 'RAL 9005' }
+      },
+      {
+        key: 'frame',
+        label: translate('orderform.defaults.face_frame'),
+        material: translate('orderform.defaults.aluminum'),
+        thickness: translate('orderform.defaults.thickness_2mm'),
+        color: { system: 'Other', code: translate('orderform.defaults.natural') }
+      }
+    ];
+  }
+
+  let materials: MaterialRow[] = createDefaultMaterials();
 
   function resetForm() {
     id = '';
@@ -46,11 +71,7 @@
     pdfPath = '';
     isRD = false;
     rdNotes = '';
-    materials = [
-      { key: 'face', label: 'Face', material: 'Acrylic', thickness: '3mm', color: { system: 'RAL', code: 'RAL 9016' } },
-      { key: 'back', label: 'Back', material: 'ACP', thickness: '3mm', color: { system: 'RAL', code: 'RAL 9005' } },
-      { key: 'frame', label: 'Face Frame', material: 'Aluminum', thickness: '2mm', color: { system: 'Other', code: 'Natural' } }
-    ];
+    materials = createDefaultMaterials();
   }
 
   function addRow() {
@@ -59,7 +80,7 @@
       ...materials,
       {
         key: `part_${index}`,
-        label: 'Part',
+        label: get(t)('orderform.defaults.part'),
         material: '',
         thickness: '',
         color: { system: 'HEX', code: '', hex: '#888888' }
@@ -89,9 +110,11 @@
   function create() {
     if (!id.trim() || !title.trim() || !client.trim() || !pdfPath.trim()) return;
 
+    const translate = get(t);
+
     const fields = [
-      { key: 'due', label: 'Due', value: due },
-      { key: 'loading', label: 'Loading Date', value: loadingDate || '' }
+      { key: 'due', label: translate('orderform.due'), value: due },
+      { key: 'loading', label: translate('orderform.loading'), value: loadingDate || '' }
     ];
 
     const mats = materials.map((item) => ({
@@ -117,7 +140,7 @@
       loadingDate,
       file: {
         id: crypto.randomUUID(),
-        name: pdfPath.split('/').pop() || 'order.pdf',
+        name: pdfPath.split('/').pop() || get(t)('orderform.pdf_default_name'),
         path: pdfPath,
         kind: 'pdf'
       }
@@ -147,44 +170,48 @@
     class="shade"
     role="button"
     tabindex="0"
-    aria-label="Close order form"
+    aria-label={$t('orderform.close')}
     on:click={handleBackdrop}
     on:keydown={handleBackdropKey}
   >
-    <div class="panel" role="dialog" aria-modal="true" aria-label="Order form">
+    <div class="panel" role="dialog" aria-modal="true" aria-label={$t('orderform.title')}>
       <header>
-        <h3>New Order</h3>
-        <button class="x" on:click={close} aria-label="Close">✕</button>
+        <h3>{$t('orderform.title')}</h3>
+        <button class="x" on:click={close} aria-label={$t('orderform.close')}>✕</button>
       </header>
 
       <section class="grid" style="grid-template-columns:1.2fr 1fr; gap:12px">
         <div class="pdf-stack">
           <PdfFrame src={pdfPath} />
           <div class="card">
-            <h4>PDF Source</h4>
+            <h4>{$t('orderform.pdf_source')}</h4>
             <div class="muted" style="font-size:.85rem;margin-bottom:6px">
-              Paste a PDF path under <code>{base}/files/</code>
+              {@html $t('orderform.pdf_hint', { path: `<code>${base}/files/</code>` })}
             </div>
-            <Input bind:value={pdfPath} placeholder={`${base}/files/PO-....pdf`} ariaLabel="PDF path" />
+            <Input
+              bind:value={pdfPath}
+              placeholder={$t('orderform.pdf_placeholder', { base })}
+              ariaLabel={$t('orderform.pdf_path_label')}
+            />
           </div>
         </div>
 
         <div class="grid">
           <div class="card">
-            <h4>Basics</h4>
+            <h4>{$t('orderform.basics')}</h4>
             <div class="grid" style="grid-template-columns:1fr 1fr">
-              <Input bind:value={id} placeholder="PO number (unique)" />
-              <Input bind:value={client} placeholder="Client" />
+              <Input bind:value={id} placeholder={$t('orderform.po')} />
+              <Input bind:value={client} placeholder={$t('orderform.client')} />
               <div style="grid-column:span 2">
-                <Input bind:value={title} placeholder="Title" />
+                <Input bind:value={title} placeholder={$t('orderform.order_title')} />
               </div>
               <div>
-                <label class="muted" for="order-due-input">Due</label>
+                <label class="muted" for="order-due-input">{$t('orderform.due')}</label>
                 <input id="order-due-input" class="rf-input" type="date" bind:value={due} />
               </div>
               <div>
-                <label class="muted" for="order-loading-input">Loading Date</label>
-                <LoadingDatePicker id="order-loading-input" bind:selected={loadingDate} ariaLabel="Loading date" />
+                <label class="muted" for="order-loading-input">{$t('orderform.loading')}</label>
+                <LoadingDatePicker id="order-loading-input" bind:selected={loadingDate} ariaLabel={$t('orderform.loading')} />
               </div>
               <div style="grid-column:span 2" class="row">
                 <label class="tag">
@@ -201,46 +228,50 @@
           </div>
 
           <div class="card">
-            <h4>Colors & Materials</h4>
+            <h4>{$t('orderform.materials')}</h4>
             <div class="materials-grid">
               {#each materials as row, index}
-                <Input bind:value={row.label} placeholder="Section" />
-                <Input bind:value={row.material} placeholder="Material" />
-                <Input bind:value={row.thickness} placeholder="Thickness (e.g., 3mm)" />
+                <Input bind:value={row.label} placeholder={$t('orderform.section_label')} />
+                <Input bind:value={row.material} placeholder={$t('orderform.material_label')} />
+                <Input bind:value={row.thickness} placeholder={$t('orderform.thickness_placeholder')} />
                 <select class="rf-select" bind:value={row.color.system}>
-                  <option value="RAL">RAL</option>
-                  <option value="Pantone">Pantone</option>
-                  <option value="HEX">HEX</option>
-                  <option value="Other">Other</option>
+                  <option value="RAL">{$t('orderform.color_system.ral')}</option>
+                  <option value="Pantone">{$t('orderform.color_system.pantone')}</option>
+                  <option value="HEX">{$t('orderform.color_system.hex')}</option>
+                  <option value="Other">{$t('orderform.color_system.other')}</option>
                 </select>
                 <Input
                   bind:value={row.color.code}
-                  placeholder={row.color.system === 'HEX' ? '#RRGGBB' : 'Color code'}
+                  placeholder={row.color.system === 'HEX' ? '#RRGGBB' : $t('orderform.color_placeholder')}
                 />
 
                 {#if row.color.system === 'HEX' && row.color.code && !isHexValid(row.color.code)}
-                  <div class="full warn">Invalid HEX</div>
+                  <div class="full warn">{$t('orderform.invalid_hex')}</div>
                 {/if}
 
                 {#if row.color.system !== 'HEX'}
                   <div class="full-block">
-                    <Input bind:value={row.color.hex} placeholder="Optional HEX override" />
+                    <Input bind:value={row.color.hex} placeholder={$t('orderform.optional_hex')} />
                     {#if row.color.hex && !isHexValid(row.color.hex)}
-                      <div class="warn">Invalid HEX</div>
+                      <div class="warn">{$t('orderform.invalid_hex')}</div>
                     {/if}
                     {#if row.color.system === 'RAL' && row.color.code && needsRalWarning(row.color.code)}
-                      <div class="warn">Unknown RAL code</div>
+                      <div class="warn">{$t('orderform.unknown_ral')}</div>
                     {/if}
                   </div>
                 {/if}
 
                 <div class="row full" style="align-items:center; gap:6px">
                   <ColorSwatch color={row.color} />
-                  <button class="tag" type="button" on:click={() => deleteRow(index)} aria-label="Remove">–</button>
+                <button class="tag" type="button" on:click={() => deleteRow(index)} aria-label={$t('orderform.remove')}>
+                  {$t('orderform.remove_short')}
+                </button>
                 </div>
               {/each}
               <div class="full">
-                <button class="tag" type="button" on:click={addRow}>+ Add section</button>
+                <button class="tag" type="button" on:click={addRow}>
+                  {$t('orderform.add_section')}
+                </button>
               </div>
             </div>
           </div>
@@ -248,8 +279,8 @@
       </section>
 
       <footer class="row" style="justify-content:flex-end; gap:8px; margin-top:10px">
-        <Button variant="ghost" on:click={close}>Cancel</Button>
-        <Button on:click={create}>Create Order</Button>
+        <Button variant="ghost" on:click={close}>{$t('actions.cancel')}</Button>
+        <Button on:click={create}>{$t('orderform.create')}</Button>
       </footer>
     </div>
   </div>

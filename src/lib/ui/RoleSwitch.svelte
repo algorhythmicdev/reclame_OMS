@@ -7,10 +7,16 @@
 </script>
 
 <script>
+  import { t } from 'svelte-i18n';
+
   $: current = $role;
+
+  const label = () => $t('roles.label');
+  const admin = () => $t('roles.admin');
+  const station = () => $t('roles.station');
 </script>
 
-<div class="row" role="group" aria-label="Role">
-  <button class="tag" aria-pressed={current==='Admin'} on:click={()=>role.set('Admin')}>Admin</button>
-  <button class="tag" aria-pressed={current==='Station'} on:click={()=>role.set('Station')}>Station</button>
+<div class="row" role="group" aria-label={label()}>
+  <button class="tag" aria-pressed={current==='Admin'} on:click={()=>role.set('Admin')}>{admin()}</button>
+  <button class="tag" aria-pressed={current==='Station'} on:click={()=>role.set('Station')}>{station()}</button>
 </div>
