@@ -106,5 +106,25 @@
     "station_label": "Stacija",
     "progress_label": "Progress (%)",
     "log": "Reģistrēt"
+  },
+  "calendar": {
+    "title": "Kalendārs",
+    "loading_mode": "Iekraušanas režīms",
+    "capacity": "Kapacitāte",
+    "note": "Piezīme",
+    "loading_day": "Iekraušanas diena"
+  },
+  "orderform": {
+    "title": "Jauns pasūtījums",
+    "pdf": "PDF priekšskatījums",
+    "basics": "Pamatinformācija",
+    "materials": "Krāsas un materiāli",
+    "po": "Pasūtījuma numurs (unikāls)",
+    "client": "Klients",
+    "order_title": "Nosaukums",
+    "due": "Termiņš",
+    "loading": "Iekraušanas datums",
+    "add_section": "Pievienot sadaļu",
+    "create": "Izveidot pasūtījumu"
   }
 }

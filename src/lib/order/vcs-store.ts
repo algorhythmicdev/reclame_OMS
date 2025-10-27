@@ -28,6 +28,7 @@ export function createOrder(seed: Omit<Order, 'branches'|'prs'|'revisions'|'defa
     title: seed.title,
     client: seed.client,
     due: seed.due,
+    loadingDate: seed.loadingDate ?? '',
     badges: seed.badges,
     fields: seed.fields,
     materials: seed.materials,
@@ -113,6 +114,7 @@ export function mergePR(orderId: string, prId: string, admin='admin') {
   if (pr.proposed.title) o.title = pr.proposed.title;
   if (pr.proposed.client) o.client = pr.proposed.client;
   if (pr.proposed.due) o.due = pr.proposed.due;
+  if (pr.proposed.loadingDate !== undefined) o.loadingDate = pr.proposed.loadingDate;
   if (pr.proposed.fields) o.fields = pr.proposed.fields;
   if (pr.proposed.materials) o.materials = pr.proposed.materials;
   if (pr.proposed.badges) o.badges = pr.proposed.badges;

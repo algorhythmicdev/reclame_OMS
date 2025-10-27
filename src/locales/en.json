@@ -106,5 +106,25 @@
     "station_label": "Station",
     "progress_label": "Progress (%)",
     "log": "Log"
+  },
+  "calendar": {
+    "title": "Calendar",
+    "loading_mode": "Loading Mode",
+    "capacity": "Capacity",
+    "note": "Note",
+    "loading_day": "Loading day"
+  },
+  "orderform": {
+    "title": "New Order",
+    "pdf": "PDF Preview",
+    "basics": "Basics",
+    "materials": "Colors & Materials",
+    "po": "PO number (unique)",
+    "client": "Client",
+    "order_title": "Title",
+    "due": "Due",
+    "loading": "Loading Date",
+    "add_section": "Add section",
+    "create": "Create Order"
   }
 }

@@ -4,7 +4,8 @@
   import DataTable from '$lib/ui/DataTable.svelte';
   import Input from '$lib/ui/Input.svelte';
   import type { Badge, Field, Order, Station } from '$lib/order/types';
-  import { listOrders, createOrder } from '$lib/order/vcs-store';
+  import { listOrders, createOrder } from '$lib/order/signage-store';
+  import OrderForm from '$lib/order/OrderForm.svelte';
 
   type OrderRow = { id: string; client: string; title: string; status: string; due: string };
 
@@ -34,6 +35,7 @@
     title: string;
     client: string;
     due: string;
+    loadingDate?: string;
     badges: Badge[];
     fields: Field[];
     materials: Field[];
@@ -49,6 +51,7 @@
       title: '4500mm Long Frame',
       client: 'ABTB BIJEN',
       due: '2025-10-26',
+      loadingDate: '2025-10-24',
       badges: ['OPEN', 'IN_PROGRESS'],
       fields: [{ key: 'priority', label: 'Priority', value: 'Normal' }],
       materials: [{ key: 'face', label: 'Face', value: 'Acrylic 3mm White' }],
@@ -60,6 +63,7 @@
       title: 'Pylon Letters',
       client: 'KIA',
       due: '2025-10-30',
+      loadingDate: '2025-10-28',
       badges: ['OPEN'],
       fields: [{ key: 'priority', label: 'Priority', value: 'High' }],
       materials: [{ key: 'face', label: 'Face', value: 'Aluminium 4mm' }],
@@ -71,6 +75,7 @@
       title: 'Menu Lightbox',
       client: 'Burger King',
       due: '2025-11-03',
+      loadingDate: '2025-11-01',
       badges: ['OPEN', 'URGENT'],
       fields: [{ key: 'priority', label: 'Priority', value: 'Rush' }],
       materials: [{ key: 'face', label: 'Face', value: 'Acrylic 5mm Frosted' }],
@@ -100,6 +105,7 @@
       fields: seed.fields,
       materials: seed.materials,
       progress: seed.progress,
+      loadingDate: seed.loadingDate,
       file: {
         id: `${seed.id}-file`,
         name: seed.fileName,
@@ -128,6 +134,7 @@
 
   let rows: OrderRow[] = [];
   let q = '';
+  let formOpen = false;
 
   function refresh() {
     rows = listOrders()
@@ -150,9 +157,16 @@
 <section class="card">
   <div class="row" style="justify-content:space-between">
     <h2 style="margin:0">Orders</h2>
-    <div style="width:280px"><Input bind:value={q} placeholder="Filter by client…" ariaLabel="Filter" /></div>
+    <div class="row" style="gap:8px; align-items:center">
+      <button class="tag" on:click={() => (formOpen = true)}>New Order</button>
+      <div style="width:280px">
+        <Input bind:value={q} placeholder="Filter by client…" ariaLabel="Filter" />
+      </div>
+    </div>
   </div>
   <div style="margin-top:12px">
     <DataTable columns={columns} rows={rows} filterKey="client" filterText={q} />
   </div>
 </section>
+
+<OrderForm bind:open={formOpen} onClose={() => { formOpen = false; refresh(); }} />

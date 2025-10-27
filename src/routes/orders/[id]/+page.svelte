@@ -45,6 +45,7 @@
       title: '4500mm Long Frame',
       client: 'ABTB BIJEN',
       due: '2025-10-26',
+      loadingDate: '2025-10-24',
       badges: ['OPEN', 'IN_PROGRESS'],
       fields: [{ key: 'priority', label: 'Priority', value: 'Normal' }],
       materials: [{ key: 'face', label: 'Face', value: 'Acrylic 3mm White' }],

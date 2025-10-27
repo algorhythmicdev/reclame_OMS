@@ -7,6 +7,7 @@ export function seed(base: string) {
       title: '4500mm Long Frame',
       client: 'ABTB BIJEN',
       due: '2025-10-26',
+      loadingDate: '2025-10-24',
       file: `${base}/files/PO-250375_ABTB-BIJEN_4500mm.pdf`,
       progress: { CAD: 100, CNC: 100, SANDING: 40, BENDING: 0, WELDING: 0, PAINT: 0, ASSEMBLY: 0, QC: 0, LOGISTICS: 0 }
     },
@@ -15,6 +16,7 @@ export function seed(base: string) {
       title: 'Pylon Letters',
       client: 'KIA',
       due: '2025-10-30',
+      loadingDate: '2025-10-28',
       file: `${base}/files/PO-250420_KIA_Pylon.pdf`,
       progress: { CAD: 100, CNC: 80, SANDING: 20, BENDING: 0, WELDING: 0, PAINT: 0, ASSEMBLY: 0, QC: 0, LOGISTICS: 0 }
     }
@@ -31,6 +33,7 @@ export function seed(base: string) {
           title: s.title,
           client: s.client,
           due: s.due,
+          loadingDate: s.loadingDate,
           badges: ['OPEN', 'IN_PROGRESS'],
           fields: [{ key: 'priority', label: 'Priority', value: 'Normal' }],
           materials: [{ key: 'face', label: 'Face', value: 'Acrylic 3mm White' }],

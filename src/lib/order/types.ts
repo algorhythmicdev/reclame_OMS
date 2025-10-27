@@ -25,6 +25,7 @@ export type Commit = {
     fields: Field[]; materials: Field[]; badges: Badge[];
     progress: Record<Station, number>;
     defaultRevisionId: string;
+    loadingDate: string;
   }>;
 };
 
@@ -49,6 +50,7 @@ export type Order = {
   title: string;
   client: string;
   due: string;                // ISO
+  loadingDate?: string | null;
   badges: Badge[];
   // Working snapshot (applies default branch head + default revision)
   fields: Field[];
