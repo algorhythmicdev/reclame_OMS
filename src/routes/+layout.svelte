@@ -50,6 +50,25 @@
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
   });
+
+  onMount(async () => {
+    if (import.meta.env.DEV) {
+      // axe is ~300KB — load only in dev
+      const axe = await import('axe-core'); // npm i axe-core -D
+      // Check only color contrast + focusable/focus-visible
+      axe.default
+        .run(document, {
+          runOnly: { type: 'rule', values: ['color-contrast', 'focus-order-semantics', 'focus-visible'] }
+        })
+        .then((results) => {
+          if (results.violations.length) {
+            console.group('%cA11Y (axe)', 'color:#fff;background:#e11d48;padding:2px 6px;border-radius:4px');
+            results.violations.forEach((v) => console.warn(v.id, v.nodes.map((n) => n.target)));
+            console.groupEnd();
+          }
+        });
+    }
+  });
 </script>
 
 <svelte:head>
@@ -106,23 +125,3 @@
 }
 .rf-main{ min-width:0; }
 </style>
-
-<script>
-  import { onMount } from 'svelte';
-  onMount(async () => {
-    if (import.meta.env.DEV) {
-      // axe is ~300KB — load only in dev
-      const axe = await import('axe-core'); // npm i axe-core -D
-      // Check only color contrast + focusable/focus-visible
-      axe.default.run(document, {
-        runOnly: { type: 'rule', values: ['color-contrast','focus-order-semantics','focus-visible'] }
-      }).then(results => {
-        if (results.violations.length) {
-          console.group('%cA11Y (axe)', 'color:#fff;background:#e11d48;padding:2px 6px;border-radius:4px');
-          results.violations.forEach(v => console.warn(v.id, v.nodes.map(n=>n.target)));
-          console.groupEnd();
-        }
-      });
-    }
-  });
-</script>

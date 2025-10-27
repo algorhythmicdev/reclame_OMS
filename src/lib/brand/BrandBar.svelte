@@ -22,7 +22,7 @@
   }
 </script>
 
-<header class="brandbar" role="banner">
+<header class="brandbar">
   <a href={`${base}/`} class="brand-link" aria-label="ReclamFabrik home">
     <img src={logoSrc()} alt="Reclamefabriek · cube" class="brand-logo" width="220" height="64" decoding="async" />
   </a>
