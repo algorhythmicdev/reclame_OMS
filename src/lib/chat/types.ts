@@ -12,4 +12,22 @@ export type Message = {
   ts: string;
   text: string;
   mentions?: string[];
+  variant?: 'user' | 'system';
+  event?: SystemMessageEvent;
 };
+
+export type SystemMessageEvent =
+  | {
+      type: 'stage_rework';
+      orderId: string;
+      orderTitle: string;
+      station: import('$lib/order/stages').StationTag;
+      reason: import('$lib/order/stages').ReworkReason;
+      note?: string;
+    }
+  | {
+      type: 'stage_completed';
+      orderId: string;
+      orderTitle: string;
+      station: import('$lib/order/stages').StationTag;
+    };

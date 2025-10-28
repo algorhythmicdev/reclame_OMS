@@ -4,6 +4,7 @@
   import { Grid, Calendar, PackageSearch, FolderOpen, Settings, KanbanSquare } from 'lucide-svelte';
   import ThemeSwitch from '$lib/ui/ThemeSwitch.svelte';
   import LanguageSwitch from '$lib/ui/LanguageSwitch.svelte';
+  import OperationsDigest from '$lib/ui/OperationsDigest.svelte';
 
   const sanitizeBase = () => {
     const trimmed = (base ?? '').trim();
@@ -51,7 +52,11 @@
   </div>
 </section>
 
-<section class="grid" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap: 10px; margin-top: 10px;">
+<div style="margin-top:16px">
+  <OperationsDigest />
+</div>
+
+<section class="grid" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap: 10px; margin-top: 16px;">
   <ThemeSwitch />
   <LanguageSwitch />
 </section>

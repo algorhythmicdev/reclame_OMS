@@ -70,6 +70,15 @@ export const STATE_LABEL: Record<StageState, string> = {
   COMPLETED: 'stages.COMPLETED'
 };
 
+export const STAGE_SEQUENCE: StageState[] = [
+  'NOT_STARTED',
+  'QUEUED',
+  'IN_PROGRESS',
+  'BLOCKED',
+  'REWORK',
+  'COMPLETED'
+];
+
 export const STATE_TONE: Record<
   StageState,
   'primary' | 'warn' | 'danger' | 'success' | 'muted'

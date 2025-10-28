@@ -198,7 +198,23 @@
   },
   "launchpad": {
     "themes": "Tēmas",
-    "language": "Valoda"
+    "language": "Valoda",
+    "digest": {
+      "title": "Operāciju pārskats",
+      "subtitle": "Maiņas fokuss no aktīvajiem pasūtījumiem.",
+      "next_load": "Tuvākā iekraušanas diena",
+      "no_loading": "Nav norādīta iekraušanas diena.",
+      "due_soon": "Termiņš 7 dienu laikā",
+      "due_none": "Šonedēļ termiņu nav.",
+      "due_in": "Termiņš pēc {days}d",
+      "blocked": "Aizturētie darbi",
+      "blocked_clear": "Visas stacijas brīvas.",
+      "station_health": "Staciju noslodze",
+      "station_empty": "Nav rindas",
+      "rework_watch": "Pārstrāžu uzraudzība",
+      "rework_none": "Atkārtotu darbu nav.",
+      "order_count": "{count} pasūtījumi"
+    }
   },
   "dashboard": {
     "kpi": {
@@ -328,7 +344,25 @@
     "message_placeholder": "Ziņa (izmanto @name pieminēšanai)",
     "signed_in_as": "Pieslēdzies kā",
     "mentions": "Pieminējumi",
-    "empty": "Vēl nav ziņu."
+    "to": "Kam",
+    "sending_to": "Adresē",
+    "remove_mention": "Noņemt pieminējumu {name}",
+    "empty": "Vēl nav ziņu.",
+    "quick_mentions": "Brigāžu saīsnes",
+    "quick_mentions_station": "Pievienot {station} brigādi",
+    "system": {
+      "name": "Sistēma",
+      "note_label": "Piezīme",
+      "rework": {
+        "summary": "Nosūtīts pārlabošanai",
+        "body": "Pārsūtīts pārlabošanai — {reason}"
+      },
+      "completed": {
+        "summary": "Stadija pabeigta",
+        "badge": "Pabeigts",
+        "body": "Stadija atzīmēta kā pabeigta"
+      }
+    }
   },
   "loading": {
     "assign": "Piešķirt",
@@ -374,7 +408,22 @@
   },
   "notifications": {
     "title": "Paziņojumi",
-    "empty": "Pagaidām nav paziņojumu."
+    "empty": "Pagaidām nav paziņojumu.",
+    "filter": {
+      "station": "Staciju filtrs",
+      "urgency": "Steidzamība",
+      "all_stations": "Visas stacijas",
+      "all_urgencies": "Visi līmeņi"
+    },
+    "urgency": {
+      "normal": "Parasts",
+      "urgent": "Steidzams"
+    },
+    "pin_label": "Piespraust paziņojumu",
+    "unpin_label": "Atspraust paziņojumu",
+    "pinned_section": "Piespraustie",
+    "rework_requested": "{order} ({orderId}) • {station} nosūtīts pārlabošanai",
+    "stage_completed": "{order} ({orderId}) • {station} atzīmēta kā pabeigta"
   },
   "settings": {
     "title": "Iestatījumi",

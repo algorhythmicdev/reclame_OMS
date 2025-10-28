@@ -1,11 +1,47 @@
 import { getOrder, openChangeRequest, approveChangeRequest } from './signage-store';
 import type { StationTag, ReworkReason, StageCycle, StageState } from './stages';
+import { get } from 'svelte/store';
 import { notify } from '$lib/notifications/store';
-import { sendMessage } from '$lib/chat/chat-store';
+import { postSystemEvent } from '$lib/chat/chat-store';
+import { t } from 'svelte-i18n';
+import { TERMS } from '$lib/order/names';
+import { REWORK_LABEL } from './stages';
+import { track } from '$lib/telemetry';
 
-function broadcast(orderId: string, station: StationTag, text: string, mentions: string[] = []) {
-  notify(`${orderId} · ${station}: ${text}`);
-  sendMessage('workstations', `${orderId} · ${station}: ${text}`, mentions);
+function translateStation(station: StationTag) {
+  const translate = get(t);
+  const key = TERMS.stations[station];
+  return translate(key);
+}
+
+function notifyStation(
+  orderId: string,
+  orderTitle: string,
+  station: StationTag,
+  textKey: string,
+  options: { urgency?: 'normal' | 'urgent' } = {}
+) {
+  const translate = get(t);
+  const stationLabel = translate(TERMS.stations[station]);
+  const text = translate(textKey, {
+    order: orderTitle || orderId,
+    orderId,
+    station: stationLabel
+  });
+  notify(text, { station, urgency: options.urgency });
+}
+
+function broadcast(
+  orderId: string,
+  orderTitle: string,
+  station: StationTag,
+  body: string,
+  event: import('$lib/chat/types').SystemMessageEvent,
+  mentions: string[] = []
+) {
+  const stationLabel = translateStation(station);
+  const headline = `${orderTitle} (${orderId}) · ${stationLabel}`;
+  postSystemEvent('workstations', `${headline} — ${body}`, event, mentions);
 }
 
 export function adminSendToRework(
@@ -38,7 +74,23 @@ export function adminSendToRework(
   });
   approveChangeRequest(orderId, prId, admin);
 
-  broadcast(orderId, station, 'rework requested', mentions);
+  const reasonLabel = get(t)(REWORK_LABEL[reason]);
+  notifyStation(orderId, order.title, station, 'notifications.rework_requested', { urgency: 'urgent' });
+  broadcast(
+    orderId,
+    order.title,
+    station,
+    get(t)('chat.system.rework.body', { reason: reasonLabel }),
+    {
+      type: 'stage_rework',
+      orderId,
+      orderTitle: order.title,
+      station,
+      reason,
+      note
+    },
+    mentions
+  );
 }
 
 export function adminApplyStage(
@@ -58,6 +110,35 @@ export function adminApplyStage(
   approveChangeRequest(orderId, prId, admin);
 
   if (next === 'COMPLETED') {
-    broadcast(orderId, station, 'completed', mentions);
+    const order = getOrder(orderId);
+    if (!order) return;
+    notifyStation(orderId, order.title, station, 'notifications.stage_completed');
+    broadcast(
+      orderId,
+      order.title,
+      station,
+      get(t)('chat.system.completed.body'),
+      {
+        type: 'stage_completed',
+        orderId,
+        orderTitle: order.title,
+        station
+      },
+      mentions
+    );
   }
+}
+
+export function trackStageProposal(
+  orderId: string,
+  station: StationTag,
+  state: StageState,
+  note?: string
+) {
+  track('stage_proposed', {
+    orderId,
+    station,
+    state,
+    noteLength: note?.trim().length ?? 0
+  });
 }
