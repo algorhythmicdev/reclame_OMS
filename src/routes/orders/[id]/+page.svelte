@@ -25,6 +25,7 @@
   import StageEditor from '$lib/order/StageEditor.svelte';
   import ReworkQuick from '$lib/order/ReworkQuick.svelte';
   import { adminSendToRework, adminApplyStage, trackStageProposal } from '$lib/order/signage-actions';
+  import { ClipboardList, Boxes, CalendarDays } from 'lucide-svelte';
 
   import type { Order, StationLog, Badge } from '$lib/order/types.signage';
   import {
@@ -39,36 +40,56 @@
     setLoadingDate
   } from '$lib/order/signage-store';
   import { blankStages, type StageState, type StationTag, type ReworkReason } from '$lib/order/stages';
+  import { getOrderSeed } from '$lib/order/order-seeds';
 
   export let params;
   const id = params.id;
 
-  const fallbackFileMap: Record<string, string> = {
-    'PO-250375': 'PO-250375_ABTB-BIJEN_4500mm.pdf',
-    'PO-250420': 'NL REKLATEKST Wassink 7000 mm  PO-251076  Nov 14.pdf',
-    'PO-250501': 'NL LEVANTO ALBERT HEIJN  Lightbox 500 mm   PO-35818  Nov 14.pdf'
-  };
-
   let existing = getOrder(id);
   if (!existing) {
-    const stages = blankStages();
-    stages.CAD = 'COMPLETED';
-    stages.CNC = 'COMPLETED';
-    stages.SANDING = 'IN_PROGRESS';
-    const fileName = fallbackFileMap[id] ?? 'PO-250375_ABTB-BIJEN_4500mm.pdf';
-    existing = createOrder({
-      id,
-      title: '4500mm Long Frame',
-      client: 'ABTB BIJEN',
-      due: '2025-10-26',
-      loadingDate: '2025-10-24',
-      badges: ['OPEN', 'IN_PROGRESS'],
-      fields: [{ key: 'priority', label: 'Priority', value: 'Normal' }],
-      materials: [{ key: 'face', label: 'Face', value: 'Acrylic 3mm White' }],
-      stages,
-      cycles: [],
-      file: { id: 'f1', name: fileName, path: `${base}/files/${fileName}`, kind: 'pdf' }
-    });
+    const seed = getOrderSeed(id);
+    if (seed) {
+      const stages = seed.stages ? { ...blankStages(), ...seed.stages } : blankStages();
+      existing = createOrder({
+        id: seed.id,
+        title: seed.title,
+        client: seed.client,
+        due: seed.due,
+        loadingDate: seed.loadingDate,
+        badges: seed.badges,
+        fields: seed.fields,
+        materials: seed.materials,
+        stages,
+        cycles: [],
+        isRD: seed.isRD,
+        rdNotes: seed.rdNotes,
+        file: {
+          id: `${seed.id}-file`,
+          name: seed.fileName,
+          path: `${base}/files/${seed.fileName}`,
+          kind: 'pdf'
+        }
+      });
+    } else {
+      const fallbackName = 'PO-250375_ABTB-BIJEN_4500mm.pdf';
+      const stages = blankStages();
+      stages.CAD = 'COMPLETED';
+      stages.CNC = 'COMPLETED';
+      stages.SANDING = 'IN_PROGRESS';
+      existing = createOrder({
+        id,
+        title: '4500mm Long Frame',
+        client: 'ABTB BIJEN',
+        due: '2025-10-26',
+        loadingDate: '2025-10-24',
+        badges: ['OPEN', 'IN_PROGRESS'],
+        fields: [{ key: 'priority', label: 'Priority', value: 'Normal' }],
+        materials: [{ key: 'face', label: 'Face', value: 'Acrylic 3mm White' }],
+        stages,
+        cycles: [],
+        file: { id: 'f1', name: fallbackName, path: `${base}/files/${fallbackName}`, kind: 'pdf' }
+      });
+    }
   }
 
   let o = getOrder(id)!;
@@ -284,51 +305,93 @@
 <div style="margin:10px 0"><Tabs {tabs} bind:active={tab} /></div>
 
 <section id="overview" hidden={tab!=='overview'} aria-label={$t('order.overview')}>
-  <div class="grid" style="grid-template-columns:1.6fr 1fr;align-items:start;gap:16px">
-    {#if pdf}
-      <section aria-label={$t('order.currentPdf')}>
+  <div class="order-overview">
+    <div class="order-overview__preview" aria-label={$t('order.currentPdf')}>
+      {#if pdf}
         <PdfFrame src={pdf.path} />
-      </section>
-    {:else}
-      <section class="card" aria-label={$t('order.currentPdf')}>
-        <h3 style="margin:0 0 8px 0">{$t('order.currentPdf')}</h3>
-        <div class="muted">{$t('order.no_file')}</div>
-      </section>
-    {/if}
+      {:else}
+        <section class="card order-preview--empty">
+          <h3>{$t('order.currentPdf')}</h3>
+          <p class="muted">{$t('order.no_file')}</p>
+        </section>
+      {/if}
+    </div>
 
-    <aside class="grid" style="gap:12px">
+    <div class="order-overview__details">
       {#if $role === 'Admin'}
-        <section class="card">
-          <h3 style="margin:0 0 8px 0">{$t('orderPage.loading.title')}</h3>
+        <section class="card order-detail">
+          <header class="order-detail__title">
+            <CalendarDays size={18} aria-hidden="true" />
+            <h3>{$t('orderPage.loading.title')}</h3>
+          </header>
           <LoadingDatePicker bind:selected={loadingSelection} />
-          <div class="row" style="margin-top:8px;gap:8px;flex-wrap:wrap;justify-content:space-between">
-            <span class="muted" style="font-size:.85rem">{$t('orderPage.loading.current')} {o.loadingDate || '—'}</span>
-            <div class="row" style="gap:6px">
+          <div class="order-detail__meta">
+            <span class="muted">{$t('orderPage.loading.current')} {o.loadingDate || '—'}</span>
+            <div class="order-detail__actions">
               <button class="tag" type="button" on:click={assignLoadingDate}>{$t('loading.assign')}</button>
               <button class="tag" type="button" on:click={clearLoadingDate} disabled={!o.loadingDate}>{$t('orderPage.loading.clear')}</button>
             </div>
           </div>
         </section>
       {/if}
-      <section class="card">
-        <h3 style="margin:0 0 8px 0">{$t('order.fields')}</h3>
-        <ul>{#each o.fields as field}<li><b>{field.label}:</b> {field.value}</li>{/each}</ul>
-        <h3 style="margin:10px 0 8px">{$t('order.materials')}</h3>
-        <ul>{#each o.materials as material}<li><b>{material.label}:</b> {material.value}</li>{/each}</ul>
+
+      <section class="card order-detail order-detail--fields">
+        <h3 class="order-detail__heading">
+          <ClipboardList size={16} aria-hidden="true" />
+          {$t('order.fields')}
+        </h3>
+        <ul class="order-list">{#each o.fields as field}<li><span>{field.label}</span><strong>{field.value}</strong></li>{/each}</ul>
+        <h3 class="order-detail__heading">
+          <Boxes size={16} aria-hidden="true" />
+          {$t('order.materials')}
+        </h3>
+        <ul class="order-list">{#each o.materials as material}<li><span>{material.label}</span><strong>{material.value}</strong></li>{/each}</ul>
       </section>
+
       {#if o.isRD}
-        <section class="card" style="background:color-mix(in oklab,var(--accent-2) 12%, var(--bg-1));">
-          <h3 style="margin:0 0 8px 0">{$t('rd.flag')}</h3>
-          <p class="muted" style="white-space:pre-wrap">{o.rdNotes || '—'}</p>
+        <section class="card order-detail order-detail--rd">
+          <h3>{$t('rd.flag')}</h3>
+          <p class="muted">{o.rdNotes || '—'}</p>
         </section>
       {/if}
+    </div>
+
+    <div class="order-overview__modules">
       <MaterialsEditor items={o.materials} onPropose={proposeMaterials} onApplyAdmin={applyMaterialsAdmin} />
       <StageLegend stages={o.stages} cycles={o.cycles ?? []} />
       <StageEditor value={o.stages} onApplyAdmin={applyStage} onPropose={proposeStage} />
       <GanttLine items={ganttItems} />
-    </aside>
+    </div>
   </div>
 </section>
+
+<style>
+  .order-overview{ display:grid; gap:24px }
+  .order-overview__preview{ display:grid; gap:12px }
+  .order-preview--empty{ min-height:260px; display:flex; flex-direction:column; gap:8px; justify-content:center }
+  .order-preview--empty h3{ margin:0 }
+  .order-preview--empty p{ margin:0 }
+  .order-overview__details{ display:grid; gap:16px; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); align-items:start }
+  .order-overview__modules{ display:grid; gap:16px; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); align-items:start }
+  .order-detail h3{ margin:0 0 8px }
+  .order-detail__title{ display:flex; align-items:center; gap:8px }
+  .order-detail__title h3{ margin:0; font-size:1rem }
+  .order-detail__heading{ display:flex; align-items:center; gap:8px; margin:0 0 8px; font-size:1rem }
+  .order-detail__heading :global(svg){ flex:0 0 auto }
+  .order-detail__meta{ display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap }
+  .order-detail__actions{ display:flex; gap:8px; flex-wrap:wrap }
+  .order-list{ list-style:none; padding:0; margin:0; display:grid; gap:6px }
+  .order-list li{ display:flex; justify-content:space-between; gap:12px; border-bottom:1px solid color-mix(in oklab,var(--border) 60%, transparent); padding:6px 0 }
+  .order-list li:last-child{ border-bottom:none }
+  .order-list li span{ color:var(--muted); font-weight:500 }
+  .order-list li strong{ font-weight:600 }
+  .order-detail--rd{ background:color-mix(in oklab,var(--accent-2) 14%, var(--bg-1)) }
+  .order-detail--rd p{ margin:0; white-space:pre-wrap }
+
+  @media (max-width: 960px){
+    .order-overview__modules{ grid-template-columns:1fr }
+  }
+</style>
 
 <section id="revisions" hidden={tab!=='revisions'} aria-label={$t('order.revisions')}>
   <div class="grid" style="grid-template-columns:2fr 1fr;align-items:start;gap:16px">

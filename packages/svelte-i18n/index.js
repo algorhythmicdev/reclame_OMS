@@ -5,6 +5,15 @@ const pending = new Map();
 const dictionaries = writable({});
 let fallbackLocale = 'en';
 
+export function addMessages(code, messages) {
+  if (typeof code !== 'string') throw new TypeError('locale code must be a string');
+  if (messages == null || typeof messages !== 'object') throw new TypeError('messages must be an object');
+  dictionaries.update((dicts) => ({
+    ...dicts,
+    [code]: { ...(dicts[code] || {}), ...messages }
+  }));
+}
+
 export function register(code, loader) {
   if (typeof code !== 'string') throw new TypeError('locale code must be a string');
   if (typeof loader !== 'function') throw new TypeError('loader must be a function');

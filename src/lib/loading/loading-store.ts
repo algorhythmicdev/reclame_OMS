@@ -1,5 +1,6 @@
 // Local demo store for loading days; backed by localStorage for now.
 import { listOrders } from '$lib/order/signage-store';
+import type { Badge, StageMap } from '$lib/order/types';
 
 export type LoadingDay = {
   id: string; // YYYY-MM-DD
@@ -62,9 +63,28 @@ export function upcoming(fromISO = new Date().toISOString().slice(0, 10)) {
   return listAll().filter((d) => d.active && d.date >= fromISO);
 }
 
+export type LoadingAssignment = {
+  id: string;
+  title: string;
+  client: string;
+  due: string;
+  badges: Badge[];
+  stages: StageMap;
+};
+
 export function usage(dateISO: string) {
-  const orders = listOrders();
-  const assigned = orders.filter((order) => order.loadingDate === dateISO).length;
+  const matching = listOrders().filter((order) => order.loadingDate === dateISO);
+  const orders: LoadingAssignment[] = matching
+    .map((order) => ({
+      id: order.id,
+      title: order.title,
+      client: order.client,
+      due: order.due,
+      badges: [...order.badges],
+      stages: order.stages
+    }))
+    .sort((a, b) => a.due.localeCompare(b.due));
+
   const cap = DB[dateISO]?.capacity ?? 0;
-  return { assigned, capacity: cap, full: cap > 0 && assigned >= cap };
+  return { assigned: orders.length, capacity: cap, full: cap > 0 && orders.length >= cap, orders };
 }

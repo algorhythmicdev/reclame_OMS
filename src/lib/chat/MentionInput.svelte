@@ -179,6 +179,7 @@
         type="button"
         class="mention-item"
         role="option"
+        aria-selected="false"
         on:click={() => insertMention(user.id)}
       >
         @{user.name}

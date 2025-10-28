@@ -9,8 +9,8 @@
   import LoadingDatePicker from '$lib/order/LoadingDatePicker.svelte';
   import { createOrder } from '$lib/order/signage-store';
   import { blankStages } from '$lib/order/stages';
-import { get } from 'svelte/store';
-import { t } from 'svelte-i18n';
+  import { get } from 'svelte/store';
+  import { t } from 'svelte-i18n';
 
   export let open = false;
   export let onClose: () => void = () => {};

@@ -9,6 +9,16 @@ export const TERMS = {
     ASSEMBLY: 'stations.ASSEMBLY',
     QC: 'stations.QC',
     LOGISTICS: 'stations.LOGISTICS'
+  },
+  badges: {
+    OPEN: 'order.badgeLabels.OPEN',
+    IN_PROGRESS: 'order.badgeLabels.IN_PROGRESS',
+    BLOCKED: 'order.badgeLabels.BLOCKED',
+    READY_TO_SHIP: 'order.badgeLabels.READY_TO_SHIP',
+    DONE: 'order.badgeLabels.DONE',
+    URGENT: 'order.badgeLabels.URGENT',
+    LOW_STOCK: 'order.badgeLabels.LOW_STOCK',
+    'R&D': 'order.badgeLabels.R&D'
   }
 } as const;
 

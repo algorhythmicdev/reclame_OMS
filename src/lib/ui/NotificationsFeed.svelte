@@ -3,6 +3,8 @@
   import { t } from 'svelte-i18n';
   import { TERMS } from '$lib/order/names';
   import { STATIONS, type StationTag } from '$lib/order/stages';
+  import StationBadge from '$lib/ui/StationBadge.svelte';
+  import { BellRing, AlertTriangle, Clock } from 'lucide-svelte';
 
   export let items: NotificationItem[] = [];
 
@@ -12,11 +14,10 @@
   let urgencyFilter: 'all' | 'urgent' | 'normal' = 'all';
 
   const stationOptions = STATIONS;
+  const stationLabel = (code: StationTag) => $t(TERMS.stations[code]);
 
   const urgencyLabel = (value: 'normal' | 'urgent') =>
     value === 'urgent' ? $t('notifications.urgency.urgent') : $t('notifications.urgency.normal');
-
-  const stationLabel = (code: StationTag) => $t(TERMS.stations[code]);
 
   function applyFilters(list: NotificationItem[]) {
     let filtered = list;
@@ -81,27 +82,37 @@
           data-urgency={item.urgency}
           data-seen={item.seen}
           aria-label={`${item.text} ${item.ts}`}
-          tabindex="0"
           on:mouseenter={() => handleSeen(item.id)}
-          on:focus={() => handleSeen(item.id)}
+          on:focusin={() => handleSeen(item.id)}
         >
-          <header class="notif-head">
+        <header class="notif-head">
+          <span class="notif-icon" aria-hidden="true">
+            <BellRing size={16} />
+          </span>
+          <div class="notif-body">
             <div class="notif-text">{item.text}</div>
-            <button
-              class="pin"
-              type="button"
-              on:click={() => handlePin(item.id)}
-              aria-pressed={item.pinned}
-              aria-label={$t('notifications.unpin_label')}
-            >★</button>
-          </header>
-          <footer class="notif-meta">
-            <span class="muted">{item.ts}</span>
-            {#if item.station}
-              <span class="tag tag--meta">{stationLabel(item.station)}</span>
-            {/if}
-            <span class="tag tag--meta" data-urgency={item.urgency}>{urgencyLabel(item.urgency)}</span>
-          </footer>
+            <div class="notif-meta">
+              <span class="muted">
+                <Clock size={14} aria-hidden="true" /> {item.ts}
+              </span>
+              {#if item.station}
+                <StationBadge station={item.station} size="sm" />
+              {/if}
+              <span class="tag tag--meta" data-urgency={item.urgency}>
+                {item.urgency === 'urgent'
+                  ? $t('notifications.urgency.urgent')
+                  : $t('notifications.urgency.normal')}
+              </span>
+            </div>
+          </div>
+          <button
+            class="pin"
+            type="button"
+            on:click={() => handlePin(item.id)}
+            aria-pressed={item.pinned}
+            aria-label={$t('notifications.unpin_label')}
+          >★</button>
+        </header>
         </article>
       {/each}
     {/if}
@@ -116,12 +127,29 @@
         data-urgency={item.urgency}
         data-seen={item.seen}
         aria-label={`${item.text} ${item.ts}`}
-        tabindex="0"
         on:mouseenter={() => handleSeen(item.id)}
-        on:focus={() => handleSeen(item.id)}
+        on:focusin={() => handleSeen(item.id)}
       >
         <header class="notif-head">
-          <div class="notif-text">{item.text}</div>
+          <span class="notif-icon" aria-hidden="true">
+            {#if item.urgency === 'urgent'}
+              <AlertTriangle size={16} />
+            {:else}
+              <BellRing size={16} />
+            {/if}
+          </span>
+          <div class="notif-body">
+            <div class="notif-text">{item.text}</div>
+            <div class="notif-meta">
+              <span class="muted">
+                <Clock size={14} aria-hidden="true" /> {item.ts}
+              </span>
+              {#if item.station}
+                <StationBadge station={item.station} size="sm" />
+              {/if}
+              <span class="tag tag--meta" data-urgency={item.urgency}>{urgencyLabel(item.urgency)}</span>
+            </div>
+          </div>
           <button
             class="pin"
             type="button"
@@ -130,13 +158,6 @@
             aria-label={item.pinned ? $t('notifications.unpin_label') : $t('notifications.pin_label')}
           >{item.pinned ? '★' : '☆'}</button>
         </header>
-        <footer class="notif-meta">
-          <span class="muted">{item.ts}</span>
-          {#if item.station}
-            <span class="tag tag--meta">{stationLabel(item.station)}</span>
-          {/if}
-          <span class="tag tag--meta" data-urgency={item.urgency}>{urgencyLabel(item.urgency)}</span>
-        </footer>
       </article>
     {/each}
 
@@ -180,33 +201,51 @@
   }
 
   .notif {
-    background: var(--bg-2);
-    padding: 10px;
+    background: var(--bg-1);
+    padding: 14px;
     display: grid;
-    gap: 6px;
-    border-left: 3px solid transparent;
+    border-radius: 16px;
+    border: 1px solid color-mix(in oklab, var(--border) 85%, transparent);
+    box-shadow: 0 12px 28px rgba(var(--shadow-rgb)/.12);
   }
 
   .notif[data-urgency='urgent'] {
-    border-left-color: var(--accent-1);
+    border-color: color-mix(in oklab, var(--danger) 40%, transparent);
   }
 
-  .notif[data-seen='true'] {
-    background: color-mix(in oklab, var(--bg-2) 80%, var(--bg-1) 20%);
-  }
-
-  .notif[data-seen='true'] .notif-text {
-    color: var(--muted);
+  .notif[data-seen='false'] {
+    box-shadow: 0 16px 32px rgba(var(--shadow-rgb)/.16);
   }
 
   .notif-head {
-    display: flex;
-    justify-content: space-between;
-    gap: 10px;
-    align-items: flex-start;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 12px;
+    align-items: start;
+  }
+
+  .notif-body {
+    display: grid;
+    gap: 8px;
+  }
+
+  .notif-icon {
+    width: 32px;
+    height: 32px;
+    display: grid;
+    place-items: center;
+    border-radius: 12px;
+    background: color-mix(in oklab, var(--bg-2) 80%, transparent);
+    color: var(--accent-2);
+  }
+
+  .notif[data-urgency='urgent'] .notif-icon {
+    color: var(--danger);
+    background: color-mix(in oklab, var(--danger) 18%, transparent);
   }
 
   .notif-text {
+    font-weight: 600;
     font-size: 0.95rem;
     line-height: 1.4;
   }
@@ -214,21 +253,33 @@
   .notif-meta {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
+    gap: 8px;
     align-items: center;
-    font-size: 0.75rem;
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+
+  .notif-meta > .muted {
+    display: inline-flex;
+    gap: 4px;
+    align-items: center;
   }
 
   .tag--meta {
     border-radius: 999px;
-    padding: 2px 6px;
-    background: color-mix(in oklab, var(--bg-0) 70%, var(--accent-2) 30%);
-    color: var(--text);
+    padding: 2px 8px;
+    background: color-mix(in oklab, var(--bg-2) 70%, transparent);
+    border: 1px solid color-mix(in oklab, var(--border) 80%, transparent);
+    color: var(--muted);
     font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
   }
 
   .tag--meta[data-urgency='urgent'] {
-    background: color-mix(in oklab, var(--accent-1) 35%, var(--bg-0));
+    color: var(--danger);
+    border-color: color-mix(in oklab, var(--danger) 40%, transparent);
+    background: color-mix(in oklab, var(--danger) 12%, transparent);
   }
 
   .pin {

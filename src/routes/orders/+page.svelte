@@ -2,12 +2,15 @@
   import { assets, base } from '$app/paths';
   import { onMount } from 'svelte';
   import Input from '$lib/ui/Input.svelte';
-  import type { Badge, Field, Order, Station } from '$lib/order/types';
+  import type { Order, Station, Badge as BadgeCode } from '$lib/order/types';
   import { listOrders, createOrder } from '$lib/order/signage-store';
   import OrderForm from '$lib/order/OrderForm.svelte';
   import { blankStages, STATE_LABEL, type StageState } from '$lib/order/stages';
   import { TERMS } from '$lib/order/names';
   import { t } from 'svelte-i18n';
+  import { ORDER_SEEDS } from '$lib/order/order-seeds';
+  import { BADGE_ICONS, badgeTone } from '$lib/order/badges';
+  import Badge from '$lib/ui/Badge.svelte';
 
   type OrderRow = {
     id: string;
@@ -15,81 +18,15 @@
     title: string;
     stages: [Station, StageState][];
     due: string;
+    loadingDate: string;
+    badges: BadgeCode[];
     href: string;
-  };
-
-  type OrderSeed = {
-    id: string;
-    title: string;
-    client: string;
-    due: string;
-    loadingDate?: string;
-    badges: Badge[];
-    fields: Field[];
-    materials: Field[];
-    stages: Record<Station, StageState>;
-    isRD?: boolean;
-    rdNotes?: string;
-    fileName: string;
   };
 
   const assetPath = (name: string) => (assets && assets !== '.' ? `${assets}/files/${name}` : `/files/${name}`);
 
-  const seeds: OrderSeed[] = [
-    {
-      id: 'PO-250375',
-      title: '4500mm Long Frame',
-      client: 'ABTB BIJEN',
-      due: '2025-10-26',
-      loadingDate: '2025-10-24',
-      badges: ['OPEN', 'IN_PROGRESS'],
-      fields: [{ key: 'priority', label: 'Priority', value: 'Normal' }],
-      materials: [{ key: 'face', label: 'Face', value: 'Acrylic 3mm White' }],
-      stages: {
-        ...blankStages(),
-        CAD: 'COMPLETED',
-        CNC: 'COMPLETED',
-        SANDING: 'IN_PROGRESS'
-      },
-      fileName: 'PO-250375_ABTB-BIJEN_4500mm.pdf'
-    },
-    {
-      id: 'PO-250420',
-      title: 'Pylon Letters',
-      client: 'KIA',
-      due: '2025-10-30',
-      loadingDate: '2025-10-28',
-      badges: ['OPEN'],
-      fields: [{ key: 'priority', label: 'Priority', value: 'High' }],
-      materials: [{ key: 'face', label: 'Face', value: 'Aluminium 4mm' }],
-      stages: {
-        ...blankStages(),
-        CAD: 'COMPLETED',
-        CNC: 'IN_PROGRESS',
-        SANDING: 'QUEUED'
-      },
-      fileName: 'NL REKLATEKST Wassink 7000 mm  PO-251076  Nov 14.pdf'
-    },
-    {
-      id: 'PO-250501',
-      title: 'Menu Lightbox',
-      client: 'Burger King',
-      due: '2025-11-03',
-      loadingDate: '2025-11-01',
-      badges: ['OPEN', 'R&D'],
-      fields: [{ key: 'priority', label: 'Priority', value: 'Rush' }],
-      materials: [{ key: 'face', label: 'Face', value: 'Acrylic 5mm Frosted' }],
-      stages: {
-        ...blankStages(),
-        CAD: 'IN_PROGRESS'
-      },
-      isRD: true,
-      rdNotes: 'Prototype signage. Confirm LED layout before assembly.',
-      fileName: 'NL LEVANTO ALBERT HEIJN  Lightbox 500 mm   PO-35818  Nov 14.pdf'
-    }
-  ];
-
-  for (const seed of seeds) {
+  for (const seed of ORDER_SEEDS) {
+    const stages = seed.stages ? { ...blankStages(), ...seed.stages } : blankStages();
     createOrder({
       id: seed.id,
       title: seed.title,
@@ -98,7 +35,7 @@
       badges: seed.badges,
       fields: seed.fields,
       materials: seed.materials,
-      stages: seed.stages,
+      stages,
       isRD: seed.isRD,
       rdNotes: seed.rdNotes,
       cycles: [],
@@ -120,6 +57,8 @@
       title: order.title,
       stages: Object.entries(stagesMap) as [Station, StageState][],
       due: order.due,
+      loadingDate: order.loadingDate ?? '',
+      badges: order.badges ?? [],
       href: `${base}/orders/${order.id}`
     };
   }
@@ -144,6 +83,7 @@
   }
 
   const stationLabel = (code: Station) => $t(TERMS.stations[code]);
+  const badgeLabel = (badge: BadgeCode) => $t(TERMS.badges[badge]);
 
   refresh();
 
@@ -175,8 +115,9 @@
             <th style="width:140px">{$t('orderLists.headers.po')}</th>
             <th>{$t('orderLists.headers.client')}</th>
             <th>{$t('orderLists.headers.title')}</th>
-            <th style="width:220px">{$t('orderLists.headers.summary')}</th>
+            <th style="width:140px">{$t('orderLists.headers.loading')}</th>
             <th style="width:120px">{$t('orderLists.headers.due')}</th>
+            <th style="width:260px">{$t('orderLists.headers.summary')}</th>
           </tr>
         </thead>
         <tbody>
@@ -185,14 +126,32 @@
               <td><a href={row.href}>{row.id}</a></td>
               <td>{row.client}</td>
               <td>{row.title}</td>
+              <td>{row.loadingDate ? row.loadingDate : '—'}</td>
+              <td>{row.due}</td>
               <td>
-                <div class="row" style="flex-wrap:wrap;gap:6px">
-                  {#each row.stages.slice(0,3) as [station, state]}
-                    <span class="tag">{stationLabel(station)}: {$t(STATE_LABEL[state])}</span>
-                  {/each}
+                <div class="order-meta">
+                  <div class="row" style="flex-wrap:wrap;gap:6px">
+                    {#each row.stages.slice(0,3) as [station, state]}
+                      <span class="tag">
+                        <strong>{stationLabel(station)}</strong> · {$t(STATE_LABEL[state])}
+                      </span>
+                    {/each}
+                  </div>
+                  <div class="badges">
+                    {#if row.badges.length}
+                      {#each row.badges as badge}
+                        {@const label = badgeLabel(badge)}
+                        <Badge tone={badgeTone(badge)} label={label}>
+                          <svelte:component this={BADGE_ICONS[badge]} size={14} aria-hidden="true" />
+                          <span>{label}</span>
+                        </Badge>
+                      {/each}
+                    {:else}
+                      <span class="muted">{$t('orderLists.no_badges')}</span>
+                    {/if}
+                  </div>
                 </div>
               </td>
-              <td>{row.due}</td>
             </tr>
           {/each}
           {#if visible.length === 0}
@@ -205,3 +164,17 @@
 </section>
 
 <OrderForm bind:open={formOpen} onClose={() => { formOpen = false; refresh(); }} />
+
+<style>
+  .order-meta {
+    display: grid;
+    gap: 6px;
+  }
+
+  .order-meta .badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+  }
+</style>

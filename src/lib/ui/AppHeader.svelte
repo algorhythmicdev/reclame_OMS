@@ -177,13 +177,18 @@
 
 <style>
   .app-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 240px) minmax(0, 1fr) auto;
     align-items: center;
-    gap: 16px;
-    padding: 12px;
-    background: var(--bg-1);
-    border-bottom: 1px solid var(--border);
+    gap: 18px;
+    padding: 16px clamp(16px, 3vw, 28px);
+    background: color-mix(in oklab, var(--bg-1) 88%, transparent);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid color-mix(in oklab, var(--border) 75%, transparent);
+    box-shadow: 0 10px 24px rgba(var(--shadow-rgb)/.12);
   }
 
   .app-header__brand {
@@ -264,7 +269,7 @@
 
   .app-header__nav {
     display: flex;
-    gap: 8px;
+    gap: 10px;
     align-items: center;
     overflow-x: auto;
     padding: 4px 0;
@@ -309,29 +314,37 @@
     white-space: nowrap;
   }
 
-  @media (max-width: 1200px) {
+  @media (max-width: 1280px) {
     .app-header {
       grid-template-columns: minmax(0, 1fr);
       grid-auto-rows: auto;
+      gap: 16px;
+    }
+
+    .app-header__brand {
+      order: 1;
     }
 
     .app-header__nav {
-      justify-self: stretch;
-      padding-bottom: 0;
+      order: 3;
+      width: 100%;
+      justify-content: flex-start;
     }
 
     .app-header__actions {
+      order: 2;
       justify-content: flex-start;
     }
   }
 
   @media (max-width: 720px) {
     .app-header {
+      padding: 12px;
       gap: 12px;
     }
 
     .app-header__actions {
-      row-gap: 8px;
+      row-gap: 10px;
     }
 
     .tag-group {
@@ -344,7 +357,7 @@
     .app-header__actions > :global(.tag-group),
     .app-header__actions > :global(.notif),
     .app-header__actions > :global(.user) {
-      flex: 0 1 auto;
+      flex: 1 1 auto;
     }
   }
 </style>
