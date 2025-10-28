@@ -13,6 +13,10 @@
   border:1px solid var(--border);
   background:var(--bg-2);
   color:var(--text);
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  line-height:1;
 }
 .badge[data-tone="primary"]{
   background:color-mix(in oklab, var(--accent-1) 18%, transparent);

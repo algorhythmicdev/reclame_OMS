@@ -11,10 +11,6 @@
   import CommandPalette from '$lib/ui/CommandPalette.svelte';
   import { t } from 'svelte-i18n';
 
-  if (import.meta.env.DEV) {
-    seed(base);
-  }
-
   let searchOpen = false;
 
   const openSearch = () => {
@@ -26,6 +22,7 @@
   };
 
   onMount(() => {
+    seed(base);
     const handler = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement | null;
       if (target?.isContentEditable) return;
@@ -128,9 +125,9 @@
 .rf-shell{
   flex:1;
   display:grid;
-  grid-template-columns:minmax(0,1fr) clamp(260px, 28vw, 360px);
-  gap:16px;
-  padding:clamp(12px, 3vw, 24px);
+  grid-template-columns:minmax(0,1fr) clamp(360px, 35vw, 460px);
+  gap:20px;
+  padding:clamp(16px, 3.5vw, 28px);
   align-items:start;
   min-height:0;
 }
@@ -142,16 +139,19 @@
 
 .rf-right{
   display:grid;
-  gap:16px;
+  gap:20px;
   align-self:start;
   min-width:0;
+  position:sticky;
+  top:calc(72px + clamp(16px, 3.5vw, 28px));
 }
 
-.rf-panel{
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-  min-height:0;
+.rf-panel{ 
+  display:flex; 
+  flex-direction:column; 
+  gap:14px; 
+  min-height:0; 
+  padding:18px; 
 }
 
 .rf-panel > header{

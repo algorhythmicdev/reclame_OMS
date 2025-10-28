@@ -4,9 +4,9 @@
   import { rooms, messages, sendMessage } from '$lib/chat/chat-store';
   import { users, currentUser } from '$lib/users/user-store';
   import { t } from 'svelte-i18n';
-  import { TERMS } from '$lib/order/names';
   import { REWORK_LABEL } from '$lib/order/stages';
   import type { StationTag, ReworkReason } from '$lib/order/stages';
+  import StationBadge from '$lib/ui/StationBadge.svelte';
 
   $: $rooms, $messages, $users, $currentUser, $t;
 
@@ -26,8 +26,9 @@
     return $users.find((user) => user.id === id)?.name ?? id;
   }
 
-  function stationLabel(station: StationTag) {
-    return $t(TERMS.stations[station]);
+  function authorStation(id: string): StationTag | null {
+    if (id === 'system') return null;
+    return $users.find((user) => user.id === id)?.stations?.[0] ?? null;
   }
 
   function reworkReasonLabel(reason: ReworkReason) {
@@ -37,6 +38,16 @@
   function isMention(messageMentions: string[] | undefined) {
     if (!messageMentions || messageMentions.length === 0) return false;
     return messageMentions.includes($currentUser.id);
+  }
+
+  function avatarInitial(id: string) {
+    const name = authorName(id) || '';
+    return name
+      .split(' ')
+      .map((part) => part.charAt(0))
+      .join('')
+      .slice(0, 2)
+      .toUpperCase();
   }
 
   function commit(text: string, mentions: string[]) {
@@ -67,11 +78,17 @@
 
 <div class="rf-panel chat-panel">
   <header class="chat-header">
-    <div>
+    <div class="chat-header__intro">
       <div class="chat-title">{$t('chat.title')}</div>
       {#if $currentUser}
-        <div class="muted" style="font-size:.8rem">
-          {$t('chat.signed_in_as')} <strong>{$currentUser.name}</strong>
+        <div class="chat-current">
+          <span class="chat-avatar" aria-hidden="true">{avatarInitial($currentUser.id)}</span>
+          <div class="chat-current__info">
+            <strong>{$currentUser.name}</strong>
+            {#if $currentUser.stations && $currentUser.stations[0]}
+              <StationBadge station={$currentUser.stations[0]} size="sm" tone="highlight" />
+            {/if}
+          </div>
         </div>
       {/if}
     </div>
@@ -100,6 +117,8 @@
     bind:this={scroller}
   >
     {#each roomMessages as message (message.id)}
+      {@const author = authorName(message.authorId)}
+      {@const station = message.variant === 'system' ? message.event?.station ?? null : authorStation(message.authorId)}
       <article
         class="card message"
         class:message--system={message.variant === 'system'}
@@ -107,8 +126,16 @@
       >
         <header class="message-head">
           <div class="message-meta">
-            <strong>{authorName(message.authorId)}</strong>
-            <span class="muted">{formatTime(message.ts)}</span>
+            <div class="message-persona">
+              <span class="message-avatar" aria-hidden="true">{avatarInitial(message.authorId)}</span>
+              <div class="message-author">
+                <strong>{author}</strong>
+                {#if station}
+                  <StationBadge station={station} size="sm" />
+                {/if}
+              </div>
+            </div>
+            <span class="muted message-time">{formatTime(message.ts)}</span>
           </div>
           {#if message.mentions && message.mentions.length}
             <div class="message-recipients" aria-label={$t('chat.mentions')}>
@@ -126,7 +153,9 @@
               <span class="muted">({message.event.orderId})</span>
             </div>
             <div class="system-tags">
-              <span class="tag tag--small">{stationLabel(message.event.station)}</span>
+              {#if message.event.station}
+                <StationBadge station={message.event.station} size="sm" />
+              {/if}
               {#if message.event.type === 'stage_rework'}
                 <span class="tag tag--small tone-warn">{reworkReasonLabel(message.event.reason)}</span>
               {:else if message.event.type === 'stage_completed'}
@@ -161,110 +190,38 @@
 </div>
 
 <style>
-.chat-panel{
-  gap:12px;
-}
-.chat-header{
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-}
-.chat-title{
-  font-weight:900;
-  margin-bottom:2px;
-}
-.rooms{
-  display:flex;
-  flex-wrap:wrap;
-  gap:6px;
-}
-.rooms .tag{
-  border-radius:999px;
-  font-size:.75rem;
-}
-.messages{
-  display:grid;
-  gap:8px;
-  min-height:0;
-  max-height:100%;
-}
-.message{
-  background:var(--bg-2);
-  padding:12px;
-  display:flex;
-  flex-direction:column;
-  gap:6px;
-}
-.message--system{
-  border-left:3px solid var(--accent-1);
-  background:color-mix(in oklab, var(--bg-2) 80%, var(--accent-2) 20%);
-}
-.message-head{
-  display:flex;
-  flex-direction:column;
-  gap:6px;
-  font-size:.85rem;
-}
-.message-meta{
-  display:flex;
-  justify-content:space-between;
-  gap:8px;
-}
-.message-recipients{
-  display:flex;
-  flex-wrap:wrap;
-  align-items:center;
-  gap:6px;
-}
-.message-recipients .label{
-  font-size:.75rem;
-  text-transform:uppercase;
-  letter-spacing:.03em;
-}
-.tag--small{
-  padding:4px 8px;
-  font-size:.75rem;
-}
-.message-body{
-  margin:0;
-  word-break:break-word;
-}
-.system-event{
-  display:grid;
-  gap:6px;
-}
-.system-headline{
-  display:flex;
-  gap:6px;
-  align-items:baseline;
-}
-.system-tags{
-  display:flex;
-  flex-wrap:wrap;
-  gap:6px;
-}
-.system-body{
-  margin:0;
-  font-size:.9rem;
-}
-.system-note{
-  margin:0;
-  display:flex;
-  gap:6px;
-  font-size:.85rem;
-  background:color-mix(in oklab, var(--bg-2) 85%, var(--accent-1) 15%);
-  padding:6px 8px;
-  border-radius:8px;
-}
-.tone-warn{
-  background:color-mix(in oklab, var(--accent-1) 30%, var(--bg-2));
-  color:var(--text);
-}
-.tone-ok{
-  background:color-mix(in oklab, var(--accent-2) 35%, var(--bg-2));
-  color:var(--text);
-}
-.message[data-mention="true"]{
-  outline:2px solid var(--accent-1);
-}
+  .chat-panel{ gap:16px; padding:16px }
+  .chat-header{ display:grid; gap:16px }
+  .chat-header__intro{ display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap }
+  .chat-title{ font-weight:800; font-size:1.05rem }
+  .chat-current{ display:flex; align-items:center; gap:10px; background:color-mix(in oklab,var(--bg-2) 75%, transparent); padding:8px 12px; border-radius:14px; border:1px solid color-mix(in oklab,var(--border) 85%, transparent) }
+  .chat-avatar{ width:32px; height:32px; border-radius:12px; display:grid; place-items:center; background:linear-gradient(135deg,var(--accent-2),color-mix(in oklab,var(--accent-2) 60%, var(--bg-2))); color:#fff; font-weight:700 }
+  .chat-current__info{ display:flex; flex-direction:column; gap:4px; font-size:.85rem }
+  .rooms{ display:flex; flex-wrap:wrap; gap:8px }
+  .rooms .tag{ border-radius:12px; font-size:.8rem }
+
+  .messages{ display:grid; gap:12px; min-height:0 }
+  .message{ display:flex; flex-direction:column; gap:10px; background:var(--bg-1); border:1px solid color-mix(in oklab,var(--border) 80%, transparent); padding:16px; box-shadow:0 12px 28px rgba(var(--shadow-rgb)/.12) }
+  .message[data-mention="true"]{ border-color:color-mix(in oklab,var(--info) 40%, transparent); box-shadow:0 16px 34px rgba(var(--shadow-rgb)/.16) }
+  .message--system{ border-left:4px solid var(--accent-1); background:color-mix(in oklab,var(--bg-1) 70%, var(--accent-2) 30%) }
+  .message-head{ display:flex; flex-direction:column; gap:8px }
+  .message-meta{ display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap }
+  .message-persona{ display:flex; align-items:flex-start; gap:10px }
+  .message-avatar{ width:28px; height:28px; border-radius:10px; display:grid; place-items:center; background:color-mix(in oklab,var(--bg-2) 80%, transparent); font-size:.8rem; font-weight:700; color:var(--text) }
+  .message-author{ display:grid; gap:4px; font-size:.85rem }
+  .message-time{ font-size:.75rem }
+  .message-recipients{ display:flex; flex-wrap:wrap; gap:6px; align-items:center }
+  .message-body{ margin:0; background:color-mix(in oklab,var(--bg-2) 80%, transparent); padding:12px; border-radius:12px; line-height:1.45 }
+  .system-event{ display:grid; gap:8px; background:color-mix(in oklab,var(--bg-2) 80%, transparent); padding:12px; border-radius:12px }
+  .system-headline{ display:flex; flex-wrap:wrap; gap:6px; align-items:center }
+  .system-tags{ display:flex; flex-wrap:wrap; gap:6px }
+  .system-body{ margin:0; line-height:1.5 }
+  .system-note{ margin:0; display:flex; gap:6px; font-size:.85rem; align-items:flex-start }
+
+  @media (max-width: 720px){
+    .chat-header__intro{ align-items:flex-start }
+    .chat-current{ width:100% }
+    .message-meta{ flex-direction:column; align-items:flex-start }
+    .message-time{ align-self:flex-end }
+  }
 </style>

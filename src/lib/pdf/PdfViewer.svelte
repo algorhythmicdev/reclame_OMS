@@ -139,8 +139,10 @@
   border-color: color-mix(in oklab, var(--danger) 40%, transparent);
 }
 .viewer{
-  max-width:100%;
-  border-radius:10px;
-  border:1px solid var(--border);
+  width:100%;
+  height:auto;
+  border-radius:12px;
+  border:1px solid color-mix(in oklab,var(--border) 85%, transparent);
+  background:var(--bg-0);
 }
 </style>

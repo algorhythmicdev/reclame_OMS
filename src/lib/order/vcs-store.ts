@@ -7,6 +7,12 @@ let DB: Record<string, Order> = (typeof window !== 'undefined')
   ? JSON.parse(localStorage.getItem(KEY) || '{}')
   : {};
 
+function emitChange() {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('rf-orders-change'));
+  }
+}
+
 function normalise(order: Order): Order {
   let mutated = false;
   if (!order.stages) {
@@ -35,7 +41,12 @@ function normalise(order: Order): Order {
   return order;
 }
 
-function persist() { if (typeof window !== 'undefined') localStorage.setItem(KEY, JSON.stringify(DB)); }
+function persist() {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(KEY, JSON.stringify(DB));
+    emitChange();
+  }
+}
 
 export function listOrders(): Order[] { return Object.values(DB).map((o) => ({ ...normalise(o) })); }
 export function getOrder(id: string): Order | null {

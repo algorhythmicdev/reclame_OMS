@@ -44,9 +44,9 @@
     "theme": {
       "label": "Тема",
       "options": {
-        "LightVim": "LightVim",
-        "DarkVim": "DarkVim",
-        "HighContrastVim": "HighContrastVim"
+        "LightVim": "Светлая",
+        "DarkVim": "Тёмная",
+        "HighContrastVim": "Высокий контраст"
       }
     },
     "language": {
@@ -92,6 +92,16 @@
     "create_change_request_hint": "Переключитесь на роль станции.",
     "timeline": "Хронология",
     "badges": "Бейджи",
+    "badgeLabels": {
+      "OPEN": "Открыт",
+      "IN_PROGRESS": "В работе",
+      "BLOCKED": "Заблокирован",
+      "READY_TO_SHIP": "Готов к отправке",
+      "DONE": "Завершён",
+      "URGENT": "Срочно",
+      "LOW_STOCK": "Мало материалов",
+      "R&D": "R&D"
+    },
     "quick_station_log": "Быстрый журнал станции",
     "station_label": "Станция",
     "progress_percent": "Прогресс (%)",
@@ -142,9 +152,11 @@
       "client": "Клиент",
       "title": "Название",
       "summary": "Сводка этапов",
+      "loading": "Погрузка",
       "due": "Срок"
     },
     "empty": "Заказы не найдены.",
+    "no_badges": "Нет значков",
     "filter_placeholder": "Фильтр по клиенту…",
     "filter_label": "Фильтр"
   },
@@ -180,9 +192,9 @@
     "by": "от {author}"
   },
   "themes": {
-    "light": "LightVim",
-    "dark": "DarkVim",
-    "hc": "HighContrastVim"
+    "light": "Светлая",
+    "dark": "Тёмная",
+    "hc": "Высокий контраст"
   },
   "a11y": {
     "toggle_right": "Показать/скрыть правую панель (Shift+R)",
@@ -270,6 +282,38 @@
     "loading_day_with_date": "День загрузки: {date}",
     "meta": "Вместимость {capacity} · Заметка: {note}",
     "note_empty": "—",
+    "summary": {
+      "idle": "Нет загрузок",
+      "open": "День загрузки открыт",
+      "available": "Есть свободные слоты",
+      "busy": "Почти заполнено",
+      "full": "Лимит достигнут",
+      "unlimited": "Запланировано заказов: {assigned}",
+      "capacity": "Занято {assigned} из {capacity}",
+      "note": "Заметка: {note}",
+      "no_note": "Заметок нет"
+    },
+    "legend": {
+      "title": "Легенда календаря",
+      "idle": "Загрузка выкл.",
+      "open": "День открыт",
+      "available": "Есть места",
+      "busy": "Почти занято",
+      "full": "Полностью занято"
+    },
+    "detail": {
+      "title": "Выбранный день",
+      "capacity": "Вместимость",
+      "assignments": "Назначения",
+      "orders_count": "Запланировано заказов: {count}",
+      "note": "Заметка",
+      "no_note": "Заметок нет",
+      "inactive": "Загрузка выключена",
+      "pick": "Выберите день, чтобы увидеть детали",
+      "orders": "Заказы на этот день",
+      "orders_empty": "На этот день нет назначенных заказов.",
+      "order_due": "Срок: {date}"
+    },
     "days": {
       "Mon": "Пн",
       "Tue": "Вт",

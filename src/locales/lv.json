@@ -44,9 +44,9 @@
     "theme": {
       "label": "Tēma",
       "options": {
-        "LightVim": "LightVim",
-        "DarkVim": "DarkVim",
-        "HighContrastVim": "HighContrastVim"
+        "LightVim": "Gaiša",
+        "DarkVim": "Tumša",
+        "HighContrastVim": "Augsts kontrasts"
       }
     },
     "language": {
@@ -92,6 +92,16 @@
     "create_change_request_hint": "Pārslēdzieties uz stacijas lomu.",
     "timeline": "Laika līnija",
     "badges": "Nozīmītes",
+    "badgeLabels": {
+      "OPEN": "Atvērts",
+      "IN_PROGRESS": "Procesā",
+      "BLOCKED": "Bloķēts",
+      "READY_TO_SHIP": "Gatavs nosūtīšanai",
+      "DONE": "Pabeigts",
+      "URGENT": "Steidzami",
+      "LOW_STOCK": "Maz krājumu",
+      "R&D": "P&A"
+    },
     "quick_station_log": "Ātrais stacijas žurnāls",
     "station_label": "Stacija",
     "progress_percent": "Progress (%)",
@@ -142,9 +152,11 @@
       "client": "Klients",
       "title": "Nosaukums",
       "summary": "Posmu kopsavilkums",
+      "loading": "Iekraušana",
       "due": "Termiņš"
     },
     "empty": "Nav atrasti pasūtījumi.",
+    "no_badges": "Nav nozīmju",
     "filter_placeholder": "Filtrēt pēc klienta…",
     "filter_label": "Filtrs"
   },
@@ -180,9 +192,9 @@
     "by": "no {author}"
   },
   "themes": {
-    "light": "LightVim",
-    "dark": "DarkVim",
-    "hc": "HighContrastVim"
+    "light": "Gaiša",
+    "dark": "Tumša",
+    "hc": "Augsts kontrasts"
   },
   "a11y": {
     "toggle_right": "Pārslēgt labo paneli (Shift+R)",
@@ -270,6 +282,38 @@
     "loading_day_with_date": "Iekraušanas diena: {date}",
     "meta": "Jauda {capacity} · Piezīme: {note}",
     "note_empty": "—",
+    "summary": {
+      "idle": "Nav plānoto iekraušanu",
+      "open": "Iekraušanas diena atvērta",
+      "available": "Pieejama jauda",
+      "busy": "Drīz pilns",
+      "full": "Jauda iztērēta",
+      "unlimited": "Ieplānoti {assigned} pasūtījumi",
+      "capacity": "Aizpildīti {assigned} no {capacity} slotiem",
+      "note": "Piezīme: {note}",
+      "no_note": "Piezīmes nav"
+    },
+    "legend": {
+      "title": "Kalendāra apzīmējumi",
+      "idle": "Iekraušana izslēgta",
+      "open": "Diena atvērta",
+      "available": "Pieejamas vietas",
+      "busy": "Gandrīz pilns",
+      "full": "Pilnībā aizņemts"
+    },
+    "detail": {
+      "title": "Izvēlētā diena",
+      "capacity": "Kapacitāte",
+      "assignments": "Piešķīrumi",
+      "orders_count": "Ieplānoti pasūtījumi: {count}",
+      "note": "Piezīme",
+      "no_note": "Piezīmes nav",
+      "inactive": "Iekraušana izslēgta",
+      "pick": "Izvēlieties dienu, lai redzētu detaļas",
+      "orders": "Pasūtījumi šai dienai",
+      "orders_empty": "Nav piešķirtu pasūtījumu šai dienai.",
+      "order_due": "Termiņš: {date}"
+    },
     "days": {
       "Mon": "Pr",
       "Tue": "Ot",

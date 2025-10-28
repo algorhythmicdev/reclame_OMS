@@ -44,9 +44,9 @@
     "theme": {
       "label": "Theme",
       "options": {
-        "LightVim": "LightVim",
-        "DarkVim": "DarkVim",
-        "HighContrastVim": "HighContrastVim"
+        "LightVim": "Light",
+        "DarkVim": "Dark",
+        "HighContrastVim": "High contrast"
       }
     },
     "language": {
@@ -92,6 +92,16 @@
     "create_change_request_hint": "Switch role to Station.",
     "timeline": "Timeline",
     "badges": "Badges",
+    "badgeLabels": {
+      "OPEN": "Open",
+      "IN_PROGRESS": "In progress",
+      "BLOCKED": "Blocked",
+      "READY_TO_SHIP": "Ready to ship",
+      "DONE": "Completed",
+      "URGENT": "Urgent",
+      "LOW_STOCK": "Low stock",
+      "R&D": "R&D"
+    },
     "quick_station_log": "Quick Station Log",
     "station_label": "Station",
     "progress_percent": "Progress (%)",
@@ -142,9 +152,11 @@
       "client": "Client",
       "title": "Title",
       "summary": "Stage summary",
+      "loading": "Loading",
       "due": "Due"
     },
     "empty": "No orders found.",
+    "no_badges": "No badges",
     "filter_placeholder": "Filter by client…",
     "filter_label": "Filter"
   },
@@ -270,6 +282,38 @@
     "loading_day_with_date": "Loading day: {date}",
     "meta": "Capacity {capacity} · Note: {note}",
     "note_empty": "—",
+    "summary": {
+      "idle": "No loading scheduled",
+      "open": "Open loading day",
+      "available": "Capacity available",
+      "busy": "Reaching capacity",
+      "full": "Capacity reached",
+      "unlimited": "{assigned} orders scheduled",
+      "capacity": "{assigned} of {capacity} slots booked",
+      "note": "Notes: {note}",
+      "no_note": "No notes yet"
+    },
+    "legend": {
+      "title": "Calendar legend",
+      "idle": "Loading off",
+      "open": "Open day",
+      "available": "Slots available",
+      "busy": "Nearly full",
+      "full": "Full day"
+    },
+    "detail": {
+      "title": "Selected day",
+      "capacity": "Capacity",
+      "assignments": "Assignments",
+      "orders_count": "{count} orders scheduled",
+      "note": "Note",
+      "no_note": "No notes yet",
+      "inactive": "Loading disabled",
+      "pick": "Choose a day to see loading details",
+      "orders": "Scheduled orders",
+      "orders_empty": "No orders assigned for this day.",
+      "order_due": "Due {date}"
+    },
     "days": {
       "Mon": "Mon",
       "Tue": "Tue",
