@@ -22,11 +22,12 @@ export type User = {
 const KEY_USER = 'rf_current_user';
 
 export const users = writable<User[]>([
-  { id: 'u-admin', name: 'Admin', role: 'Admin' },
-  { id: 'u-cnc1', name: 'CNC-1', role: 'Station', stations: ['CNC'] },
-  { id: 'u-sanding', name: 'Sanding', role: 'Station', stations: ['SANDING'] },
-  { id: 'u-welding', name: 'Welding', role: 'Station', stations: ['WELDING'] },
-  { id: 'u-paint', name: 'Paint', role: 'Station', stations: ['PAINT'] }
+  { id: 'u-admin', name: 'Lina Ops', role: 'Admin' },
+  { id: 'u-cnc1', name: 'Marta Jansone', role: 'Station', stations: ['CNC'] },
+  { id: 'u-sanding', name: 'Igor Petrovs', role: 'Station', stations: ['SANDING'] },
+  { id: 'u-welding', name: 'Līga Ozola', role: 'Station', stations: ['WELDING'] },
+  { id: 'u-paint', name: 'Anna Kalniņa', role: 'Station', stations: ['PAINT'] },
+  { id: 'u-logistics', name: 'Ravi Nair', role: 'Station', stations: ['LOGISTICS'] }
 ]);
 
 const start = typeof window !== 'undefined' ? localStorage.getItem(KEY_USER) : null;

@@ -198,7 +198,23 @@
   },
   "launchpad": {
     "themes": "Themes",
-    "language": "Language"
+    "language": "Language",
+    "digest": {
+      "title": "Operations digest",
+      "subtitle": "Shift focus pulled from active orders.",
+      "next_load": "Next loading day",
+      "no_loading": "No loading date assigned.",
+      "due_soon": "Due in next 7 days",
+      "due_none": "No deadlines this week.",
+      "due_in": "Due in {days}d",
+      "blocked": "Blocked work",
+      "blocked_clear": "All stations clear.",
+      "station_health": "Station health",
+      "station_empty": "No work queued",
+      "rework_watch": "Rework watch",
+      "rework_none": "No repeats logged.",
+      "order_count": "{count} orders"
+    }
   },
   "dashboard": {
     "kpi": {
@@ -328,7 +344,25 @@
     "message_placeholder": "Message (use @name to mention)",
     "signed_in_as": "Signed in as",
     "mentions": "Mentions",
-    "empty": "No messages yet."
+    "to": "To",
+    "sending_to": "Addressing",
+    "remove_mention": "Remove mention for {name}",
+    "empty": "No messages yet.",
+    "quick_mentions": "Crew shortcuts",
+    "quick_mentions_station": "Mention crew for {station}",
+    "system": {
+      "name": "System",
+      "note_label": "Note",
+      "rework": {
+        "summary": "Rework requested",
+        "body": "Rework requested — {reason}"
+      },
+      "completed": {
+        "summary": "Stage completed",
+        "badge": "Completed",
+        "body": "Stage marked completed"
+      }
+    }
   },
   "loading": {
     "assign": "Assign",
@@ -374,7 +408,22 @@
   },
   "notifications": {
     "title": "Notifications",
-    "empty": "No notifications yet."
+    "empty": "No notifications yet.",
+    "filter": {
+      "station": "Station filter",
+      "urgency": "Urgency",
+      "all_stations": "All stations",
+      "all_urgencies": "All urgency levels"
+    },
+    "urgency": {
+      "normal": "Normal",
+      "urgent": "Urgent"
+    },
+    "pin_label": "Pin notification",
+    "unpin_label": "Unpin notification",
+    "pinned_section": "Pinned",
+    "rework_requested": "{order} ({orderId}) • {station} sent to rework",
+    "stage_completed": "{order} ({orderId}) • {station} marked completed"
   },
   "settings": {
     "title": "Settings",

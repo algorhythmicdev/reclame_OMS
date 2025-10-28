@@ -2,11 +2,11 @@
   import { base } from '$app/paths';
   import { page } from '$app/stores';
   import { createEventDispatcher, onDestroy } from 'svelte';
-import { Search } from 'lucide-svelte';
-import { currentUser, users, currentUserId } from '$lib/users/user-store';
-import { unseenCount } from '$lib/notifications/count';
-import RoleSwitch from './RoleSwitch.svelte';
-import { t, locale } from 'svelte-i18n';
+  import { Search } from 'lucide-svelte';
+  import { currentUser, users, currentUserId } from '$lib/users/user-store';
+  import { unseenCount } from '$lib/notifications/count';
+  import RoleSwitch from './RoleSwitch.svelte';
+  import { t, locale } from 'svelte-i18n';
   import { setLocale } from '$lib/i18n';
   import { theme, type ThemeName } from '$lib/stores/theme';
   import { savePrefs } from '$lib/settings/service';
@@ -18,6 +18,7 @@ import { t, locale } from 'svelte-i18n';
     getActiveState,
     ariaCurrent
   } from '$lib/navigation/nav';
+  import { track } from '$lib/telemetry';
 
   const dispatch = createEventDispatcher<{ opensearch: void }>();
   const openSearch = () => dispatch('opensearch');
@@ -41,11 +42,11 @@ import { t, locale } from 'svelte-i18n';
 
   $: currentPath = toRelativePath($page.url?.pathname ?? '/');
 
-const navState = (href: string) => getActiveState(currentPath, href);
+  const navState = (href: string) => getActiveState(currentPath, href);
 
-const navAriaCurrent = (href: string) => ariaCurrent(navState(href));
+  const navAriaCurrent = (href: string) => ariaCurrent(navState(href));
 
-const themes: ThemeName[] = ['LightVim', 'DarkVim', 'HighContrastVim'];
+  const themes: ThemeName[] = ['LightVim', 'DarkVim', 'HighContrastVim'];
   let currentTheme: ThemeName = 'DarkVim';
   const unsubscribeTheme = theme.subscribe((value) => (currentTheme = value));
   onDestroy(() => unsubscribeTheme?.());
@@ -57,11 +58,13 @@ const themes: ThemeName[] = ['LightVim', 'DarkVim', 'HighContrastVim'];
   const selectTheme = (value: ThemeName) => {
     theme.set(value);
     savePrefs();
+    track('theme_toggle', { theme: value });
   };
 
   const changeLocale = (code: 'en' | 'ru' | 'lv') => {
     setLocale(code);
     savePrefs();
+    track('locale_toggle', { locale: code });
   };
 
   const onLocaleChange = (event: Event) => {
@@ -69,23 +72,25 @@ const themes: ThemeName[] = ['LightVim', 'DarkVim', 'HighContrastVim'];
     changeLocale(value);
   };
 
-const toggleUserMenu = () => (showUserMenu = !showUserMenu);
+  const toggleUserMenu = () => (showUserMenu = !showUserMenu);
 
-$: notificationLabel = notificationCount
-  ? `${$t('header.notifications.label')} (${$t('header.notifications.srCount', { count: notificationCount })})`
-  : $t('header.notifications.label');
+  $: notificationLabel = notificationCount
+    ? `${$t('header.notifications.label')} (${$t('header.notifications.srCount', { count: notificationCount })})`
+    : $t('header.notifications.label');
 
-const roleLabel = (role: string) => {
-  if (role === 'Admin') return $t('roles.admin');
-  if (role === 'Station') return $t('roles.station');
-  return role;
-};
+  const roleLabel = (role: string) => {
+    if (role === 'Admin') return $t('roles.admin');
+    if (role === 'Station') return $t('roles.station');
+    return role;
+  };
 </script>
 
 <header class="app-header">
-  <a href={`${base}/`} class="brand-link" aria-label={$t('app.brand.aria')}>
-    <img src={logo()} alt={$t('app.brand.aria')} class="brand-logo" width="220" height="64" decoding="async" />
-  </a>
+  <div class="app-header__brand">
+    <a href={`${base}/`} class="brand-link" aria-label={$t('app.brand.aria')}>
+      <img src={logo()} alt={$t('app.brand.aria')} class="brand-logo" width="220" height="64" decoding="async" />
+    </a>
+  </div>
 
   <nav class="app-header__nav" aria-label={$t('nav.launchpad')}>
     {#each navLinks as link}
@@ -172,13 +177,17 @@ const roleLabel = (role: string) => {
 
 <style>
   .app-header {
-    display: flex;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
     align-items: center;
     gap: 16px;
-    flex-wrap: wrap;
     padding: 12px;
     background: var(--bg-1);
     border-bottom: 1px solid var(--border);
+  }
+
+  .app-header__brand {
+    min-width: 0;
   }
 
   .brand-link {
@@ -255,21 +264,38 @@ const roleLabel = (role: string) => {
 
   .app-header__nav {
     display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-    flex: 1 1 auto;
+    gap: 8px;
+    align-items: center;
+    overflow-x: auto;
+    padding: 4px 0;
+    min-width: 0;
+    scrollbar-width: thin;
+  }
+
+  .app-header__nav::-webkit-scrollbar {
+    height: 6px;
+  }
+
+  .app-header__nav::-webkit-scrollbar-thumb {
+    background: color-mix(in oklab, var(--border) 60%, transparent);
+    border-radius: 999px;
   }
 
   .app-header__actions {
-    margin-left: auto;
     display: flex;
     align-items: center;
+    justify-content: flex-end;
     gap: 12px;
     flex-wrap: wrap;
+    min-width: 0;
   }
 
   .app-header__actions .tag {
     transition: background 0.2s ease, color 0.2s ease;
+  }
+
+  .shortcut {
+    margin-left: 8px;
   }
 
   .sr-only {
@@ -283,18 +309,42 @@ const roleLabel = (role: string) => {
     white-space: nowrap;
   }
 
-  @media (max-width: 900px) {
+  @media (max-width: 1200px) {
+    .app-header {
+      grid-template-columns: minmax(0, 1fr);
+      grid-auto-rows: auto;
+    }
+
+    .app-header__nav {
+      justify-self: stretch;
+      padding-bottom: 0;
+    }
+
+    .app-header__actions {
+      justify-content: flex-start;
+    }
+  }
+
+  @media (max-width: 720px) {
     .app-header {
       gap: 12px;
     }
 
-    .app-header__nav {
-      flex: 1 1 100%;
+    .app-header__actions {
+      row-gap: 8px;
     }
 
-    .app-header__actions {
+    .tag-group {
       width: 100%;
       justify-content: flex-start;
+    }
+
+    .app-header__actions > :global(.tag),
+    .app-header__actions > :global(select),
+    .app-header__actions > :global(.tag-group),
+    .app-header__actions > :global(.notif),
+    .app-header__actions > :global(.user) {
+      flex: 0 1 auto;
     }
   }
 </style>

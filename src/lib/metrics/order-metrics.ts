@@ -1,13 +1,11 @@
 import type { Order } from '$lib/order/types.signage';
-import { STATIONS } from '$lib/order/stages';
-
-const STATES: string[] = ['NOT_STARTED', 'QUEUED', 'IN_PROGRESS', 'BLOCKED', 'REWORK', 'COMPLETED'];
+import { STATIONS, STAGE_SEQUENCE } from '$lib/order/stages';
 
 export function summarize(orders: Order[]) {
   const stageBuckets: Record<string, number> = {};
   const reworkCounts: Record<string, number> = {};
   for (const station of STATIONS) {
-    for (const state of STATES) {
+    for (const state of STAGE_SEQUENCE) {
       stageBuckets[`${station}:${state}`] = 0;
     }
     reworkCounts[station] = 0;

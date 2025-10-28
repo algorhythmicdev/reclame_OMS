@@ -1,6 +1,7 @@
 import { writable, get } from 'svelte/store';
-import type { Room, Message } from './types';
+import type { Room, Message, SystemMessageEvent } from './types';
 import { users, currentUser } from '$lib/users/user-store';
+import { createId } from '$lib/utils/id';
 
 const KEY_ROOMS = 'rf_chat_rooms';
 const KEY_MSGS = 'rf_chat_msgs';
@@ -38,21 +39,43 @@ rooms.subscribe((value) => save(KEY_ROOMS, value));
 export const messages = writable<Message[]>(load(KEY_MSGS, []));
 messages.subscribe((value) => save(KEY_MSGS, value));
 
-export function sendMessage(roomId: string, text: string, mentions: string[] = []) {
+type MessageOptions = {
+  authorId?: string;
+  variant?: Message['variant'];
+  event?: SystemMessageEvent;
+};
+
+export function sendMessage(
+  roomId: string,
+  text: string,
+  mentions: string[] = [],
+  options: MessageOptions = {}
+) {
   const me = get(currentUser);
   const payload = text.trim();
   if (!payload) return;
 
   const message: Message = {
-    id: crypto.randomUUID(),
+    id: createId('chat'),
     roomId,
-    authorId: me.id,
+    authorId: options.authorId ?? me.id,
     ts: new Date().toISOString(),
     text: payload,
-    mentions
+    mentions,
+    variant: options.variant ?? 'user',
+    event: options.event
   };
 
   messages.update((value) => [...value, message]);
+}
+
+export function postSystemEvent(
+  roomId: string,
+  text: string,
+  event: SystemMessageEvent,
+  mentions: string[] = []
+) {
+  sendMessage(roomId, text, mentions, { authorId: 'system', variant: 'system', event });
 }
 
 export function ensureRoom(room: Room) {

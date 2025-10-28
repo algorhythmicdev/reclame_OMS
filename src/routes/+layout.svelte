@@ -128,10 +128,11 @@
 .rf-shell{
   flex:1;
   display:grid;
-  grid-template-columns:minmax(0,1fr) minmax(320px, 380px);
-  gap:12px;
-  padding:12px;
+  grid-template-columns:minmax(0,1fr) clamp(260px, 28vw, 360px);
+  gap:16px;
+  padding:clamp(12px, 3vw, 24px);
   align-items:start;
+  min-height:0;
 }
 
 .rf-main{
@@ -140,16 +141,50 @@
 }
 
 .rf-right{
+  display:grid;
+  gap:16px;
   align-self:start;
+  min-width:0;
 }
 
-@media (max-width: 1100px){
+.rf-panel{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  min-height:0;
+}
+
+.rf-panel > header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+}
+
+.rf-panel .rf-scroll{
+  flex:1;
+  min-height:0;
+}
+
+@media (max-width: 1280px){
   .rf-shell{
-    grid-template-columns:1fr;
+    grid-template-columns:minmax(0,1fr);
   }
 
   .rf-right{
-    position:static;
+    grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+  }
+}
+
+@media (max-width: 720px){
+  .rf-shell{
+    gap:12px;
+    padding:12px;
+  }
+
+  .rf-right{
+    grid-template-columns:1fr;
+    gap:12px;
   }
 }
 </style>

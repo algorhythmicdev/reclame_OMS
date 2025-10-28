@@ -198,7 +198,23 @@
   },
   "launchpad": {
     "themes": "Темы",
-    "language": "Язык"
+    "language": "Язык",
+    "digest": {
+      "title": "Оперативная сводка",
+      "subtitle": "Фокус смены по активным заказам.",
+      "next_load": "Ближайшая загрузка",
+      "no_loading": "Нет назначенного дня загрузки.",
+      "due_soon": "Срок в ближайшие 7 дней",
+      "due_none": "На этой неделе без дедлайнов.",
+      "due_in": "Срок через {days}д",
+      "blocked": "Блоки в работе",
+      "blocked_clear": "Все станции свободны.",
+      "station_health": "Состояние станций",
+      "station_empty": "Очередь пуста",
+      "rework_watch": "Мониторинг доработок",
+      "rework_none": "Повторов не зафиксировано.",
+      "order_count": "{count} заказов"
+    }
   },
   "dashboard": {
     "kpi": {
@@ -328,7 +344,25 @@
     "message_placeholder": "Сообщение (используйте @name для упоминания)",
     "signed_in_as": "Вы вошли как",
     "mentions": "Упоминания",
-    "empty": "Сообщений пока нет."
+    "to": "Кому",
+    "sending_to": "Обращение",
+    "remove_mention": "Удалить упоминание {name}",
+    "empty": "Сообщений пока нет.",
+    "quick_mentions": "Быстрые адресаты",
+    "quick_mentions_station": "Упомянуть смену {station}",
+    "system": {
+      "name": "Система",
+      "note_label": "Заметка",
+      "rework": {
+        "summary": "Отправлено на доработку",
+        "body": "Отправлено на доработку — {reason}"
+      },
+      "completed": {
+        "summary": "Этап завершён",
+        "badge": "Завершено",
+        "body": "Этап помечен завершённым"
+      }
+    }
   },
   "loading": {
     "assign": "Назначить",
@@ -374,7 +408,22 @@
   },
   "notifications": {
     "title": "Уведомления",
-    "empty": "Пока нет уведомлений."
+    "empty": "Пока нет уведомлений.",
+    "filter": {
+      "station": "Фильтр по станции",
+      "urgency": "Срочность",
+      "all_stations": "Все станции",
+      "all_urgencies": "Все уровни"
+    },
+    "urgency": {
+      "normal": "Обычный",
+      "urgent": "Срочно"
+    },
+    "pin_label": "Закрепить уведомление",
+    "unpin_label": "Открепить уведомление",
+    "pinned_section": "Закреплённые",
+    "rework_requested": "{order} ({orderId}) • {station} отправлено на доработку",
+    "stage_completed": "{order} ({orderId}) • {station} отмечено выполненным"
   },
   "settings": {
     "title": "Настройки",

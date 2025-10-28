@@ -24,7 +24,7 @@
   import StageLegend from '$lib/order/StageLegend.svelte';
   import StageEditor from '$lib/order/StageEditor.svelte';
   import ReworkQuick from '$lib/order/ReworkQuick.svelte';
-  import { adminSendToRework, adminApplyStage } from '$lib/order/signage-actions';
+  import { adminSendToRework, adminApplyStage, trackStageProposal } from '$lib/order/signage-actions';
 
   import type { Order, StationLog, Badge } from '$lib/order/types.signage';
   import {
@@ -139,6 +139,7 @@
   }
   function proposeStage(station: StationTag, state: StageState, note?: string) {
     createCR(`${station} → ${state}`, { stages: { [station]: state } }, note);
+    trackStageProposal(o.id, station, state, note);
   }
   function sendRework(station: StationTag, reason: ReworkReason, note: string) {
     adminSendToRework(o.id, station, reason, note, 'admin');
