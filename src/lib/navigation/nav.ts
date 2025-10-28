@@ -8,12 +8,10 @@ export interface NavLink {
 }
 
 export const navLinks: NavLink[] = [
-  { href: '/launchpad', labelKey: 'nav.launchpad', icon: KanbanSquare },
   { href: '/', labelKey: 'nav.dashboard', icon: Grid },
   { href: '/calendar', labelKey: 'nav.calendar', icon: Calendar },
   { href: '/orders', labelKey: 'nav.orders', icon: PackageSearch },
-  { href: '/files', labelKey: 'nav.files', icon: FolderOpen },
-  { href: '/settings', labelKey: 'nav.settings', icon: Settings }
+  { href: '/files', labelKey: 'nav.files', icon: FolderOpen }
 ];
 
 export const sanitizeBase = (basePath: string | undefined) => {

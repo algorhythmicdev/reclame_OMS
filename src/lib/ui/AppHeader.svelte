@@ -115,34 +115,9 @@
       on:click={openSearch}
       aria-label={$t('a11y.search')}
     >
-      <span class="row" style="gap:6px;align-items:center">
-        <Search size={16} />
-        <span>{$t('a11y.search')}</span>
-      </span>
-      <span class="muted shortcut">⌘K</span>
+      <Search size={16} />
+      <span class="sr-only">{$t('a11y.search')}</span>
     </button>
-
-    <div class="tag-group" role="group" aria-label={$t('header.theme.label')}>
-      {#each themes as option}
-        <button
-          type="button"
-          class="tag"
-          class:is-active={currentTheme === option}
-          on:click={() => selectTheme(option)}
-        >{$t(`header.theme.options.${option}`)}</button>
-      {/each}
-    </div>
-
-    <select
-      class="rf-input rf-input--compact"
-      bind:value={currentLocale}
-      aria-label={$t('header.language.label')}
-      on:change={onLocaleChange}
-    >
-      <option value="en">{$t('header.language.options.en')}</option>
-      <option value="ru">{$t('header.language.options.ru')}</option>
-      <option value="lv">{$t('header.language.options.lv')}</option>
-    </select>
 
     <RoleSwitch />
 
@@ -181,14 +156,12 @@
     top: 0;
     z-index: 100;
     display: grid;
-    grid-template-columns: minmax(0, 240px) minmax(0, 1fr) auto;
+    grid-template-columns: auto 1fr auto;
     align-items: center;
-    gap: 18px;
-    padding: 16px clamp(16px, 3vw, 28px);
-    background: color-mix(in oklab, var(--bg-1) 88%, transparent);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid color-mix(in oklab, var(--border) 75%, transparent);
-    box-shadow: 0 10px 24px rgba(var(--shadow-rgb)/.12);
+    gap: 24px;
+    padding: 12px clamp(16px, 3vw, 28px);
+    background: var(--bg-1);
+    border-bottom: 1px solid var(--border);
   }
 
   .app-header__brand {
@@ -203,7 +176,7 @@
   }
 
   .brand-logo {
-    height: 40px;
+    height: 36px;
     width: auto;
     object-fit: contain;
   }
@@ -269,38 +242,28 @@
 
   .app-header__nav {
     display: flex;
-    gap: 10px;
+    gap: 8px;
     align-items: center;
     overflow-x: auto;
-    padding: 4px 0;
+    padding: 0;
     min-width: 0;
-    scrollbar-width: thin;
+    scrollbar-width: none;
   }
 
   .app-header__nav::-webkit-scrollbar {
-    height: 6px;
-  }
-
-  .app-header__nav::-webkit-scrollbar-thumb {
-    background: color-mix(in oklab, var(--border) 60%, transparent);
-    border-radius: 999px;
+    display: none;
   }
 
   .app-header__actions {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    gap: 12px;
-    flex-wrap: wrap;
+    gap: 8px;
     min-width: 0;
   }
 
   .app-header__actions .tag {
     transition: background 0.2s ease, color 0.2s ease;
-  }
-
-  .shortcut {
-    margin-left: 8px;
   }
 
   .sr-only {
@@ -316,48 +279,52 @@
 
   @media (max-width: 1280px) {
     .app-header {
-      grid-template-columns: minmax(0, 1fr);
-      grid-auto-rows: auto;
+      grid-template-columns: auto 1fr auto;
       gap: 16px;
     }
 
-    .app-header__brand {
-      order: 1;
-    }
-
     .app-header__nav {
-      order: 3;
-      width: 100%;
-      justify-content: flex-start;
+      order: 0;
     }
 
     .app-header__actions {
-      order: 2;
-      justify-content: flex-start;
+      order: 0;
+    }
+
+    .user-btn .name {
+      display: none;
     }
   }
 
   @media (max-width: 720px) {
     .app-header {
-      padding: 12px;
+      padding: 10px 16px;
       gap: 12px;
+      grid-template-columns: 1fr auto;
     }
 
-    .app-header__actions {
-      row-gap: 10px;
+    .app-header__brand {
+      grid-column: 1 / -1;
     }
 
-    .tag-group {
+    .app-header__nav {
+      order: 2;
+      grid-column: 1 / -1;
       width: 100%;
       justify-content: flex-start;
     }
 
-    .app-header__actions > :global(.tag),
-    .app-header__actions > :global(select),
-    .app-header__actions > :global(.tag-group),
-    .app-header__actions > :global(.notif),
-    .app-header__actions > :global(.user) {
-      flex: 1 1 auto;
+    .app-header__actions {
+      order: 1;
+      gap: 8px;
+    }
+
+    .tag-group {
+      display: none;
+    }
+
+    .brand-logo {
+      height: 32px;
     }
   }
 </style>
