@@ -20,8 +20,6 @@ Primary outcomes/KPIs: On-time loads, fewer blockers, fewer reworks, and instant
 
 Top-level sections:
 
-Launchpad. Entry hub with theme/lang switch, quick links, and KPIs.
-
 Orders. The core: repo-like “Order Records” that contain the order form + PDF/asset previews + revisions/branches + change requests (PR-style approvals) + stage status and rework cycles.
 
 Calendar. Admin-managed Loading Dates; assign orders to upcoming load slots; export daily manifests (CSV).
@@ -36,7 +34,7 @@ Settings. Users/roles, themes, languages, notification prefs.
 
 Right rail (persistent): Notifications (top), Chat (bottom). Both scroll internally; the page never resizes.
 
-Header actions: brand logo, notifications counter, small avatar + quick user switch (role aware).
+Header actions: brand logo, compact theme/language/text-size controls, notifications counter, small avatar + quick user switch (role aware).
 
 3) Reusable Modules & Components
 

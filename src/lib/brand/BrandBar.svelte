@@ -3,7 +3,11 @@
   import { currentUser, users, currentUserId } from '$lib/users/user-store';
   import { unseenCount } from '$lib/notifications/count';
   import { t } from 'svelte-i18n';
+  import BellIcon from 'lucide-svelte/icons/bell';
   import TopNav from './TopNav.svelte';
+  import ThemeQuick from '$lib/ui/ThemeQuick.svelte';
+  import LangQuick from '$lib/ui/LangQuick.svelte';
+  import TextScaleQuick from '$lib/ui/TextScaleQuick.svelte';
 
   let showUserMenu = false, c = 0;
   unseenCount.subscribe((v) => (c = v));
@@ -32,11 +36,19 @@
 
   <!-- actions -->
   <div class="actions" role="group" aria-label={$t('header.actions')}>
+    <div class="toggles" role="group" aria-label="Display preferences">
+      <ThemeQuick />
+      <LangQuick />
+      <TextScaleQuick />
+    </div>
+
     <a
       class="notif"
       aria-label={c ? $t('header.notifications.srCount', { count: c }) : $t('header.notifications.label')}
       href={`${base}/notifications`}
+      title={$t('header.notifications.label')}
     >
+      <BellIcon aria-hidden="true" focusable="false" />
       {#if c}<span class="dot" aria-hidden="true"></span>{/if}
       <span class="sr-only">{$t('header.notifications.srCount', { count: c })}</span>
     </a>
@@ -73,8 +85,11 @@
 .brand-logo{height:40px;width:auto;object-fit:contain}
 .brandbar :global(.topnav){flex:1;min-width:260px}
 .brandbar :global(.topnav .nav-list){flex-wrap:wrap}
-.actions{display:flex;align-items:center;gap:12px}
+.actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:flex-end}
+.toggles{display:flex;align-items:center;gap:8px}
+.toggles :global(svg){width:18px;height:18px}
 .notif{position:relative;width:28px;height:28px;display:grid;place-items:center;border:1px solid var(--border);border-radius:999px;background:var(--bg-0)}
+.notif :global(svg){width:18px;height:18px;color:var(--text)}
 .notif .dot{width:8px;height:8px;border-radius:999px;background:var(--accent-1);position:absolute;top:2px;right:2px}
 .user{position:relative}
 .user-btn{display:flex;align-items:center;gap:8px;background:transparent;border:1px solid var(--border);border-radius:999px;padding:4px 8px;color:var(--text)}

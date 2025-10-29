@@ -32,7 +32,6 @@
   },
   "nav": {
     "dashboard": "Dashboard",
-    "launchpad": "Launchpad",
     "calendar": "Calendar",
     "orders": "Orders",
     "inventory": "Inventory",
@@ -215,6 +214,12 @@
     "text_size": "Text Size",
     "text_size_toggle": "Toggle text size",
     "text_size_hint": "Click to cycle through text sizes",
+    "text_size_options": {
+      "sm": { "label": "Small text", "abbr": "Small" },
+      "md": { "label": "Default text", "abbr": "Default" },
+      "lg": { "label": "Large text", "abbr": "Large" },
+      "xl": { "label": "Extra large text", "abbr": "Extra large" }
+    },
     "help_hints": "Help Hints",
     "show_hints": "Show helpful tooltips throughout the interface"
   },
@@ -235,9 +240,9 @@
     "q4": "What do the different order badges mean?",
     "a4": "DRAFT = preliminary order, URGENT = high priority, BLOCKED = issues prevent progress, IN_PROGRESS = actively being worked on, DONE = completed.",
     "q5": "How do I change the theme?",
-    "a5": "Go to Launchpad and select your preferred theme: Light, Dark, or High Contrast.",
+    "a5": "Use the header controls to select your preferred theme: Light, Dark, or High Contrast.",
     "q6": "Can I change the text size?",
-    "a6": "Yes! Use the Text Size control on the Launchpad page to cycle through Normal, Large, and Extra Large text sizes."
+    "a6": "Yes! Use the Text Size control in the header to cycle through Small, Default, Large, and Extra Large text sizes."
   },
   "toast": {
     "approved": "Change Request approved",

@@ -1,0 +1,255 @@
+<script lang="ts">
+  import { onMount, tick } from 'svelte';
+  import TypeIcon from 'lucide-svelte/icons/type';
+  import { scale, type Scale } from '$lib/stores/scale';
+  import { t } from 'svelte-i18n';
+
+  const options: Scale[] = ['sm', 'md', 'lg', 'xl'];
+
+  let open = false;
+  let wrapper: HTMLDivElement | null = null;
+  let trigger: HTMLButtonElement | null = null;
+  let items: HTMLButtonElement[] = [];
+
+  function registerItem(node: HTMLButtonElement) {
+    items = [...items, node];
+    return {
+      destroy() {
+        items = items.filter((item) => item !== node);
+      }
+    };
+  }
+
+  function focusItem(index: number) {
+    items[index]?.focus();
+  }
+
+  async function openMenu(focusLast = false) {
+    if (!open) {
+      open = true;
+      await tick();
+    } else {
+      await tick();
+    }
+
+    if (!items.length) return;
+
+    const current = ($scale as Scale) ?? 'md';
+    const defaultIndex = Math.max(options.indexOf(current), 0);
+    const targetIndex = focusLast ? items.length - 1 : defaultIndex;
+    focusItem(Math.max(0, targetIndex));
+  }
+
+  function closeMenu() {
+    open = false;
+  }
+
+  function toggleMenu() {
+    if (open) {
+      closeMenu();
+    } else {
+      void openMenu();
+    }
+  }
+
+  function selectScale(value: Scale) {
+    if ($scale !== value) {
+      scale.set(value);
+    }
+
+    closeMenu();
+    trigger?.focus();
+  }
+
+  function handleFocusOut(event: FocusEvent) {
+    const next = event.relatedTarget as Node | null;
+    if (!next || !wrapper?.contains(next)) {
+      closeMenu();
+    }
+  }
+
+  function handleDocumentPointer(event: PointerEvent) {
+    if (!open) return;
+    const target = event.target as Node | null;
+    if (!wrapper?.contains(target)) {
+      closeMenu();
+    }
+  }
+
+  function handleTriggerKeydown(event: KeyboardEvent) {
+    if (event.key === 'ArrowDown' || event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      void openMenu();
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      void openMenu(true);
+    } else if (event.key === 'Escape' && open) {
+      event.preventDefault();
+      closeMenu();
+    }
+  }
+
+  function handleMenuKeydown(event: KeyboardEvent) {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      closeMenu();
+      trigger?.focus();
+      return;
+    }
+
+    if (!items.length) return;
+
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      event.preventDefault();
+      const currentIndex = items.findIndex((item) => item === document.activeElement);
+      const delta = event.key === 'ArrowDown' ? 1 : -1;
+      const nextIndex = (currentIndex + delta + items.length) % items.length;
+      focusItem(nextIndex);
+    } else if (event.key === 'Home') {
+      event.preventDefault();
+      focusItem(0);
+    } else if (event.key === 'End') {
+      event.preventDefault();
+      focusItem(items.length - 1);
+    }
+  }
+
+  onMount(() => {
+    const pointerListener = (event: PointerEvent) => handleDocumentPointer(event);
+    document.addEventListener('pointerdown', pointerListener, true);
+
+    return () => {
+      document.removeEventListener('pointerdown', pointerListener, true);
+    };
+  });
+</script>
+
+<div class="menu-wrap" bind:this={wrapper} on:focusout={handleFocusOut}>
+  <button
+    class="chip"
+    type="button"
+    aria-haspopup="menu"
+    aria-expanded={open}
+    on:click={toggleMenu}
+    on:keydown={handleTriggerKeydown}
+    bind:this={trigger}
+    title={`${$t('accessibility.text_size')}: ${$t(`accessibility.text_size_options.${$scale}.label`)}`}
+  >
+    <TypeIcon aria-hidden="true" focusable="false" />
+    <span class="mini" aria-hidden="true">{$t(`accessibility.text_size_options.${$scale}.abbr`)}</span>
+    <span class="sr-only">{$t('accessibility.text_size')}</span>
+  </button>
+  {#if open}
+    <div
+      class="menu"
+      role="menu"
+      aria-label={$t('accessibility.text_size')}
+      tabindex="-1"
+      on:keydown={handleMenuKeydown}
+    >
+      {#each options as value}
+        <button
+          type="button"
+          role="menuitemradio"
+          class="row-item"
+          aria-checked={$scale === value}
+          data-scale={value}
+          use:registerItem
+          on:click={() => selectScale(value)}
+        >
+          <span>{$t(`accessibility.text_size_options.${value}.label`)}</span>
+          <span class="mini" aria-hidden="true">{$t(`accessibility.text_size_options.${value}.abbr`)}</span>
+        </button>
+      {/each}
+    </div>
+  {/if}
+</div>
+
+<style>
+  .menu-wrap {
+    position: relative;
+  }
+
+  .chip {
+    align-items: center;
+    background: var(--bg-0);
+    border: 1px solid color-mix(in oklab, var(--border) 85%, transparent);
+    border-radius: 10px;
+    color: var(--text);
+    cursor: pointer;
+    display: inline-flex;
+    gap: 6px;
+    height: 36px;
+    padding: 0 12px;
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  }
+
+  .chip:hover,
+  .chip:focus-visible {
+    background: color-mix(in oklab, var(--bg-2) 70%, var(--bg-1) 30%);
+    border-color: color-mix(in oklab, var(--border) 70%, transparent);
+  }
+
+  .chip :global(svg) {
+    width: 18px;
+    height: 18px;
+    stroke-width: 2;
+  }
+
+  .mini {
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+
+  .menu {
+    background: var(--bg-1);
+    border: 1px solid color-mix(in oklab, var(--border) 85%, transparent);
+    border-radius: 12px;
+    box-shadow: 0 12px 24px rgba(var(--shadow-rgb) / 0.15);
+    display: grid;
+    gap: 4px;
+    min-width: 200px;
+    padding: 8px;
+    position: absolute;
+    right: 0;
+    top: 42px;
+    z-index: 20;
+  }
+
+  .row-item {
+    align-items: center;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    color: var(--text);
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 10px;
+    text-align: left;
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+
+  .row-item:hover,
+  .row-item:focus-visible {
+    background: color-mix(in oklab, var(--bg-2) 70%, var(--bg-1) 30%);
+  }
+
+  .row-item[aria-checked='true'] {
+    background: color-mix(in oklab, var(--bg-2) 80%, var(--bg-1) 20%);
+    font-weight: 600;
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+  }
+</style>
