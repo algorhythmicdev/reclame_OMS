@@ -72,16 +72,11 @@
     });
 
     // Notify about draft order creation
-    const notificationText = translate('draft.notification', { id });
-    notify(notificationText, { urgency: cdrFile ? 'urgent' : 'normal' });
+    const notificationText = cdrFile 
+      ? `${translate('draft.notification', { id })} - ${translate('draft.cdr_attached')}`
+      : translate('draft.notification', { id });
     
-    // If CDR file is attached, send an urgent notification to admin
-    if (cdrFile) {
-      notify(
-        `${notificationText} - ${translate('draft.cdr_attached')}`, 
-        { urgency: 'urgent' }
-      );
-    }
+    notify(notificationText, { urgency: cdrFile ? 'urgent' : 'normal' });
     
     handleClose();
   }
