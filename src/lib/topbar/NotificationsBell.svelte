@@ -1,8 +1,19 @@
 <script lang="ts">
   import Bell from 'lucide-svelte/icons/bell';
   import { notices } from '$lib/notify/bus';
-  let open=false, btn:HTMLButtonElement; let noticesList=[]; const u=notices.subscribe(v=>noticesList=v);
-  function onKey(e:KeyboardEvent){ if(e.key==='Escape'){ open=false; btn?.focus(); } }
+  
+  let open = false;
+  let btn: HTMLButtonElement;
+  let noticesList = [];
+  const unsubscribe = notices.subscribe(v => noticesList = v);
+  
+  function onKey(e: KeyboardEvent) { 
+    if (e.key === 'Escape') { 
+      open = false; 
+      btn?.focus(); 
+    } 
+  }
+  
   $: count = noticesList.length;
 </script>
 

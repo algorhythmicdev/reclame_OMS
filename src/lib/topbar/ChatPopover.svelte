@@ -1,19 +1,32 @@
 <script lang="ts">
   import MessageSquare from 'lucide-svelte/icons/message-square';
   import { messages, sendMessage, rooms } from '$lib/chat/chat-store';
-  let open=false, btn:HTMLButtonElement; let text=''; 
-  let chatMessages=[], chatRooms=[]; 
-  const um=messages.subscribe(v=>chatMessages=v);
-  const ur=rooms.subscribe(v=>chatRooms=v);
+  
+  let open = false;
+  let btn: HTMLButtonElement;
+  let text = '';
+  let chatMessages = [];
+  let chatRooms = [];
+  
+  const unsubscribeMessages = messages.subscribe(v => chatMessages = v);
+  const unsubscribeRooms = rooms.subscribe(v => chatRooms = v);
+  
   let activeRoomId = 'general';
   $: activeRoom = chatRooms.find((room) => room.id === activeRoomId) || chatRooms[0];
   $: chat = chatMessages.filter(m => m.roomId === activeRoomId);
-  function send(){ 
-    if(!text.trim() || !activeRoom) return; 
+  
+  function send() { 
+    if (!text.trim() || !activeRoom) return; 
     sendMessage(activeRoom.id, text, []); 
-    text=''; 
+    text = ''; 
   }
-  function onKey(e:KeyboardEvent){ if(e.key==='Escape'){ open=false; btn?.focus(); } }
+  
+  function onKey(e: KeyboardEvent) { 
+    if (e.key === 'Escape') { 
+      open = false; 
+      btn?.focus(); 
+    } 
+  }
 </script>
 
 <div class="menu">
