@@ -1,9 +1,10 @@
 <script lang="ts">
   import { base } from '$app/paths';
   import { t } from 'svelte-i18n';
-  import { Grid, Calendar, PackageSearch, FolderOpen, Settings, KanbanSquare } from 'lucide-svelte';
+  import { Grid, Calendar, PackageSearch, FolderOpen, Settings, KanbanSquare, HelpCircle } from 'lucide-svelte';
   import ThemeSwitch from '$lib/ui/ThemeSwitch.svelte';
   import LanguageSwitch from '$lib/ui/LanguageSwitch.svelte';
+  import TextSizeSwitch from '$lib/ui/TextSizeSwitch.svelte';
   import OperationsDigest from '$lib/ui/OperationsDigest.svelte';
 
   const sanitizeBase = () => {
@@ -35,6 +36,7 @@
     { path: '/orders', labelKey: 'nav.orders', icon: PackageSearch },
     { path: '/files', labelKey: 'nav.files', icon: FolderOpen },
     { path: '/kanban', labelKey: 'nav.kanban', icon: KanbanSquare },
+    { path: '/help', labelKey: 'nav.help', icon: HelpCircle },
     { path: '/settings', labelKey: 'nav.settings', icon: Settings }
   ];
 </script>
@@ -56,7 +58,8 @@
   <OperationsDigest />
 </div>
 
-<section class="grid" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap: 10px; margin-top: 16px;">
+<section class="grid" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap: 10px; margin-top: 16px;">
   <ThemeSwitch />
   <LanguageSwitch />
+  <TextSizeSwitch />
 </section>

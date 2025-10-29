@@ -1,6 +1,12 @@
 :root, :host { color-scheme: light dark; }
 *{ box-sizing:border-box }
-html, body{ height:100% } body{ margin:0; font: 400 16px/1.55 system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif }
+html, body{ height:100% } 
+body{ margin:0; font: 400 16px/1.55 system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif }
+
+/* Text size scaling support */
+:root.text-size-normal body { font-size: 16px; }
+:root.text-size-large body { font-size: 18px; }
+:root.text-size-x-large body { font-size: 20px; }
 
 :root{
   --bg-0:#eef1f8; --bg-1:#ffffff; --bg-2:#e3e7f5;
