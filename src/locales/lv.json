@@ -557,6 +557,7 @@
     "cdr_file_placeholder": "CDR faila ceļš (piemēram, /files/design.cdr)",
     "attach_cdr": "Pievienot CDR",
     "notification": "Pasūtījuma melnraksts {id} ir izveidots",
+    "cdr_attached": "CDR fails pievienots un gatavs pārbaudei",
     "convert_to_order": "Pārvērst par pasūtījumu",
     "download_cdr": "Lejupielādēt CDR"
   }

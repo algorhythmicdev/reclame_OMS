@@ -34,7 +34,7 @@
   function handleCreate() {
     const translate = get(t);
     if (!id || !title || !client) {
-      notify(translate('orderform.error_required_fields') || 'Please fill in all required fields', 'error');
+      notify(translate('orderform.error_required_fields') || 'Please fill in all required fields');
       return;
     }
 
@@ -71,7 +71,18 @@
       file
     });
 
-    notify(translate('draft.notification', { id }), 'success');
+    // Notify about draft order creation
+    const notificationText = translate('draft.notification', { id });
+    notify(notificationText, { urgency: cdrFile ? 'urgent' : 'normal' });
+    
+    // If CDR file is attached, send an urgent notification to admin
+    if (cdrFile) {
+      notify(
+        `${notificationText} - ${translate('draft.cdr_attached')}`, 
+        { urgency: 'urgent' }
+      );
+    }
+    
     handleClose();
   }
 </script>

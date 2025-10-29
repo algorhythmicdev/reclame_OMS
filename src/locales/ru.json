@@ -557,6 +557,7 @@
     "cdr_file_placeholder": "Путь к файлу CDR (например, /files/design.cdr)",
     "attach_cdr": "Прикрепить CDR",
     "notification": "Черновик заказа {id} был создан",
+    "cdr_attached": "Файл CDR прикреплен и готов к проверке",
     "convert_to_order": "Преобразовать в заказ",
     "download_cdr": "Скачать CDR"
   }

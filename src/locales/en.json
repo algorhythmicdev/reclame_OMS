@@ -557,6 +557,7 @@
     "cdr_file_placeholder": "Path to CDR file (e.g., /files/design.cdr)",
     "attach_cdr": "Attach CDR",
     "notification": "Draft order {id} has been created",
+    "cdr_attached": "CDR file attached and ready for review",
     "convert_to_order": "Convert to Order",
     "download_cdr": "Download CDR"
   }
