@@ -24,6 +24,7 @@
     badges: BadgeCode[];
     href: string;
     isDraft: boolean;
+    expanded: boolean;
   };
 
   const assetPath = (name: string) => (assets && assets !== '.' ? `${assets}/files/${name}` : `/files/${name}`);
@@ -63,7 +64,8 @@
       loadingDate: order.loadingDate ?? '',
       badges: order.badges ?? [],
       href: `${base}/orders/${order.id}`,
-      isDraft: order.isDraft || false
+      isDraft: order.isDraft || false,
+      expanded: false
     };
   }
 
@@ -73,13 +75,25 @@
   let draftFormOpen = false;
   let visible: OrderRow[] = [];
   let qLower = '';
+  let sortKey: 'id' | 'client' | 'title' | 'due' | 'loadingDate' = 'due';
+  let sortAsc = true;
 
   $: qLower = q.trim().toLowerCase();
-  $: visible = qLower
-    ? rows.filter((row) =>
-        `${row.id} ${row.client} ${row.title}`.toLowerCase().includes(qLower)
-      )
-    : rows;
+  $: {
+    let filtered = qLower
+      ? rows.filter((row) =>
+          `${row.id} ${row.client} ${row.title}`.toLowerCase().includes(qLower)
+        )
+      : rows;
+    
+    // Sort the filtered results
+    visible = filtered.sort((a, b) => {
+      let av = a[sortKey] || '';
+      let bv = b[sortKey] || '';
+      const result = av > bv ? 1 : av < bv ? -1 : 0;
+      return sortAsc ? result : -result;
+    });
+  }
 
   $: isAdmin = $currentUser?.role === 'Admin' || $currentUser?.role === 'SuperAdmin';
   $: isSuperAdmin = $currentUser?.role === 'SuperAdmin';
@@ -91,9 +105,22 @@
       ? allOrders 
       : allOrders.filter(order => !order.isDraft);
     
-    rows = filteredOrders
-      .map(toRow)
-      .sort((a, b) => a.due.localeCompare(b.due));
+    rows = filteredOrders.map(toRow);
+  }
+
+  function toggleSort(key: typeof sortKey) {
+    if (sortKey === key) {
+      sortAsc = !sortAsc;
+    } else {
+      sortKey = key;
+      sortAsc = true;
+    }
+  }
+
+  function toggleExpand(rowId: string) {
+    rows = rows.map(row => 
+      row.id === rowId ? { ...row, expanded: !row.expanded } : row
+    );
   }
 
   const stationLabel = (code: Station) => $t(TERMS.stations[code]);
@@ -128,53 +155,106 @@
   </div>
   <div style="margin-top:12px">
     <div class="rf-scroll" style="max-height:60vh">
-      <table class="rf-table">
+      <table class="rf-table orders-table">
         <thead>
           <tr>
-            <th style="width:140px">{$t('orderLists.headers.po')}</th>
-            <th>{$t('orderLists.headers.client')}</th>
-            <th>{$t('orderLists.headers.title')}</th>
-            <th style="width:140px">{$t('orderLists.headers.loading')}</th>
-            <th style="width:120px">{$t('orderLists.headers.due')}</th>
-            <th style="width:260px">{$t('orderLists.headers.summary')}</th>
+            <th style="width:50px"></th>
+            <th style="width:140px" on:click={() => toggleSort('id')} class="sortable">
+              {$t('orderLists.headers.po')} {sortKey === 'id' ? (sortAsc ? '▲' : '▼') : ''}
+            </th>
+            <th on:click={() => toggleSort('client')} class="sortable">
+              {$t('orderLists.headers.client')} {sortKey === 'client' ? (sortAsc ? '▲' : '▼') : ''}
+            </th>
+            <th on:click={() => toggleSort('title')} class="sortable">
+              {$t('orderLists.headers.title')} {sortKey === 'title' ? (sortAsc ? '▲' : '▼') : ''}
+            </th>
+            <th style="width:140px" on:click={() => toggleSort('loadingDate')} class="sortable">
+              {$t('orderLists.headers.loading')} {sortKey === 'loadingDate' ? (sortAsc ? '▲' : '▼') : ''}
+            </th>
+            <th style="width:120px" on:click={() => toggleSort('due')} class="sortable">
+              {$t('orderLists.headers.due')} {sortKey === 'due' ? (sortAsc ? '▲' : '▼') : ''}
+            </th>
+            <th style="width:200px">{$t('orderLists.headers.badges')}</th>
           </tr>
         </thead>
         <tbody>
           {#each visible as row (row.id)}
-            <tr>
-              <td><a href={row.href}>{row.id}</a></td>
+            <tr class="order-row" class:expanded={row.expanded}>
+              <td>
+                <button 
+                  class="expand-btn" 
+                  on:click={() => toggleExpand(row.id)}
+                  aria-expanded={row.expanded}
+                  aria-label={row.expanded ? 'Collapse' : 'Expand'}>
+                  {row.expanded ? '▼' : '▶'}
+                </button>
+              </td>
+              <td><a href={row.href} class="order-link">{row.id}</a></td>
               <td>{row.client}</td>
               <td>{row.title}</td>
               <td>{row.loadingDate ? row.loadingDate : '—'}</td>
               <td>{row.due}</td>
               <td>
-                <div class="order-meta">
-                  <div class="row" style="flex-wrap:wrap;gap:6px">
-                    {#each row.stages.slice(0,3) as [station, state]}
-                      <span class="tag">
-                        <strong>{stationLabel(station)}</strong> · {$t(STATE_LABEL[state])}
-                      </span>
+                <div class="badges-cell">
+                  {#if row.badges.length}
+                    {#each row.badges.slice(0, 3) as badge}
+                      {@const label = badgeLabel(badge)}
+                      <Badge tone={badgeTone(badge)} label={label}>
+                        <svelte:component this={BADGE_ICONS[badge]} size={12} aria-hidden="true" />
+                        <span class="badge-text">{label}</span>
+                      </Badge>
                     {/each}
-                  </div>
-                  <div class="badges">
-                    {#if row.badges.length}
-                      {#each row.badges as badge}
-                        {@const label = badgeLabel(badge)}
-                        <Badge tone={badgeTone(badge)} label={label}>
-                          <svelte:component this={BADGE_ICONS[badge]} size={14} aria-hidden="true" />
-                          <span>{label}</span>
-                        </Badge>
-                      {/each}
-                    {:else}
-                      <span class="muted">{$t('orderLists.no_badges')}</span>
+                    {#if row.badges.length > 3}
+                      <span class="muted">+{row.badges.length - 3}</span>
                     {/if}
-                  </div>
+                  {:else}
+                    <span class="muted">{$t('orderLists.no_badges')}</span>
+                  {/if}
                 </div>
               </td>
             </tr>
+            {#if row.expanded}
+              <tr class="expanded-row">
+                <td colspan="7">
+                  <div class="expanded-content">
+                    <div class="expanded-section">
+                      <h4>{$t('orderLists.headers.stages')}</h4>
+                      <div class="stages-grid">
+                        {#each row.stages.slice(0, 6) as [station, state]}
+                          <div class="stage-item">
+                            <span class="tag stage-tag" data-tone={STATE_LABEL[state] !== 'COMPLETED' ? 'primary' : 'success'}>
+                              <strong>{stationLabel(station)}</strong>
+                              <span class="muted"> · </span>
+                              {$t(STATE_LABEL[state])}
+                            </span>
+                          </div>
+                        {/each}
+                      </div>
+                    </div>
+                    {#if row.badges.length > 0}
+                      <div class="expanded-section">
+                        <h4>{$t('orderLists.headers.all_badges')}</h4>
+                        <div class="badges-expanded">
+                          {#each row.badges as badge}
+                            {@const label = badgeLabel(badge)}
+                            <Badge tone={badgeTone(badge)} label={label}>
+                              <svelte:component this={BADGE_ICONS[badge]} size={14} aria-hidden="true" />
+                              <span>{label}</span>
+                            </Badge>
+                          {/each}
+                        </div>
+                      </div>
+                    {/if}
+                    <div class="expanded-actions">
+                      <a href={row.href} class="tag">View Details →</a>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            {/if}
           {/each}
           {#if visible.length === 0}
-            <tr><td colspan="5" class="muted">{$t('orderLists.empty')}</td></tr>
+            <tr><td colspan="7" class="muted">{$t('orderLists.empty')}</td></tr>
           {/if}
         </tbody>
       </table>
@@ -186,15 +266,117 @@
 <DraftOrderForm bind:open={draftFormOpen} onClose={() => { draftFormOpen = false; refresh(); }} />
 
 <style>
-  .order-meta {
-    display: grid;
-    gap: 6px;
+  .orders-table :global(th.sortable) {
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.2s ease;
   }
 
-  .order-meta .badges {
+  .orders-table :global(th.sortable:hover) {
+    background-color: color-mix(in oklab, var(--bg-1) 95%, var(--text));
+  }
+
+  .order-row {
+    transition: background-color 0.15s ease;
+  }
+
+  .order-row:hover {
+    background-color: color-mix(in oklab, var(--bg-1) 95%, var(--text));
+  }
+
+  .order-row.expanded {
+    background-color: color-mix(in oklab, var(--accent-1) 10%, transparent);
+  }
+
+  .expand-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 0.8rem;
+    padding: 4px 8px;
+    color: var(--text);
+    transition: transform 0.2s ease;
+  }
+
+  .expand-btn:hover {
+    background-color: color-mix(in oklab, var(--bg-1) 85%, var(--text));
+    border-radius: 4px;
+  }
+
+  .order-link {
+    color: var(--accent-1);
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .order-link:hover {
+    text-decoration: underline;
+  }
+
+  .badges-cell {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
+    gap: 4px;
     align-items: center;
+  }
+
+  .badge-text {
+    display: none;
+  }
+
+  @media (min-width: 1200px) {
+    .badge-text {
+      display: inline;
+    }
+  }
+
+  .expanded-row {
+    background-color: color-mix(in oklab, var(--bg-2) 50%, transparent);
+  }
+
+  .expanded-content {
+    padding: 16px;
+    display: grid;
+    gap: 16px;
+  }
+
+  .expanded-section {
+    display: grid;
+    gap: 8px;
+  }
+
+  .expanded-section h4 {
+    margin: 0;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+  }
+
+  .stages-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 8px;
+  }
+
+  .stage-item {
+    display: flex;
+  }
+
+  .stage-tag {
+    width: 100%;
+  }
+
+  .badges-expanded {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .expanded-actions {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
   }
 </style>

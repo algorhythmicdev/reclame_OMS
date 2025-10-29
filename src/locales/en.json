@@ -155,7 +155,10 @@
       "title": "Title",
       "summary": "Stage summary",
       "loading": "Loading",
-      "due": "Due"
+      "due": "Due",
+      "badges": "Badges",
+      "stages": "Process Stages",
+      "all_badges": "All Badges"
     },
     "empty": "No orders found.",
     "no_badges": "No badges",
@@ -511,7 +514,8 @@
     "prev": "Prev",
     "next": "Next",
     "page": "Page {current} / {total}",
-    "error": "Unable to display PDF. Please check the file path."
+    "error": "Unable to display PDF. Please check the file path.",
+    "loading": "Loading PDF..."
   },
   "branches": {
     "title": "Branches",

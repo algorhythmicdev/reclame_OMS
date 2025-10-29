@@ -155,7 +155,10 @@
       "title": "Nosaukums",
       "summary": "Posmu kopsavilkums",
       "loading": "Iekraušana",
-      "due": "Termiņš"
+      "due": "Termiņš",
+      "badges": "Žetoni",
+      "stages": "Procesa posmi",
+      "all_badges": "Visi žetoni"
     },
     "empty": "Nav atrasti pasūtījumi.",
     "no_badges": "Nav nozīmju",
@@ -511,7 +514,8 @@
     "prev": "Atpakaļ",
     "next": "Uz priekšu",
     "page": "Lapa {current} / {total}",
-    "error": "Nevar parādīt PDF. Pārbaudiet faila ceļu."
+    "error": "Nevar parādīt PDF. Pārbaudiet faila ceļu.",
+    "loading": "Ielādē PDF..."
   },
   "branches": {
     "title": "Zari",
