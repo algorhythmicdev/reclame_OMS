@@ -37,7 +37,8 @@
     "orders": "Pasūtījumi",
     "files": "Faili",
     "settings": "Iestatījumi",
-    "kanban": "Ražošana"
+    "kanban": "Ražošana",
+    "help": "Palīdzība"
   },
   "header": {
     "actions": "Galvenes darbības",
@@ -68,6 +69,7 @@
   },
   "roles": {
     "label": "Loma",
+    "superadmin": "Super Admins",
     "admin": "Admins",
     "station": "Stacija"
   },
@@ -100,7 +102,8 @@
       "DONE": "Pabeigts",
       "URGENT": "Steidzami",
       "LOW_STOCK": "Maz krājumu",
-      "R&D": "P&A"
+      "R&D": "P&A",
+      "DRAFT": "Melnraksts"
     },
     "quick_station_log": "Ātrais stacijas žurnāls",
     "station_label": "Stacija",
@@ -153,7 +156,10 @@
       "title": "Nosaukums",
       "summary": "Posmu kopsavilkums",
       "loading": "Iekraušana",
-      "due": "Termiņš"
+      "due": "Termiņš",
+      "badges": "Žetoni",
+      "stages": "Procesa posmi",
+      "all_badges": "Visi žetoni"
     },
     "empty": "Nav atrasti pasūtījumi.",
     "no_badges": "Nav nozīmju",
@@ -201,6 +207,34 @@
     "search": "Meklēt pasūtījumus, failus, klientus…",
     "progress_region": "Kopējais procesa progress",
     "skip": "Pāriet uz saturu"
+  },
+  "accessibility": {
+    "text_size": "Teksta izmērs",
+    "text_size_toggle": "Mainīt teksta izmēru",
+    "text_size_hint": "Noklikšķiniet, lai mainītu teksta izmērus",
+    "help_hints": "Palīdzības padomi",
+    "show_hints": "Rādīt noderīgus padomus visā saskarnē"
+  },
+  "help": {
+    "title": "Palīdzība un dokumentācija",
+    "faq": "Bieži uzdotie jautājumi",
+    "hints_enabled": "Palīdzības padomi iespējoti",
+    "hints_disabled": "Palīdzības padomi atspējoti"
+  },
+  "faq": {
+    "title": "BUJ - Bieži uzdotie jautājumi",
+    "q1": "Kā izveidot jaunu pasūtījumu?",
+    "a1": "Noklikšķiniet uz pogas 'Jauns pasūtījums' Pasūtījumu lapā. Aizpildiet obligātos laukus, ieskaitot PO numuru, klientu, nosaukumu un termiņu.",
+    "q2": "Kas ir melnraksta pasūtījums?",
+    "a2": "Melnraksta pasūtījumi ir prelimināri pasūtījumi, ko izveidojis SuperAdmins ar CDR dizaina failiem. Tie ir redzami tikai Adminam un SuperAdminam līdz pārvēršanai par parastiem pasūtījumiem.",
+    "q3": "Kā piešķirt iekraušanas datumu?",
+    "a3": "Dodieties uz Kalendāra lapu, ieslēdziet administratora režīmu un noklikšķiniet uz datuma, lai atzīmētu to kā iekraušanas dienu. Pēc tam piešķiriet pasūtījumus šim datumam.",
+    "q4": "Ko nozīmē dažādi pasūtījumu žetoni?",
+    "a4": "DRAFT = preliminārs pasūtījums, URGENT = augsta prioritāte, BLOCKED = problēmas kavē progresu, IN_PROGRESS = aktīvi tiek strādāts, DONE = pabeigts.",
+    "q5": "Kā mainīt tēmu?",
+    "a5": "Dodieties uz Palaišanas paneli un izvēlieties vēlamo tēmu: Gaiša, Tumša vai Augsta kontrasta.",
+    "q6": "Vai varu mainīt teksta izmēru?",
+    "a6": "Jā! Izmantojiet Teksta izmēra kontroli Palaišanas paneļa lapā, lai pārslēgtos starp Normālu, Lielu un Ļoti lielu teksta izmēru."
   },
   "toast": {
     "approved": "Pieprasījums apstiprināts",
@@ -509,7 +543,8 @@
     "prev": "Atpakaļ",
     "next": "Uz priekšu",
     "page": "Lapa {current} / {total}",
-    "error": "Nevar parādīt PDF. Pārbaudiet faila ceļu."
+    "error": "Nevar parādīt PDF. Pārbaudiet faila ceļu.",
+    "loading": "Ielādē PDF..."
   },
   "branches": {
     "title": "Zari",
@@ -542,5 +577,17 @@
     "BLOCKED": "Aizturēts",
     "REWORK": "Pārstrāde",
     "COMPLETED": "Pabeigts"
+  },
+  "draft": {
+    "title": "Pasūtījumu melnraksti",
+    "add": "Pievienot melnrakstu",
+    "create": "Izveidot melnrakstu",
+    "cdr_file": "CDR fails",
+    "cdr_file_placeholder": "CDR faila ceļš (piemēram, /files/design.cdr)",
+    "attach_cdr": "Pievienot CDR",
+    "notification": "Pasūtījuma melnraksts {id} ir izveidots",
+    "cdr_attached": "CDR fails pievienots un gatavs pārbaudei",
+    "convert_to_order": "Pārvērst par pasūtījumu",
+    "download_cdr": "Lejupielādēt CDR"
   }
 }

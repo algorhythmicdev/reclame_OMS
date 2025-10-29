@@ -1,12 +1,13 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import CalendarMonth from '$lib/calendar/CalendarMonth.svelte';
-import { listOrders } from '$lib/order/signage-store';
-import { downloadCSV, toCSV } from '$lib/export/csv';
-import { listAll } from '$lib/loading/loading-store';
-import { get } from 'svelte/store';
-import { t } from 'svelte-i18n';
-import type { Order } from '$lib/order/types';
+  import Tooltip from '$lib/ui/Tooltip.svelte';
+  import { listOrders } from '$lib/order/signage-store';
+  import { downloadCSV, toCSV } from '$lib/export/csv';
+  import { listAll } from '$lib/loading/loading-store';
+  import { get } from 'svelte/store';
+  import { t } from 'svelte-i18n';
+  import type { Order } from '$lib/order/types';
 
   let today = new Date();
   let y = today.getFullYear();
@@ -79,7 +80,10 @@ import type { Order } from '$lib/order/types';
 
 <section class="card">
   <div class="row" style="justify-content:space-between;align-items:center">
-    <h2 style="margin:0">{$t('calendar.title')}</h2>
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <h2 style="margin:0">{$t('calendar.title')}</h2>
+      <Tooltip text="Toggle admin mode to mark loading days. Click days to view or assign orders." />
+    </div>
     <div class="row" style="gap:8px; align-items:center">
       <button class="tag" on:click={prev}>◀</button>
       <div style="min-width:140px;text-align:center;font-weight:700">{y} · {m + 1}</div>

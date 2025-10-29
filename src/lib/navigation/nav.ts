@@ -1,5 +1,5 @@
 import type { ComponentType } from 'svelte';
-import { Grid, Calendar, FolderOpen, PackageSearch, Settings, KanbanSquare } from 'lucide-svelte';
+import { Grid, Calendar, FolderOpen, PackageSearch, Settings, KanbanSquare, HelpCircle } from 'lucide-svelte';
 
 export interface NavLink {
   href: string;
@@ -11,7 +11,8 @@ export const navLinks: NavLink[] = [
   { href: '/', labelKey: 'nav.dashboard', icon: Grid },
   { href: '/calendar', labelKey: 'nav.calendar', icon: Calendar },
   { href: '/orders', labelKey: 'nav.orders', icon: PackageSearch },
-  { href: '/files', labelKey: 'nav.files', icon: FolderOpen }
+  { href: '/files', labelKey: 'nav.files', icon: FolderOpen },
+  { href: '/help', labelKey: 'nav.help', icon: HelpCircle }
 ];
 
 export const sanitizeBase = (basePath: string | undefined) => {

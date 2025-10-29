@@ -1,6 +1,6 @@
 import { writable, derived } from 'svelte/store';
 
-export type Role = 'Admin' | 'Station';
+export type Role = 'SuperAdmin' | 'Admin' | 'Station';
 export type StationTag =
   | 'CAD'
   | 'CNC'
@@ -22,6 +22,7 @@ export type User = {
 const KEY_USER = 'rf_current_user';
 
 export const users = writable<User[]>([
+  { id: 'u-superadmin', name: 'Boss Director', role: 'SuperAdmin' },
   { id: 'u-admin', name: 'Lina Ops', role: 'Admin' },
   { id: 'u-cnc1', name: 'Marta Jansone', role: 'Station', stations: ['CNC'] },
   { id: 'u-sanding', name: 'Igor Petrovs', role: 'Station', stations: ['SANDING'] },
