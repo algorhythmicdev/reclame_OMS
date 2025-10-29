@@ -40,13 +40,13 @@ body{ margin:0; font: 400 1rem/1.55 system-ui, -apple-system, Segoe UI, Roboto, 
   --ok:#0f9d58; --warn:#f59e0b; --danger:#dc2626; --info:#2563eb;
   --accent: var(--brand-red);
   
-  /* Calendar tokens */
+  /* Calendar tokens (Light + Dark + HC) */
   --cal-bg: var(--bg-0);
   --cal-day: var(--bg-0);
   --cal-day-border: var(--border);
-  --cal-day-num: color-mix(in oklab, var(--text) 92%, black);
-  --cal-day-muted: color-mix(in oklab, var(--text) 60%, transparent);
-  --cal-focus: color-mix(in oklab, var(--accent) 60%, black);
+  --cal-num: color-mix(in oklab, var(--text) 92%, black);     /* higher contrast numerals */
+  --cal-muted: color-mix(in oklab, var(--text) 60%, transparent);
+  --cal-focus: color-mix(in oklab, var(--accent) 60%, black); /* focus ≥3:1 */
 }
 
 :root[data-theme="LightVim"]{
@@ -65,7 +65,7 @@ body{ margin:0; font: 400 1rem/1.55 system-ui, -apple-system, Segoe UI, Roboto, 
 }
 
 /* Calendar-specific styling for Light mode */
-[data-theme="LightVim"] .cal .day-num { color: var(--cal-day-num); }
+.cal .day-num { color: var(--cal-num); }
 .cal .day:focus-visible { outline: 3px solid var(--cal-focus); outline-offset: 2px; }
 
 body{ background:var(--bg-0); color:var(--text) }

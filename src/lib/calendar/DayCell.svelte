@@ -61,7 +61,7 @@
 }
 .day-num{
   font-weight:700; 
-  color:var(--cal-day-num);
+  color:var(--cal-num);
 }
 .stack{
   display:grid; 
