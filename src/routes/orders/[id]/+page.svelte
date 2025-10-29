@@ -14,6 +14,7 @@
   import BranchesTable from '$lib/order/BranchesTable.svelte';
   import { role } from '$lib/ui/RoleSwitch.svelte';
   import CompareView from '$lib/order/CompareView.svelte';
+  import FileCompareView from '$lib/compare/CompareView.svelte';
   import StationQuickLogger from '$lib/order/StationQuickLogger.svelte';
   import BadgesManager from '$lib/order/BadgesManager.svelte';
   import GanttLine from '$lib/order/GanttLine.svelte';
@@ -422,26 +423,41 @@
 </style>
 
 <section id="revisions" hidden={tab!=='revisions'} aria-label={$t('order.revisions')}>
-  <div class="grid" style="grid-template-columns:2fr 1fr;align-items:start;gap:16px">
-    <RevisionsList
-      items={o.revisions}
-      currentId={o.defaultRevisionId}
-      onUse={useRevision}
+  <div class="grid" style="gap:16px">
+    <div class="grid" style="grid-template-columns:2fr 1fr;align-items:start;gap:16px">
+      <RevisionsList
+        items={o.revisions}
+        currentId={o.defaultRevisionId}
+        onUse={useRevision}
+        canManage={$role==='Admin'}
+      />
+      {#if $role==='Admin'}
+        <section class="card">
+          <h3 style="margin:0 0 8px 0">{$t('order.attach_admin_heading')}</h3>
+          <input
+            id="attach-path"
+            class="rf-input"
+            placeholder={$t('order.attach_help')}
+            bind:value={newPath}
+            aria-label={$t('order.attach_help')}
+          />
+          <div class="row" style="margin-top:8px"><button class="tag" on:click={attach}>{$t('order.attach')}</button></div>
+        </section>
+      {/if}
+    </div>
+    
+    <FileCompareView
+      baseFields={{client: o.client, due: o.due, loadingDate: o.loadingDate}}
+      candidateFields={{client: o.client, due: o.due, loadingDate: o.loadingDate}}
+      fileList={o.revisions.map(r => ({
+        rev: r.id.slice(0,8),
+        name: r.name,
+        size: 1024 * 512,
+        date: new Date().toISOString()
+      }))}
       canManage={$role==='Admin'}
+      onUseAsCurrent={useRevision}
     />
-    {#if $role==='Admin'}
-      <section class="card">
-        <h3 style="margin:0 0 8px 0">{$t('order.attach_admin_heading')}</h3>
-        <input
-          id="attach-path"
-          class="rf-input"
-          placeholder={$t('order.attach_help')}
-          bind:value={newPath}
-          aria-label={$t('order.attach_help')}
-        />
-        <div class="row" style="margin-top:8px"><button class="tag" on:click={attach}>{$t('order.attach')}</button></div>
-      </section>
-    {/if}
   </div>
 </section>
 
