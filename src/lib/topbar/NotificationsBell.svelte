@@ -24,7 +24,7 @@
   </button>
 
   {#if open}
-  <div class="dropdown" role="menu" on:keydown={onKey}>
+  <div class="dropdown mobile-sheet" role="menu" on:keydown={onKey}>
     {#if noticesList.length===0}<div class="muted">No notifications.</div>{/if}
     {#each noticesList as n}
       <button role="menuitem" class="row">
@@ -46,4 +46,11 @@
          padding:8px;z-index:50}
 .dropdown [role="menuitem"]{display:flex;justify-content:space-between;gap:8px;padding:6px;border-radius:8px}
 .dropdown [role="menuitem"]:focus{outline:3px solid var(--focus)}
+
+@media (max-width: 820px){
+  .dropdown{
+    min-width:auto; 
+    width:100%;
+  }
+}
 </style>

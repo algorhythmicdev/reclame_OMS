@@ -8,6 +8,7 @@
   import ThemeSwitch from '$lib/topbar/ThemeSwitch.svelte';
   import LangSwitch from '$lib/topbar/LangSwitch.svelte';
   import TextSizeSwitch from '$lib/topbar/TextSizeSwitch.svelte';
+  import MobileNav from '$lib/topbar/MobileNav.svelte';
   import Toaster from '$lib/ui/Toaster.svelte';
   import LiveRegion from '$lib/ui/LiveRegion.svelte';
   import { role } from '$lib/ui/RoleSwitch.svelte';
@@ -107,6 +108,8 @@
 </header>
 
 <main id="main" class="rf-page"><slot /></main>
+
+<MobileNav />
 
 <Toaster />
 <LiveRegion />
