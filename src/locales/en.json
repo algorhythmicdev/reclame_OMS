@@ -35,6 +35,9 @@
     "launchpad": "Launchpad",
     "calendar": "Calendar",
     "orders": "Orders",
+    "inventory": "Inventory",
+    "stations": "Stations",
+    "assets": "Assets",
     "files": "Files",
     "settings": "Settings",
     "kanban": "Production Board",
@@ -478,11 +481,45 @@
   },
   "inventory": {
     "title": "Inventory",
-    "add": "Add item",
-    "qty": "Qty",
-    "min": "Min",
-    "ok": "OK",
-    "low": "LOW"
+    "search": "Search",
+    "search_placeholder": "SKU, name, color, location…",
+    "add_item": "Add item",
+    "movements": "Movements",
+    "low_stock": "Low stock",
+    "minimum_label": "Minimum {value}",
+    "count": "{count} items",
+    "headers": {
+      "sku": "SKU",
+      "name": "Name",
+      "category": "Category",
+      "unit": "Unit",
+      "stock": "Stock",
+      "minimum": "Minimum",
+      "location": "Location",
+      "updated": "Updated"
+    },
+    "labels": {
+      "vendor": "Vendor",
+      "color": "Color",
+      "thickness": "Thickness",
+      "offcut": "Offcut",
+      "bin": "Bin",
+      "weight": "Weight",
+      "stock": "Stock",
+      "on_hand": "On hand",
+      "min": "Min",
+      "location": "Location",
+      "updated": "Updated"
+    },
+    "actions": {
+      "add": "Add",
+      "consume": "Consume",
+      "back": "Back"
+    },
+    "prompt": {
+      "add": "Add quantity:",
+      "consume": "Consume quantity:"
+    }
   },
   "notifications": {
     "title": "Notifications",

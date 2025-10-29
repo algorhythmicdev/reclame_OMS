@@ -35,6 +35,9 @@
     "launchpad": "Starts",
     "calendar": "Kalendārs",
     "orders": "Pasūtījumi",
+    "inventory": "Krājumi",
+    "stations": "Stacijas",
+    "assets": "Resursi",
     "files": "Faili",
     "settings": "Iestatījumi",
     "kanban": "Ražošana",
@@ -478,11 +481,45 @@
   },
   "inventory": {
     "title": "Noliktava",
-    "add": "Pievienot vienumu",
-    "qty": "Skaits",
-    "min": "Min.",
-    "ok": "LABI",
-    "low": "MAZS"
+    "search": "Meklēt",
+    "search_placeholder": "Artikuls, nosaukums, krāsa, atrašanās vieta…",
+    "add_item": "Pievienot vienumu",
+    "movements": "Pārvietojumi",
+    "low_stock": "Zems atlikums",
+    "minimum_label": "Minimums {value}",
+    "count": "{count} vienības",
+    "headers": {
+      "sku": "Artikuls",
+      "name": "Nosaukums",
+      "category": "Kategorija",
+      "unit": "Vienība",
+      "stock": "Atlikums",
+      "minimum": "Minimums",
+      "location": "Atrašanās vieta",
+      "updated": "Atjaunots"
+    },
+    "labels": {
+      "vendor": "Piegādātājs",
+      "color": "Krāsa",
+      "thickness": "Biezums",
+      "offcut": "Atgriezums",
+      "bin": "Kaste",
+      "weight": "Svars",
+      "stock": "Atlikums",
+      "on_hand": "Pieejams",
+      "min": "Min.",
+      "location": "Vieta",
+      "updated": "Atjaunots"
+    },
+    "actions": {
+      "add": "Pievienot",
+      "consume": "Patērēt",
+      "back": "Atpakaļ"
+    },
+    "prompt": {
+      "add": "Pievienot daudzumu:",
+      "consume": "Patērēt daudzumu:"
+    }
   },
   "notifications": {
     "title": "Paziņojumi",
