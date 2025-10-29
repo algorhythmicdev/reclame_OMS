@@ -100,7 +100,7 @@
     <span class="muted">{$t('inventory.count', { count: filtered.length })}</span>
   </header>
   
-  <Tabs tabs={tabs} value={currentTab} onChange={handleTabChange} />
+  <Tabs tabs={tabs} active={currentTab} onChange={handleTabChange} />
   
   <div style="margin-top:16px">
     {#each groups(currentTab) as g}
@@ -136,10 +136,10 @@
                   <td data-label={$t('inventory.headers.minimum')}>{it.min}</td>
                   <td data-label={$t('inventory.headers.location')}>{it.location}</td>
                   <td class="row" style="gap:6px">
-                    <a href={`${base}/inventory/${it.id}`} class="icon" title="Edit">
+                    <a href={`${base}/inventory/${it.id}`} class="icon" aria-label={`Edit ${it.name}`}>
                       <Edit size={16} aria-hidden="true"/>
                     </a>
-                    <button class="icon warn" title="Delete" on:click={()=>removeItem(it.id)}>
+                    <button class="icon warn" aria-label={`Delete ${it.name}`} on:click={()=>{ if(confirm(`Delete ${it.name}?`)) removeItem(it.id); }}>
                       <Trash size={16} aria-hidden="true"/>
                     </button>
                   </td>
