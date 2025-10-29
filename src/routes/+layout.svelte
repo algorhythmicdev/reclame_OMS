@@ -11,6 +11,10 @@
   import CommandPalette from '$lib/ui/CommandPalette.svelte';
   import { t } from 'svelte-i18n';
   import { startPreferenceUrlSync } from '$lib/settings/url-sync';
+  import { notices } from '$lib/notify/bus';
+  
+  let noticesList = [];
+  const unsubNotices = notices.subscribe(v => noticesList = v);
 
   let searchOpen = false;
 
@@ -100,6 +104,16 @@
           <strong>{$t('layout.notifications')}</strong>
         </header>
         <div class="rf-scroll" aria-live="polite">
+          {#if noticesList.length > 0}
+            <div style="display:grid;gap:8px;margin-bottom:12px;padding:0 8px">
+              {#each noticesList.slice(0, 10) as n}
+                <div class="row" style="justify-content:space-between;font-size:0.85rem;padding:6px 8px;border-radius:8px;background:var(--bg-0);border:1px solid var(--border)">
+                  <span class="tag" data-kind={n.kind} style="flex:1">{n.text}</span>
+                  <span class="muted" style="font-size:0.75rem" title={n.time}>{new Date(n.time).toLocaleTimeString()}</span>
+                </div>
+              {/each}
+            </div>
+          {/if}
           <NotificationsFeed />
         </div>
       </section>

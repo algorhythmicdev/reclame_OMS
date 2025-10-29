@@ -3,6 +3,7 @@
   import { createEventDispatcher, onDestroy } from 'svelte';
   import SearchIcon from 'lucide-svelte/icons/search';
   import BellIcon from 'lucide-svelte/icons/bell';
+  import HelpCircle from 'lucide-svelte/icons/help-circle';
   import { currentUser, users, currentUserId } from '$lib/users/user-store';
   import { unseenCount } from '$lib/notifications/count';
   import RoleSwitch from './RoleSwitch.svelte';
@@ -11,11 +12,13 @@
   import ThemeQuick from '$lib/ui/ThemeQuick.svelte';
   import LangQuick from '$lib/ui/LangQuick.svelte';
   import TextScaleQuick from '$lib/ui/TextScaleQuick.svelte';
+  import HelpOverlay from '$lib/ui/HelpOverlay.svelte';
 
   const dispatch = createEventDispatcher<{ opensearch: void }>();
   const openSearch = () => dispatch('opensearch');
 
   let showUserMenu = false;
+  let showHelp = false;
   let notificationCount = 0;
 
   const unsubscribeUnseen = unseenCount.subscribe((value) => (notificationCount = value));
@@ -74,6 +77,10 @@
 
     <RoleSwitch />
 
+    <button class="tag" title="Help" on:click={()=>showHelp=true}>
+      <HelpCircle aria-hidden="true" width={18} height={18} />
+    </button>
+
     <a class="notif" aria-label={notificationLabel} href={`${base}/notifications`} title={$t('header.notifications.label')}>
       <BellIcon aria-hidden="true" focusable="false" />
       {#if notificationCount}<span class="dot" aria-hidden="true"></span>{/if}
@@ -102,6 +109,8 @@
     </div>
   </div>
 </header>
+
+{#if showHelp}<HelpOverlay onClose={()=>showHelp=false}/>{/if}
 
 <style>
   .app-header {
