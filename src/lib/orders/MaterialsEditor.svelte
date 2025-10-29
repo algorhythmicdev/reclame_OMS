@@ -51,11 +51,11 @@
   }
   
   function handleWidthChange(id: string, e: Event, currentDims: MaterialRow['dims']) {
-    set(id, { dims: { ...currentDims, w: +(e.target as HTMLInputElement).value } });
+    set(id, { dims: { ...(currentDims || {}), w: +(e.target as HTMLInputElement).value } });
   }
   
   function handleHeightChange(id: string, e: Event, currentDims: MaterialRow['dims']) {
-    set(id, { dims: { ...currentDims, h: +(e.target as HTMLInputElement).value } });
+    set(id, { dims: { ...(currentDims || {}), h: +(e.target as HTMLInputElement).value } });
   }
   
   function handleNotesChange(id: string, e: Event) {

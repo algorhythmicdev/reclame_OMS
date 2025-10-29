@@ -101,8 +101,8 @@
   let loadingSelection = o.loadingDate ?? '';
   let showPicker = false;
   
-  // New materials editor state (mock/demo)
-  let materialRows: MaterialRow[] = (o as any).materialRows ?? [];
+  // New materials editor state (mock/demo) - not persisted to order store
+  let materialRows: MaterialRow[] = [];
 
   let tab = 'overview';
   let tabs: { id: string; label: string }[] = [];
@@ -350,7 +350,7 @@
       {/if}
       
       <section class="card">
-        <NewMaterialsEditor bind:rows={materialRows} onChange={(r) => { materialRows = r; }} />
+        <NewMaterialsEditor bind:rows={materialRows} />
       </section>
     </div>
 
