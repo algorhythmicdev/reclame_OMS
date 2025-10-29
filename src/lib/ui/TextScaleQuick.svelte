@@ -3,6 +3,7 @@
   import TypeIcon from 'lucide-svelte/icons/type';
   import { scale, type Scale } from '$lib/stores/scale';
   import { t } from 'svelte-i18n';
+  import { savePrefs } from '$lib/settings/service';
 
   const options: Scale[] = ['sm', 'md', 'lg', 'xl'];
 
@@ -55,6 +56,7 @@
   function selectScale(value: Scale) {
     if ($scale !== value) {
       scale.set(value);
+      savePrefs();
     }
 
     closeMenu();
