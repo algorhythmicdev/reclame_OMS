@@ -6,6 +6,7 @@
   let month = dayjs(); let open=true; let message='';
   function dates(){ const start=month.startOf('month'); return Array.from({length:month.daysInMonth()},(_,i)=>start.add(i,'day')); }
   function pick(d:string){ const {ok,left} = book(d, po, 6); message = ok ? `Booked. ${left} slots left` : `No slots available`; if(ok){ onPick(d); open=false; } }
+  function slotsLeft(d: string) { const info = getDay(d, 6); return info.max - info.booked.length; }
 </script>
 
 {#if open}
@@ -25,9 +26,7 @@
         <button class="tile" on:click={()=>pick(d.format('YYYY-MM-DD'))}
           aria-label={`Book ${d.format('YYYY MMM DD')}`}>
           <div>{d.date()}</div>
-          {#let info = getDay(d.format('YYYY-MM-DD'),6)}
-            <small class="muted">{info.max - info.booked.length} left</small>
-          {/let}
+          <small class="muted">{slotsLeft(d.format('YYYY-MM-DD'))} left</small>
         </button>
         {/key}
       {/each}
