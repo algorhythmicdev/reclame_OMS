@@ -1,6 +1,8 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import CalendarMonth from '$lib/calendar/CalendarMonth.svelte';
+  import WeekStrip from '$lib/calendar/WeekStrip.svelte';
+  import DayList from '$lib/calendar/DayList.svelte';
   import Tooltip from '$lib/ui/Tooltip.svelte';
   import { listOrders } from '$lib/order/signage-store';
   import { downloadCSV, toCSV } from '$lib/export/csv';
@@ -15,6 +17,7 @@
   let adminMode = true;
   let selectedISO: string | null = null;
   let orders = listOrders();
+  let mode:'grid'|'list'='grid';
 
   function refreshOrders() {
     orders = listOrders();
@@ -78,13 +81,17 @@
     : null;
 </script>
 
-<section class="card">
+<section class="card cal-card">
   <div class="row" style="justify-content:space-between;align-items:center">
     <div style="display: flex; align-items: center; gap: 8px;">
       <h2 style="margin:0">{$t('calendar.title')}</h2>
       <Tooltip text="Toggle admin mode to mark loading days. Click days to view or assign orders." />
     </div>
-    <div class="row" style="gap:8px; align-items:center">
+    <div class="row" style="gap:8px; align-items:center;flex-wrap:wrap">
+      <div class="row" role="tablist" aria-label="View mode">
+        <button class="tag" role="tab" aria-selected={mode==='grid'} on:click={()=>mode='grid'}>Grid</button>
+        <button class="tag" role="tab" aria-selected={mode==='list'} on:click={()=>mode='list'}>List</button>
+      </div>
       <button class="tag" on:click={prev}>◀</button>
       <div style="min-width:140px;text-align:center;font-weight:700">{y} · {m + 1}</div>
       <button class="tag" on:click={next}>▶</button>
@@ -94,7 +101,14 @@
     </div>
   </div>
 
-  <CalendarMonth year={y} month={m} {adminMode} on:selectDay={onPicked} />
+  {#if mode==='grid'}
+    <div class="cal-month">
+      <CalendarMonth year={y} month={m} {adminMode} on:selectDay={onPicked} />
+    </div>
+    <WeekStrip year={y} month={m} />
+  {:else}
+    <DayList />
+  {/if}
 </section>
 
 {#if selectedISO}
@@ -153,5 +167,24 @@
   padding:10px;
   border-bottom:1px solid var(--border);
   text-align:left;
+}
+
+.cal-card{ 
+  container-type:inline-size; 
+}
+
+.cal-month{
+  display:block;
+}
+
+@container (width <= 560px){ 
+  /* phones */
+  /* auto-switch to compact week strip when card is narrow */
+  .cal-month{ 
+    display:none 
+  }
+  :global(.cal-weekstrip){ 
+    display:block 
+  }
 }
 </style>

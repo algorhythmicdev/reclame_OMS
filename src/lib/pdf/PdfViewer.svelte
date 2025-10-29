@@ -18,6 +18,8 @@
   let loading = false;
   let error = '';
   let lastSrc = '';
+  let full = false;
+  let hostEl;
 
   async function ensurePdf() {
     if (pdfjsLib) return;
@@ -105,9 +107,23 @@
 
   onMount(() => {
     mounted = true;
-    render(true);
+    
+    // Lazy load PDF when it becomes visible
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting && src && !pdfDoc) {
+          render(true);
+        }
+      });
+    }, { threshold: 0.1 });
+    
+    if (hostEl) {
+      observer.observe(hostEl);
+    }
+    
     return () => {
       mounted = false;
+      observer.disconnect();
       renderTask?.cancel();
       renderTask = undefined;
       currentSrc = '';
@@ -123,47 +139,80 @@
     render(true);
   }
 </script>
-<div class="pdf-controls">
-  <div class="row" style="justify-content:space-between;margin-bottom:8px">
-    <div class="row">
-      <button class="tag" on:click={prev} disabled={pageNum <= 1}>{$t('pdf.prev')}</button>
-      <div class="tag">{$t('pdf.page', { current: pageNum, total: pageCount })}</div>
-      <button class="tag" on:click={next} disabled={pageNum >= pageCount}>{$t('pdf.next')}</button>
-    </div>
-    <div class="row">
-      <button
-        class="tag"
-        on:click={async () => {
-          scale = Math.max(0.5, scale - 0.2);
-          await render();
-        }}
-        disabled={scale <= 0.5}>-
-      </button>
-      <div class="tag">{Math.round(scale * 100)}%</div>
-      <button
-        class="tag"
-        on:click={async () => {
-          scale = Math.min(maxScale, scale + 0.2);
-          await render();
-        }}
-        disabled={scale >= maxScale}>+
-      </button>
+<div class="pdf-host" class:overlay={full} bind:this={hostEl}>
+  <div class="pdf-controls">
+    <div class="row" style="justify-content:space-between;margin-bottom:8px">
+      <strong>PDF</strong>
+      <div class="row">
+        <div class="row">
+          <button class="tag" on:click={prev} disabled={pageNum <= 1}>{$t('pdf.prev')}</button>
+          <div class="tag">{$t('pdf.page', { current: pageNum, total: pageCount })}</div>
+          <button class="tag" on:click={next} disabled={pageNum >= pageCount}>{$t('pdf.next')}</button>
+        </div>
+        <div class="row">
+          <button
+            class="tag"
+            on:click={async () => {
+              scale = Math.max(0.5, scale - 0.2);
+              await render();
+            }}
+            disabled={scale <= 0.5}>-
+          </button>
+          <div class="tag">{Math.round(scale * 100)}%</div>
+          <button
+            class="tag"
+            on:click={async () => {
+              scale = Math.min(maxScale, scale + 0.2);
+              await render();
+            }}
+            disabled={scale >= maxScale}>+
+          </button>
+        </div>
+        <button class="tag" on:click={()=>full=!full}>{full?'Close':'Full screen'}</button>
+      </div>
     </div>
   </div>
+  {#if loading}
+    <div class="pdf-loading">{$t('pdf.loading') || 'Loading...'}</div>
+  {/if}
+  {#if error}
+    <div class="tag tag-error" style="margin-bottom:8px">{error}</div>
+  {/if}
+  <canvas
+    class="viewer"
+    bind:this={canvasEl}
+    aria-busy={loading}
+  ></canvas>
 </div>
-{#if loading}
-  <div class="pdf-loading">{$t('pdf.loading') || 'Loading...'}</div>
-{/if}
-{#if error}
-  <div class="tag tag-error" style="margin-bottom:8px">{error}</div>
-{/if}
-<canvas
-  class="viewer"
-  bind:this={canvasEl}
-  aria-busy={loading}
-></canvas>
 
 <style>
+.pdf-host{ 
+  height: 60vh; 
+  min-height: 400px;
+}
+
+.overlay{
+  position:fixed; 
+  inset:auto 0 0 0; 
+  top:10%;
+  height:90%;
+  background:var(--bg-0); 
+  z-index:70; 
+  padding:12px 12px calc(12px + var(--rail-safe));
+  border:1px solid var(--border); 
+  border-radius:16px 16px 0 0;
+  overflow:auto;
+}
+
+@media (min-width:821px){ 
+  .overlay{ 
+    position:static; 
+    height:auto; 
+    border:none; 
+    border-radius:12px;
+  } 
+}
+
 .pdf-controls {
   position: sticky;
   top: 0;

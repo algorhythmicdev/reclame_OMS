@@ -46,4 +46,14 @@
          padding:8px;z-index:50}
 .dropdown [role="menuitem"]{display:flex;justify-content:space-between;gap:8px;padding:6px;border-radius:8px}
 .dropdown [role="menuitem"]:focus{outline:3px solid var(--focus)}
+
+@media (max-width: 820px){
+  .dropdown{
+    position: fixed; left:0; right:0; bottom:0; top:auto;
+    margin:0; padding:12px 12px calc(12px + var(--rail-safe));
+    border-radius:16px 16px 0 0; border:1px solid var(--border); background:var(--bg-0);
+    box-shadow: 0 -18px 40px color-mix(in oklab,var(--shadow-rgb) 40%, transparent);
+    min-width:auto; width:100%;
+  }
+}
 </style>
