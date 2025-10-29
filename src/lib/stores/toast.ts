@@ -28,3 +28,10 @@ function createToasts() {
 }
 
 export const toasts = createToasts();
+
+// Convenience function for announce-style toasts
+export function announce(text: string, level: 'success' | 'warning' | 'error' = 'success') {
+  // Map level to kind
+  const kind = level === 'warning' ? 'warning' : level === 'error' ? 'error' : 'success';
+  toasts.push({ message: text, kind });
+}

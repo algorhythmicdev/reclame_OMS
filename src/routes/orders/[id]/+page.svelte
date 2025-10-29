@@ -17,10 +17,12 @@
   import StationQuickLogger from '$lib/order/StationQuickLogger.svelte';
   import BadgesManager from '$lib/order/BadgesManager.svelte';
   import GanttLine from '$lib/order/GanttLine.svelte';
+  import { announce as announceToast } from '$lib/stores/toast';
   import { announce } from '$lib/a11y/live';
   import MaterialsEditor from '$lib/order/MaterialsEditor.svelte';
   import { TERMS } from '$lib/order/names';
   import LoadingDatePicker from '$lib/order/LoadingDatePicker.svelte';
+  import LoadingPicker from '$lib/calendar/LoadingPicker.svelte';
   import StageLegend from '$lib/order/StageLegend.svelte';
   import StageEditor from '$lib/order/StageEditor.svelte';
   import ReworkQuick from '$lib/order/ReworkQuick.svelte';
@@ -95,6 +97,7 @@
   let o = getOrder(id)!;
   $: pdf = o.revisions.find((r) => r.id === o.defaultRevisionId)?.file;
   let loadingSelection = o.loadingDate ?? '';
+  let showPicker = false;
 
   let tab = 'overview';
   let tabs: { id: string; label: string }[] = [];
@@ -197,6 +200,12 @@
     assignLoadingDate();
   }
 
+  function setLoading(d: string) {
+    setLoadingDate(o.id, d, 'admin');
+    refreshOrder();
+    announceToast(`Loading date set to ${d}`, 'success');
+  }
+
   const ganttItems = [
     { label: 'CAD', planned: [Date.parse('2025-10-20'), Date.parse('2025-10-21')], actual: [Date.parse('2025-10-20'), Date.parse('2025-10-20T18:00')] },
     { label: 'CNC', planned: [Date.parse('2025-10-21'), Date.parse('2025-10-22')], actual: [Date.parse('2025-10-21T09:00'), Date.parse('2025-10-21T16:00')] },
@@ -296,10 +305,29 @@
 
 <RepoHeader id={o.id} title={o.title} client={o.client} badges={o.badges} />
 
+{#if $role === 'Admin' && o.loadingDate}
+  <div class="card" style="margin-top:12px;display:flex;justify-content:space-between;align-items:center">
+    <div>
+      <span class="tag">Load: {o.loadingDate}</span>
+    </div>
+    <button class="tag ghost" on:click={() => (showPicker = true)}>Change loading date…</button>
+  </div>
+{/if}
+
 {#if $role === 'Admin'}
   <div style="margin-top:12px">
     <BadgesManager value={o.badges} onChange={updateBadges} />
   </div>
+{/if}
+
+{#if showPicker}
+  <LoadingPicker
+    po={o.id}
+    onPick={(d) => {
+      setLoading(d);
+      showPicker = false;
+    }}
+  />
 {/if}
 
 <div style="margin:10px 0"><Tabs {tabs} bind:active={tab} /></div>

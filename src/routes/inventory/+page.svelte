@@ -4,6 +4,7 @@
   import { base } from '$app/paths';
   import { t } from 'svelte-i18n';
   import { onDestroy } from 'svelte';
+  import { toCSV, downloadCSV } from '$lib/inventory/export';
 
   let q = '';
   let list: Item[] = [];
@@ -24,6 +25,8 @@
       .toLowerCase()
       .includes(q.toLowerCase())
   );
+
+  function exportCSV(){ downloadCSV(`inventory-${new Date().toISOString().slice(0,10)}.csv`, toCSV(list)); }
 </script>
 
 <section class="card">
@@ -39,6 +42,7 @@
       />
     </div>
     <div class="row">
+      <button class="tag" on:click={exportCSV}>Export CSV</button>
       <a class="tag" href={`${base}/inventory/new`}>{$t('inventory.add_item')}</a>
       <a class="tag" href={`${base}/inventory/movements`}>{$t('inventory.movements')}</a>
     </div>
