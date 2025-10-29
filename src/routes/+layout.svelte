@@ -10,7 +10,7 @@
   import { seed } from '$lib/dev/seed';
   import CommandPalette from '$lib/ui/CommandPalette.svelte';
   import { t } from 'svelte-i18n';
-  import { textSize } from '$lib/stores/text-size';
+  import { startPreferenceUrlSync } from '$lib/settings/url-sync';
 
   let searchOpen = false;
 
@@ -22,21 +22,9 @@
     searchOpen = false;
   };
 
-  // Initialize text size on mount
-  onMount(() => {
-    // Subscribe to text size changes
-    const unsubscribe = textSize.subscribe((size) => {
-      if (typeof document !== 'undefined') {
-        document.documentElement.classList.remove('text-size-normal', 'text-size-large', 'text-size-x-large');
-        document.documentElement.classList.add(`text-size-${size}`);
-      }
-    });
-
-    return () => unsubscribe();
-  });
-
   onMount(() => {
     seed(base);
+    const stopPreferenceSync = startPreferenceUrlSync();
     const handler = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement | null;
       if (target?.isContentEditable) return;
@@ -59,7 +47,10 @@
     };
 
     window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
+    return () => {
+      stopPreferenceSync?.();
+      window.removeEventListener('keydown', handler);
+    };
   });
 
   onMount(async () => {

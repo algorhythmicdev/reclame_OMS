@@ -1,5 +1,6 @@
 import { setupI18n, setLocale } from '$lib/i18n';
 import { theme, type ThemeName } from '$lib/stores/theme';
+import { scale, type Scale } from '$lib/stores/scale';
 import { building } from '$app/environment';
 
 export const load = async ({ url }) => {
@@ -15,6 +16,11 @@ export const load = async ({ url }) => {
     const th = params.get('theme') as ThemeName | null;
     if (th && ['LightVim', 'DarkVim', 'HighContrastVim'].includes(th)) {
       theme.set(th);
+    }
+
+    const sc = params.get('scale') as Scale | null;
+    if (sc && ['sm', 'md', 'lg', 'xl'].includes(sc)) {
+      scale.set(sc);
     }
   }
 

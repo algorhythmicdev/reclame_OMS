@@ -32,7 +32,6 @@
   },
   "nav": {
     "dashboard": "Panelis",
-    "launchpad": "Starts",
     "calendar": "Kalendārs",
     "orders": "Pasūtījumi",
     "inventory": "Krājumi",
@@ -215,6 +214,12 @@
     "text_size": "Teksta izmērs",
     "text_size_toggle": "Mainīt teksta izmēru",
     "text_size_hint": "Noklikšķiniet, lai mainītu teksta izmērus",
+    "text_size_options": {
+      "sm": { "label": "Mazs teksts", "abbr": "Mazs" },
+      "md": { "label": "Noklusējuma teksts", "abbr": "Noklusējums" },
+      "lg": { "label": "Liels teksts", "abbr": "Liels" },
+      "xl": { "label": "Ļoti liels teksts", "abbr": "Ļoti liels" }
+    },
     "help_hints": "Palīdzības padomi",
     "show_hints": "Rādīt noderīgus padomus visā saskarnē"
   },
@@ -235,9 +240,9 @@
     "q4": "Ko nozīmē dažādi pasūtījumu žetoni?",
     "a4": "DRAFT = preliminārs pasūtījums, URGENT = augsta prioritāte, BLOCKED = problēmas kavē progresu, IN_PROGRESS = aktīvi tiek strādāts, DONE = pabeigts.",
     "q5": "Kā mainīt tēmu?",
-    "a5": "Dodieties uz Palaišanas paneli un izvēlieties vēlamo tēmu: Gaiša, Tumša vai Augsta kontrasta.",
+    "a5": "Izmantojiet galvenes vadīklas, lai izvēlētos vēlamo tēmu: Gaiša, Tumša vai Augsta kontrasta.",
     "q6": "Vai varu mainīt teksta izmēru?",
-    "a6": "Jā! Izmantojiet Teksta izmēra kontroli Palaišanas paneļa lapā, lai pārslēgtos starp Normālu, Lielu un Ļoti lielu teksta izmēru."
+    "a6": "Jā! Izmantojiet Teksta izmēra vadīklu galvenē, lai pārslēgtos starp Mazu, Noklusējuma, Lielu un Ļoti lielu teksta izmēru."
   },
   "toast": {
     "approved": "Pieprasījums apstiprināts",

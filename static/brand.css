@@ -1,12 +1,20 @@
 :root, :host { color-scheme: light dark; }
 *{ box-sizing:border-box }
-html, body{ height:100% } 
-body{ margin:0; font: 400 16px/1.55 system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif }
+html, body{ height:100% }
 
-/* Text size scaling support */
-:root.text-size-normal body { font-size: 16px; }
-:root.text-size-large body { font-size: 18px; }
-:root.text-size-x-large body { font-size: 20px; }
+:root{
+  --rf-scale: md;
+  --rf-font-size: 16px;
+}
+
+:root[data-scale="sm"]{ --rf-font-size: 14px; }
+:root[data-scale="md"]{ --rf-font-size: 16px; }
+:root[data-scale="lg"]{ --rf-font-size: 18px; }
+:root[data-scale="xl"]{ --rf-font-size: 20px; }
+
+html{ font-size: var(--rf-font-size, 16px) }
+
+body{ margin:0; font: 400 1rem/1.55 system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif }
 
 :root{
   /* Spacing tokens */
@@ -148,34 +156,8 @@ a:visited{ color:var(--link-visited) }
 }
 
 /* Layout helpers */
-.rf-launchbar{ 
-  display:flex; 
-  align-items:center; 
-  gap:var(--space-md); 
-  padding:10px var(--space-md); 
-  background:var(--bg-1); 
-  border-bottom:1px solid var(--border); 
-  flex-wrap:wrap 
-}
-.rf-launchbar nav .tag{ font-size:.85rem }
-.rf-launchbar .tag{ transition:background .2s ease,color .2s ease }
-.rf-launchbar .launchpad-controls{ 
-  margin-left:auto; 
-  gap:var(--space-sm); 
-  flex-wrap:wrap; 
-  align-items:center 
-}
-.tag-group{ display:flex; gap:var(--space-sm); flex-wrap:wrap }
-.rf-input--compact{ 
-  padding:var(--space-sm) var(--space-sm); 
-  font-size:.85rem; 
-  height:34px; 
-  width:140px 
-}
-.shortcut{ font-size:0.75rem; color:var(--muted) }
-
-.grid{ display:grid; gap:10px } 
-.row{ display:flex; gap:10px; align-items:center } 
+.grid{ display:grid; gap:10px }
+.row{ display:flex; gap:10px; align-items:center }
 .muted{ color:var(--muted) }
 .rf-right{ display:grid; gap:var(--space-lg); min-height:0 } 
 .rf-right>*{ min-height:0 } 

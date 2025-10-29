@@ -1,17 +1,16 @@
 <script lang="ts">
   import { base } from '$app/paths';
-  import { page } from '$app/stores';
   import { createEventDispatcher, onDestroy } from 'svelte';
-  import { Search } from 'lucide-svelte';
+  import SearchIcon from 'lucide-svelte/icons/search';
+  import BellIcon from 'lucide-svelte/icons/bell';
   import { currentUser, users, currentUserId } from '$lib/users/user-store';
   import { unseenCount } from '$lib/notifications/count';
   import RoleSwitch from './RoleSwitch.svelte';
-  import { t, locale } from 'svelte-i18n';
-  import { setLocale } from '$lib/i18n';
-  import { theme, type ThemeName } from '$lib/stores/theme';
-  import { savePrefs } from '$lib/settings/service';
-  import { track } from '$lib/telemetry';
+  import { t } from 'svelte-i18n';
   import TopNav from '$lib/brand/TopNav.svelte';
+  import ThemeQuick from '$lib/ui/ThemeQuick.svelte';
+  import LangQuick from '$lib/ui/LangQuick.svelte';
+  import TextScaleQuick from '$lib/ui/TextScaleQuick.svelte';
 
   const dispatch = createEventDispatcher<{ opensearch: void }>();
   const openSearch = () => dispatch('opensearch');
@@ -26,32 +25,6 @@
 
   const logo = () => `${base}/logo.png`;
   const pickUser = (event: Event) => currentUserId.set((event.target as HTMLSelectElement).value);
-
-  const themes: ThemeName[] = ['LightVim', 'DarkVim', 'HighContrastVim'];
-  let currentTheme: ThemeName = 'DarkVim';
-  const unsubscribeTheme = theme.subscribe((value) => (currentTheme = value));
-  onDestroy(() => unsubscribeTheme?.());
-
-  let currentLocale: 'en' | 'ru' | 'lv' = 'en';
-  const unsubscribeLocale = locale.subscribe((value) => (currentLocale = value || 'en'));
-  onDestroy(() => unsubscribeLocale?.());
-
-  const selectTheme = (value: ThemeName) => {
-    theme.set(value);
-    savePrefs();
-    track('theme_toggle', { theme: value });
-  };
-
-  const changeLocale = (code: 'en' | 'ru' | 'lv') => {
-    setLocale(code);
-    savePrefs();
-    track('locale_toggle', { locale: code });
-  };
-
-  const onLocaleChange = (event: Event) => {
-    const value = (event.target as HTMLSelectElement).value as 'en' | 'ru' | 'lv';
-    changeLocale(value);
-  };
 
   const toggleUserMenu = () => (showUserMenu = !showUserMenu);
 
@@ -88,19 +61,21 @@
   </div>
 
   <div class="app-header__actions" role="group" aria-label={$t('header.actions')}>
-    <button
-      class="tag"
-      type="button"
-      on:click={openSearch}
-      aria-label={$t('a11y.search')}
-    >
-      <Search size={16} />
+    <button class="tag" type="button" on:click={openSearch} aria-label={$t('a11y.search')} title={$t('a11y.search')}>
+      <SearchIcon aria-hidden="true" focusable="false" width={18} height={18} />
       <span class="sr-only">{$t('a11y.search')}</span>
     </button>
 
+    <div class="app-header__toggles" role="group" aria-label="Display preferences">
+      <ThemeQuick />
+      <LangQuick />
+      <TextScaleQuick />
+    </div>
+
     <RoleSwitch />
 
-    <a class="notif" aria-label={notificationLabel} href={`${base}/notifications`}>
+    <a class="notif" aria-label={notificationLabel} href={`${base}/notifications`} title={$t('header.notifications.label')}>
+      <BellIcon aria-hidden="true" focusable="false" />
       {#if notificationCount}<span class="dot" aria-hidden="true"></span>{/if}
       <span class="sr-only">{$t('header.notifications.srCount', { count: notificationCount })}</span>
     </a>
@@ -168,6 +143,12 @@
     border: 1px solid var(--border);
     border-radius: 999px;
     background: var(--bg-0);
+    color: var(--text);
+  }
+
+  .notif :global(svg) {
+    width: 18px;
+    height: 18px;
   }
 
   .notif .dot {
@@ -245,6 +226,17 @@
     justify-content: flex-end;
     gap: 8px;
     min-width: 0;
+  }
+
+  .app-header__toggles {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .app-header__toggles :global(svg) {
+    width: 18px;
+    height: 18px;
   }
 
   .app-header__actions .tag {
