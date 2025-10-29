@@ -449,11 +449,11 @@
     <FileCompareView
       baseFields={{client: o.client, due: o.due, loadingDate: o.loadingDate}}
       candidateFields={{client: o.client, due: o.due, loadingDate: o.loadingDate}}
-      fileList={o.revisions.map(r => ({
+      fileList={o.revisions.map((r, idx) => ({
         rev: r.id.slice(0,8),
         name: r.name,
-        size: 1024 * 512,
-        date: new Date().toISOString()
+        size: Math.floor(200000 + Math.random() * 800000),
+        date: new Date(Date.now() - idx * 86400000).toISOString()
       }))}
       canManage={$role==='Admin'}
       onUseAsCurrent={useRevision}

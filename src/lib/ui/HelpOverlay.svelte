@@ -7,7 +7,7 @@
 
 {#if open}
 <div class="sheet">
-  <div class="card" role="dialog" aria-modal="true" aria-label="Interface help" on:keydown={onKey} tabindex="-1">
+  <div class="card" role="dialog" aria-modal="true" aria-label="Interface help" on:keydown={onKey} tabindex="0">
     <h3>Quick help</h3>
     <ul>
       <li><b>Theme</b>: Light / Dark / High-contrast (3:1 non-text contrast).</li>
