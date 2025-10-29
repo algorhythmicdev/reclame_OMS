@@ -372,7 +372,17 @@
       "due": "Срок",
       "loading": "Загрузка"
     },
-    "empty": "Нет назначенных заказов."
+    "empty": "Нет назначенных заказов.",
+    "add_entry": "Добавить запись",
+    "type_loading": "Загрузка",
+    "type_meeting": "Встреча",
+    "type_note": "Заметка",
+    "carrier": "Перевозчик",
+    "window_from": "С",
+    "window_to": "До",
+    "attendees": "Участники",
+    "location": "Место",
+    "notes": "Примечания"
   },
   "orderform": {
     "title": "Новый заказ",
@@ -383,7 +393,11 @@
     "client": "Клиент",
     "order_title": "Название",
     "due": "Срок",
+    "due_date": "Дата выполнения",
     "loading": "Дата загрузки",
+    "loading_link": "Загрузка (ссылка на календарь)",
+    "carrier": "Перевозчик",
+    "scheduling": "Планирование",
     "add_section": "Добавить секцию",
     "create": "Создать заказ",
     "cancel": "Отмена",
@@ -493,6 +507,12 @@
     "low_stock": "Малый остаток",
     "minimum_label": "Минимум {value}",
     "count": "{count} позиций",
+    "materials": "Материалы",
+    "leftovers": "Остатки",
+    "paints": "Краски",
+    "tools": "Инструменты",
+    "consumables": "Расходные материалы",
+    "add": "Добавить",
     "headers": {
       "sku": "Артикул",
       "name": "Название",

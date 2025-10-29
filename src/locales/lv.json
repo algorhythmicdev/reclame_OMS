@@ -372,7 +372,17 @@
       "due": "Termiņš",
       "loading": "Iekraušana"
     },
-    "empty": "Nav piešķirtu pasūtījumu."
+    "empty": "Nav piešķirtu pasūtījumu.",
+    "add_entry": "Pievienot ierakstu",
+    "type_loading": "Iekraušana",
+    "type_meeting": "Sanāksme",
+    "type_note": "Piezīme",
+    "carrier": "Pārvadātājs",
+    "window_from": "No",
+    "window_to": "Līdz",
+    "attendees": "Dalībnieki",
+    "location": "Vieta",
+    "notes": "Piezīmes"
   },
   "orderform": {
     "title": "Jauns pasūtījums",
@@ -383,7 +393,11 @@
     "client": "Klients",
     "order_title": "Nosaukums",
     "due": "Termiņš",
+    "due_date": "Izpildes datums",
     "loading": "Iekraušanas datums",
+    "loading_link": "Iekraušana (saite uz kalendāru)",
+    "carrier": "Pārvadātājs",
+    "scheduling": "Plānošana",
     "add_section": "Pievienot sadaļu",
     "create": "Izveidot pasūtījumu",
     "cancel": "Atcelt",
@@ -493,6 +507,12 @@
     "low_stock": "Zems atlikums",
     "minimum_label": "Minimums {value}",
     "count": "{count} vienības",
+    "materials": "Materiāli",
+    "leftovers": "Atlikumi",
+    "paints": "Krāsas",
+    "tools": "Instrumenti",
+    "consumables": "Patēriņa materiāli",
+    "add": "Pievienot",
     "headers": {
       "sku": "Artikuls",
       "name": "Nosaukums",
