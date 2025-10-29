@@ -34,7 +34,7 @@
           on:click={()=>open=!open}><MessageSquare aria-hidden="true"/></button>
 
   {#if open}
-  <div class="sheet" role="dialog" aria-modal="true" aria-label="Team chat" on:keydown={onKey}>
+  <div class="sheet mobile-sheet" role="dialog" aria-modal="true" aria-label="Team chat" on:keydown={onKey}>
     <div class="panel card">
       <header class="row" style="justify-content:space-between"><strong>Team chat</strong>
         <button class="tag ghost" on:click={()=>{open=false;btn?.focus();}}>Close</button>
@@ -57,12 +57,6 @@
 .msg{border:1px solid var(--border);border-radius:10px;padding:6px}
 
 @media (max-width: 820px){
-  .sheet{
-    position: fixed; left:0; right:0; bottom:0; top:auto;
-    margin:0; padding:12px 12px calc(12px + var(--rail-safe));
-    border-radius:16px 16px 0 0; border:1px solid var(--border); background:var(--bg-0);
-    box-shadow: 0 -18px 40px color-mix(in oklab,var(--shadow-rgb) 40%, transparent);
-  }
   .panel{
     width:100%;
     border:none;

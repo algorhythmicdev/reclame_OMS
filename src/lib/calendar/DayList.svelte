@@ -6,9 +6,12 @@
   let days = listAll();
   let orders = listOrders();
   
+  // Memoize current date to avoid recalculation on every render
+  const today = dayjs().subtract(1, 'day');
+  
   // Get upcoming 14 days with loadings
   $: upcoming = days
-    .filter(d => dayjs(d.id).isAfter(dayjs().subtract(1, 'day')))
+    .filter(d => dayjs(d.id).isAfter(today))
     .slice(0, 14);
 </script>
 

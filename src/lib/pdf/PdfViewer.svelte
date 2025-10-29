@@ -110,11 +110,10 @@
     
     // Lazy load PDF when it becomes visible
     const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting && src && !pdfDoc) {
-          render(true);
-        }
-      });
+      const entry = entries.find(e => e.isIntersecting);
+      if (entry && src && !pdfDoc) {
+        render(true);
+      }
     }, { threshold: 0.1 });
     
     if (hostEl) {

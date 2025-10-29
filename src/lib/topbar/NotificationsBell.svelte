@@ -24,7 +24,7 @@
   </button>
 
   {#if open}
-  <div class="dropdown" role="menu" on:keydown={onKey}>
+  <div class="dropdown mobile-sheet" role="menu" on:keydown={onKey}>
     {#if noticesList.length===0}<div class="muted">No notifications.</div>{/if}
     {#each noticesList as n}
       <button role="menuitem" class="row">
@@ -49,11 +49,8 @@
 
 @media (max-width: 820px){
   .dropdown{
-    position: fixed; left:0; right:0; bottom:0; top:auto;
-    margin:0; padding:12px 12px calc(12px + var(--rail-safe));
-    border-radius:16px 16px 0 0; border:1px solid var(--border); background:var(--bg-0);
-    box-shadow: 0 -18px 40px color-mix(in oklab,var(--shadow-rgb) 40%, transparent);
-    min-width:auto; width:100%;
+    min-width:auto; 
+    width:100%;
   }
 }
 </style>

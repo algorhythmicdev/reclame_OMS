@@ -177,8 +177,11 @@
   display:block;
 }
 
+/* Container query breakpoint at 560px - applies when the card itself is narrow,
+   which can happen even on larger screens with sidebars or multi-column layouts.
+   This is different from the 820px media query which applies to viewport width. */
 @container (width <= 560px){ 
-  /* phones */
+  /* phones or narrow cards */
   /* auto-switch to compact week strip when card is narrow */
   .cal-month{ 
     display:none 
