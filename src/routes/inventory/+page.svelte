@@ -6,6 +6,7 @@
   import { onDestroy } from 'svelte';
   import { toCSV, downloadCSV } from '$lib/inventory/export';
   import Tabs from '$lib/ui/Tabs.svelte';
+  import ItemModal from '$lib/inventory/ItemModal.svelte';
   import Plus from 'lucide-svelte/icons/plus';
   import Edit from 'lucide-svelte/icons/pencil';
   import Trash from 'lucide-svelte/icons/trash-2';
@@ -46,8 +47,10 @@
     return uniqueGroups.map(g => ({id: `${id}-${g}`, title: g}));
   }
   
+  let editing: any = null;
+  
   function handleCreateItem(section: Section, group: string) {
-    createItem({ section, group });
+    editing = { section, group };
   }
 
   $: filtered = list.filter((it) =>
@@ -107,7 +110,7 @@
       <div class="group-section">
         <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:8px">
           <h3 class="group-title">{g.title}</h3>
-          <button class="tag" on:click={()=>handleCreateItem(currentTab, g.title)}>
+          <button class="tag" on:click={() => handleCreateItem(currentTab, g.title)}>
             <Plus size={14} aria-hidden="true"/> {$t('inventory.add')}
           </button>
         </div>
@@ -152,6 +155,10 @@
     {/each}
   </div>
 </section>
+
+{#if editing}
+  <ItemModal bind:item={editing} onClose={() => editing = null} />
+{/if}
 
 <style>
 .table-wrap{overflow:auto}
