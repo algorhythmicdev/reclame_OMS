@@ -200,7 +200,24 @@ export function recordMovement(
 }
 
 export function move(itemId: string, kind: MovementKind, qty: number, by = 'admin', note?: string) {
-  return recordMovement(itemId, kind, qty, { by, note });
+  const result = recordMovement(itemId, kind, qty, { by, note });
+  
+  // Check for low stock after movement
+  if (result) {
+    const item = getItem(itemId);
+    if (item && item.stock <= item.min) {
+      // Use dynamic imports to avoid circular dependencies
+      Promise.all([
+        import('$lib/stores/toast'),
+        import('$lib/notify/bus')
+      ]).then(([{ announce }, { push }]) => {
+        announce(`Low stock: ${item.sku} (${item.stock} ${item.unit})`, 'warning');
+        push('warn', `Low stock: ${item.sku} (${item.stock} ${item.unit})`);
+      });
+    }
+  }
+  
+  return result;
 }
 
 export function movementsForItem(itemId: string) {
