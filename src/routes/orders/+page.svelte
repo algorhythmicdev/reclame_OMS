@@ -5,12 +5,14 @@
   import type { Order, Station, Badge as BadgeCode } from '$lib/order/types';
   import { listOrders, createOrder } from '$lib/order/signage-store';
   import OrderForm from '$lib/order/OrderForm.svelte';
+  import DraftOrderForm from '$lib/order/DraftOrderForm.svelte';
   import { blankStages, STATE_LABEL, type StageState } from '$lib/order/stages';
   import { TERMS } from '$lib/order/names';
   import { t } from 'svelte-i18n';
   import { ORDER_SEEDS } from '$lib/order/order-seeds';
   import { BADGE_ICONS, badgeTone } from '$lib/order/badges';
   import Badge from '$lib/ui/Badge.svelte';
+  import { currentUser } from '$lib/users/user-store';
 
   type OrderRow = {
     id: string;
@@ -21,6 +23,7 @@
     loadingDate: string;
     badges: BadgeCode[];
     href: string;
+    isDraft: boolean;
   };
 
   const assetPath = (name: string) => (assets && assets !== '.' ? `${assets}/files/${name}` : `/files/${name}`);
@@ -59,13 +62,15 @@
       due: order.due,
       loadingDate: order.loadingDate ?? '',
       badges: order.badges ?? [],
-      href: `${base}/orders/${order.id}`
+      href: `${base}/orders/${order.id}`,
+      isDraft: order.isDraft || false
     };
   }
 
   let rows: OrderRow[] = [];
   let q = '';
   let formOpen = false;
+  let draftFormOpen = false;
   let visible: OrderRow[] = [];
   let qLower = '';
 
@@ -76,8 +81,17 @@
       )
     : rows;
 
+  $: isAdmin = $currentUser?.role === 'Admin' || $currentUser?.role === 'SuperAdmin';
+  $: isSuperAdmin = $currentUser?.role === 'SuperAdmin';
+
   function refresh() {
-    rows = listOrders()
+    const allOrders = listOrders();
+    // Filter draft orders - only visible to Admin and SuperAdmin
+    const filteredOrders = isAdmin 
+      ? allOrders 
+      : allOrders.filter(order => !order.isDraft);
+    
+    rows = filteredOrders
       .map(toRow)
       .sort((a, b) => a.due.localeCompare(b.due));
   }
@@ -101,7 +115,12 @@
   <div class="row" style="justify-content:space-between">
     <h2 style="margin:0">{$t('orderLists.title')}</h2>
     <div class="row" style="gap:8px; align-items:center">
-      <button class="tag" on:click={() => (formOpen = true)}>{$t('orderLists.new')}</button>
+      {#if isSuperAdmin}
+        <button class="tag" on:click={() => (draftFormOpen = true)}>{$t('draft.add')}</button>
+      {/if}
+      {#if isAdmin}
+        <button class="tag" on:click={() => (formOpen = true)}>{$t('orderLists.new')}</button>
+      {/if}
       <div style="width:280px">
         <Input bind:value={q} placeholder={$t('orderLists.filter_placeholder')} ariaLabel={$t('orderLists.filter_label')} />
       </div>
@@ -164,6 +183,7 @@
 </section>
 
 <OrderForm bind:open={formOpen} onClose={() => { formOpen = false; refresh(); }} />
+<DraftOrderForm bind:open={draftFormOpen} onClose={() => { draftFormOpen = false; refresh(); }} />
 
 <style>
   .order-meta {

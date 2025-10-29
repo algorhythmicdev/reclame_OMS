@@ -7,7 +7,8 @@ import {
   CheckCircle2,
   Flame,
   PackageMinus,
-  FlaskConical
+  FlaskConical,
+  FileEdit
 } from 'lucide-svelte';
 
 export const BADGE_ICONS: Record<Badge, typeof CircleDashed> = {
@@ -18,7 +19,8 @@ export const BADGE_ICONS: Record<Badge, typeof CircleDashed> = {
   DONE: CheckCircle2,
   URGENT: Flame,
   LOW_STOCK: PackageMinus,
-  'R&D': FlaskConical
+  'R&D': FlaskConical,
+  DRAFT: FileEdit
 };
 
 export const BADGE_TONES: Record<Badge, 'primary' | 'info' | 'success' | 'warn' | 'danger'> = {
@@ -29,10 +31,12 @@ export const BADGE_TONES: Record<Badge, 'primary' | 'info' | 'success' | 'warn' 
   DONE: 'success',
   URGENT: 'danger',
   LOW_STOCK: 'warn',
-  'R&D': 'info'
+  'R&D': 'info',
+  DRAFT: 'info'
 };
 
 export const BADGE_ORDER: Badge[] = [
+  'DRAFT',
   'URGENT',
   'BLOCKED',
   'LOW_STOCK',

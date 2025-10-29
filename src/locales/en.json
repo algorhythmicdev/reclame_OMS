@@ -68,6 +68,7 @@
   },
   "roles": {
     "label": "Role",
+    "superadmin": "SuperAdmin",
     "admin": "Admin",
     "station": "Station"
   },
@@ -100,7 +101,8 @@
       "DONE": "Completed",
       "URGENT": "Urgent",
       "LOW_STOCK": "Low stock",
-      "R&D": "R&D"
+      "R&D": "R&D",
+      "DRAFT": "Draft"
     },
     "quick_station_log": "Quick Station Log",
     "station_label": "Station",
@@ -542,5 +544,16 @@
     "BLOCKED": "Blocked",
     "REWORK": "Rework",
     "COMPLETED": "Completed"
+  },
+  "draft": {
+    "title": "Draft Orders",
+    "add": "Add Draft Order",
+    "create": "Create Draft",
+    "cdr_file": "CDR File",
+    "cdr_file_placeholder": "Path to CDR file (e.g., /files/design.cdr)",
+    "attach_cdr": "Attach CDR",
+    "notification": "Draft order {id} has been created",
+    "convert_to_order": "Convert to Order",
+    "download_cdr": "Download CDR"
   }
 }

@@ -18,7 +18,8 @@ export const TERMS = {
     DONE: 'order.badgeLabels.DONE',
     URGENT: 'order.badgeLabels.URGENT',
     LOW_STOCK: 'order.badgeLabels.LOW_STOCK',
-    'R&D': 'order.badgeLabels.R&D'
+    'R&D': 'order.badgeLabels.R&D',
+    DRAFT: 'order.badgeLabels.DRAFT'
   }
 } as const;
 

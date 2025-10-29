@@ -11,11 +11,12 @@ export type Badge =
   | 'DONE'
   | 'URGENT'
   | 'LOW_STOCK'
-  | 'R&D';
+  | 'R&D'
+  | 'DRAFT';
 
 export type Field = { key: string; label: string; value: string };
 
-export type FileRef = { id: string; name: string; path: string; kind: 'pdf' | 'image' | 'other' };
+export type FileRef = { id: string; name: string; path: string; kind: 'pdf' | 'image' | 'cdr' | 'other' };
 
 export type Revision = {
   id: string;                 // revision id (hash-like)
@@ -65,6 +66,8 @@ export type Order = {
   loadingDate?: string | null;
   isRD?: boolean;
   rdNotes?: string;
+  isDraft?: boolean;          // Draft orders visible only to admin/superadmin
+  cdrFile?: FileRef | null;   // CDR file for draft orders
   badges: Badge[];
   // Working snapshot (applies default branch head + default revision)
   fields: Field[];
@@ -77,6 +80,7 @@ export type Order = {
   prs: PullRequest[];
   revisions: Revision[];      // file history, newest first
   defaultRevisionId: string;  // which revision is "current"
+  file?: FileRef;             // Main file reference
 };
 
 export type { StageMap, StageCycle, StageState, StationTag };
