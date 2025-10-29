@@ -11,6 +11,9 @@ export type Category =
   | 'INSTRUMENT';
 export type MovementKind = 'IN' | 'OUT' | 'ADJUST';
 
+// New types for section-based organization
+export type Section = 'materials' | 'leftovers' | 'paints' | 'tools' | 'cons';
+
 export interface Item {
   id: string;
   sku: string;
@@ -32,6 +35,9 @@ export interface Item {
     bin?: string;
   };
   updatedAt: string;
+  // New fields for section-based organization
+  section?: Section;
+  group?: string;
 }
 
 export interface Movement {

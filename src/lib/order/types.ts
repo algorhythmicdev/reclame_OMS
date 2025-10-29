@@ -62,8 +62,11 @@ export type Order = {
   id: string;                 // PO number (unique)
   title: string;
   client: string;
-  due: string;                // ISO
-  loadingDate?: string | null;
+  due: string;                // ISO - Due date for the order
+  dueDate?: string;           // Alias for due, for clarity
+  loadingDate?: string | null; // Optional loading date
+  loadingEventId?: string | null; // Link to calendar loading event
+  carrier?: string;           // Carrier for this order
   isRD?: boolean;
   rdNotes?: string;
   isDraft?: boolean;          // Draft orders visible only to admin/superadmin

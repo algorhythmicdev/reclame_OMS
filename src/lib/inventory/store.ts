@@ -124,6 +124,22 @@ export function addItem(input: NewItemInput): Item {
   return entry;
 }
 
+export function createItem(partial: Partial<Item> = {}): Item {
+  const newItem: Item = {
+    id: createId('inv'),
+    sku: '',
+    name: '',
+    category: 'HARDWARE',
+    unit: 'PCS',
+    stock: 0,
+    min: 0,
+    updatedAt: new Date().toISOString(),
+    ...partial
+  };
+  items.update((list) => [...list, newItem]);
+  return newItem;
+}
+
 export function updateItem(itemId: string, patch: ItemUpdate): Item | null {
   let updated: Item | null = null;
   const stamp = patch.updatedAt ?? new Date().toISOString();

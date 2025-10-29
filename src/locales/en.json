@@ -372,7 +372,17 @@
       "due": "Due",
       "loading": "Loading"
     },
-    "empty": "No orders assigned."
+    "empty": "No orders assigned.",
+    "add_entry": "Add entry",
+    "type_loading": "Loading",
+    "type_meeting": "Meeting",
+    "type_note": "Note",
+    "carrier": "Carrier",
+    "window_from": "From",
+    "window_to": "To",
+    "attendees": "Attendees",
+    "location": "Location",
+    "notes": "Notes"
   },
   "orderform": {
     "title": "New Order",
@@ -383,7 +393,11 @@
     "client": "Client",
     "order_title": "Title",
     "due": "Due",
+    "due_date": "Due date",
     "loading": "Loading Date",
+    "loading_link": "Loading (link to calendar entry)",
+    "carrier": "Carrier",
+    "scheduling": "Scheduling",
     "add_section": "Add section",
     "create": "Create Order",
     "cancel": "Cancel",
@@ -493,6 +507,12 @@
     "low_stock": "Low stock",
     "minimum_label": "Minimum {value}",
     "count": "{count} items",
+    "materials": "Materials",
+    "leftovers": "Leftovers",
+    "paints": "Paints",
+    "tools": "Tools",
+    "consumables": "Consumables",
+    "add": "Add",
     "headers": {
       "sku": "SKU",
       "name": "Name",

@@ -351,14 +351,25 @@
         <section class="card order-detail">
           <header class="order-detail__title">
             <CalendarDays size={18} aria-hidden="true" />
-            <h3>{$t('orderPage.loading.title')}</h3>
+            <h3>{$t('orderform.scheduling')}</h3>
           </header>
-          <LoadingDatePicker bind:selected={loadingSelection} />
-          <div class="order-detail__meta">
-            <span class="muted">{$t('orderPage.loading.current')} {o.loadingDate || '—'}</span>
-            <div class="order-detail__actions">
-              <button class="tag" type="button" on:click={assignLoadingDate}>{$t('loading.assign')}</button>
-              <button class="tag" type="button" on:click={clearLoadingDate} disabled={!o.loadingDate}>{$t('orderPage.loading.clear')}</button>
+          <div style="display:grid;gap:12px;margin-top:8px">
+            <div>
+              <label class="muted" style="font-size:0.85rem">{$t('orderform.due_date')}</label>
+              <div style="margin-top:4px"><strong>{o.due || '—'}</strong></div>
+            </div>
+            <div>
+              <label class="muted" style="font-size:0.85rem">{$t('orderPage.loading.title')}</label>
+              <LoadingDatePicker bind:selected={loadingSelection} />
+              <div style="margin-top:4px" class="muted">{$t('orderPage.loading.current')} {o.loadingDate || '—'}</div>
+              <div class="order-detail__actions" style="margin-top:4px">
+                <button class="tag" type="button" on:click={assignLoadingDate}>{$t('loading.assign')}</button>
+                <button class="tag" type="button" on:click={clearLoadingDate} disabled={!o.loadingDate}>{$t('orderPage.loading.clear')}</button>
+              </div>
+            </div>
+            <div>
+              <label class="muted" style="font-size:0.85rem">{$t('orderform.carrier')}</label>
+              <div style="margin-top:4px">{o.carrier || '—'}</div>
             </div>
           </div>
         </section>
