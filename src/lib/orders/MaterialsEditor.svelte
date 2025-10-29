@@ -27,6 +27,40 @@
     rows = rows.map(r => r.id === id ? { ...r, ...patch } : r);
     onChange(rows);
   }
+  
+  function handleTypeChange(id: string, e: Event) {
+    const val = (e.target as HTMLSelectElement).value as MaterialRow['type'];
+    set(id, { type: val });
+  }
+  
+  function handleColorSystemChange(id: string, e: Event) {
+    const val = (e.target as HTMLSelectElement).value as MaterialRow['colorSystem'];
+    set(id, { colorSystem: val });
+  }
+  
+  function handleThicknessChange(id: string, e: Event) {
+    set(id, { thicknessMM: +(e.target as HTMLInputElement).value });
+  }
+  
+  function handleColorCodeInput(id: string, e: Event) {
+    set(id, { colorCode: (e.target as HTMLInputElement).value });
+  }
+  
+  function handleQtyChange(id: string, e: Event) {
+    set(id, { qty: +(e.target as HTMLInputElement).value });
+  }
+  
+  function handleWidthChange(id: string, e: Event, currentDims: MaterialRow['dims']) {
+    set(id, { dims: { ...currentDims, w: +(e.target as HTMLInputElement).value } });
+  }
+  
+  function handleHeightChange(id: string, e: Event, currentDims: MaterialRow['dims']) {
+    set(id, { dims: { ...currentDims, h: +(e.target as HTMLInputElement).value } });
+  }
+  
+  function handleNotesChange(id: string, e: Event) {
+    set(id, { notes: (e.target as HTMLInputElement).value });
+  }
 </script>
 
 <div class="row" style="justify-content:space-between;align-items:center">
@@ -51,7 +85,7 @@
     {#each rows as r (r.id)}
       <tr>
         <td>
-          <select bind:value={r.type} on:change={(e) => set(r.id, { type: (e.currentTarget as HTMLSelectElement).value as any })}>
+          <select bind:value={r.type} on:change={(e) => handleTypeChange(r.id, e)}>
             <option>Acrylic</option>
             <option>Aluminium</option>
             <option>Plastic</option>
@@ -66,11 +100,11 @@
             min="0" 
             step="0.5" 
             bind:value={r.thicknessMM} 
-            on:change={(e) => set(r.id, { thicknessMM: +(e.currentTarget as HTMLInputElement).value })}
+            on:change={(e) => handleThicknessChange(r.id, e)}
           />
         </td>
         <td>
-          <select bind:value={r.colorSystem} on:change={(e) => set(r.id, { colorSystem: (e.currentTarget as HTMLSelectElement).value as any })}>
+          <select bind:value={r.colorSystem} on:change={(e) => handleColorSystemChange(r.id, e)}>
             <option>None</option>
             <option>RAL</option>
             <option>Pantone</option>
@@ -81,7 +115,7 @@
           <input 
             placeholder={r.colorSystem === 'HEX' ? '#RRGGBB' : r.colorSystem === 'RAL' ? 'RAL 3020' : 'e.g., 186 C'}
             bind:value={r.colorCode} 
-            on:input={(e) => set(r.id, { colorCode: (e.currentTarget as HTMLInputElement).value })}
+            on:input={(e) => handleColorCodeInput(r.id, e)}
           />
         </td>
         <td>
@@ -90,7 +124,7 @@
             min="1" 
             step="1" 
             bind:value={r.qty} 
-            on:change={(e) => set(r.id, { qty: +(e.currentTarget as HTMLInputElement).value })}
+            on:change={(e) => handleQtyChange(r.id, e)}
           />
         </td>
         <td class="row">
@@ -101,7 +135,7 @@
             style="width:90px" 
             placeholder="W" 
             value={r.dims?.w} 
-            on:change={(e) => set(r.id, { dims: { ...r.dims, w: +(e.currentTarget as HTMLInputElement).value } })}
+            on:change={(e) => handleWidthChange(r.id, e, r.dims)}
           />
           <input 
             type="number" 
@@ -110,13 +144,13 @@
             style="width:90px" 
             placeholder="H" 
             value={r.dims?.h} 
-            on:change={(e) => set(r.id, { dims: { ...r.dims, h: +(e.currentTarget as HTMLInputElement).value } })}
+            on:change={(e) => handleHeightChange(r.id, e, r.dims)}
           />
         </td>
         <td>
           <input 
             value={r.notes || ''} 
-            on:change={(e) => set(r.id, { notes: (e.currentTarget as HTMLInputElement).value })}
+            on:change={(e) => handleNotesChange(r.id, e)}
           />
         </td>
         <td>

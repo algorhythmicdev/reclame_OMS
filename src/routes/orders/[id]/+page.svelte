@@ -21,6 +21,7 @@
   import { announce as announceToast } from '$lib/stores/toast';
   import { announce } from '$lib/a11y/live';
   import MaterialsEditor from '$lib/order/MaterialsEditor.svelte';
+  import NewMaterialsEditor, { type MaterialRow } from '$lib/orders/MaterialsEditor.svelte';
   import { TERMS } from '$lib/order/names';
   import LoadingDatePicker from '$lib/order/LoadingDatePicker.svelte';
   import LoadingPicker from '$lib/calendar/LoadingPicker.svelte';
@@ -99,6 +100,9 @@
   $: pdf = o.revisions.find((r) => r.id === o.defaultRevisionId)?.file;
   let loadingSelection = o.loadingDate ?? '';
   let showPicker = false;
+  
+  // New materials editor state (mock/demo)
+  let materialRows: MaterialRow[] = (o as any).materialRows ?? [];
 
   let tab = 'overview';
   let tabs: { id: string; label: string }[] = [];
@@ -344,6 +348,10 @@
           <p class="muted">{$t('order.no_file')}</p>
         </section>
       {/if}
+      
+      <section class="card">
+        <NewMaterialsEditor bind:rows={materialRows} onChange={(r) => { materialRows = r; }} />
+      </section>
     </div>
 
     <div class="order-overview__details">
