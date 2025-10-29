@@ -35,6 +35,9 @@
     "launchpad": "Лончпад",
     "calendar": "Календарь",
     "orders": "Заказы",
+    "inventory": "Склад",
+    "stations": "Станции",
+    "assets": "Активы",
     "files": "Файлы",
     "settings": "Настройки",
     "kanban": "Производство",
@@ -478,11 +481,45 @@
   },
   "inventory": {
     "title": "Склад",
-    "add": "Добавить позицию",
-    "qty": "Кол-во",
-    "min": "Мин.",
-    "ok": "ОК",
-    "low": "МАЛО"
+    "search": "Поиск",
+    "search_placeholder": "Артикул, название, цвет, место…",
+    "add_item": "Добавить позицию",
+    "movements": "Движения",
+    "low_stock": "Малый остаток",
+    "minimum_label": "Минимум {value}",
+    "count": "{count} позиций",
+    "headers": {
+      "sku": "Артикул",
+      "name": "Название",
+      "category": "Категория",
+      "unit": "Ед.",
+      "stock": "Остаток",
+      "minimum": "Минимум",
+      "location": "Место",
+      "updated": "Обновлено"
+    },
+    "labels": {
+      "vendor": "Поставщик",
+      "color": "Цвет",
+      "thickness": "Толщина",
+      "offcut": "Остаток",
+      "bin": "Ячейка",
+      "weight": "Вес",
+      "stock": "Остаток",
+      "on_hand": "На складе",
+      "min": "Мин.",
+      "location": "Место",
+      "updated": "Обновлено"
+    },
+    "actions": {
+      "add": "Приход",
+      "consume": "Списать",
+      "back": "Назад"
+    },
+    "prompt": {
+      "add": "Добавить количество:",
+      "consume": "Списать количество:"
+    }
   },
   "notifications": {
     "title": "Уведомления",

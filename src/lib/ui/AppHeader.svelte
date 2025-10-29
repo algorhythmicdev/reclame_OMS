@@ -10,15 +10,8 @@
   import { setLocale } from '$lib/i18n';
   import { theme, type ThemeName } from '$lib/stores/theme';
   import { savePrefs } from '$lib/settings/service';
-  import {
-    navLinks,
-    resolveHref,
-    normalize,
-    toRelative,
-    getActiveState,
-    ariaCurrent
-  } from '$lib/navigation/nav';
   import { track } from '$lib/telemetry';
+  import TopNav from '$lib/brand/TopNav.svelte';
 
   const dispatch = createEventDispatcher<{ opensearch: void }>();
   const openSearch = () => dispatch('opensearch');
@@ -33,18 +26,6 @@
 
   const logo = () => `${base}/logo.png`;
   const pickUser = (event: Event) => currentUserId.set((event.target as HTMLSelectElement).value);
-
-  const basePath = normalize(resolveHref(base, '/'));
-
-  const resolveLink = (path: string) => resolveHref(base, path);
-
-  const toRelativePath = (path: string) => toRelative(basePath, path);
-
-  $: currentPath = toRelativePath($page.url?.pathname ?? '/');
-
-  const navState = (href: string) => getActiveState(currentPath, href);
-
-  const navAriaCurrent = (href: string) => ariaCurrent(navState(href));
 
   const themes: ThemeName[] = ['LightVim', 'DarkVim', 'HighContrastVim'];
   let currentTheme: ThemeName = 'DarkVim';
@@ -83,6 +64,16 @@
     if (role === 'Station') return $t('roles.station');
     return role;
   };
+
+  $: navItems = [
+    { path: '/orders', label: $t('nav.orders'), icon: 'orders' },
+    { path: '/calendar', label: $t('nav.calendar'), icon: 'calendar' },
+    { path: '/inventory', label: $t('nav.inventory'), icon: 'inventory' },
+    { path: '/', label: $t('nav.dashboard'), icon: 'home' },
+    { path: '/stations', label: $t('nav.stations') || 'Stations', icon: 'stations' },
+    { path: '/assets', label: $t('nav.assets') || 'Assets', icon: 'assets' },
+    { path: '/settings', label: $t('nav.settings'), icon: 'settings' }
+  ];
 </script>
 
 <header class="app-header">
@@ -92,21 +83,9 @@
     </a>
   </div>
 
-  <nav class="app-header__nav" aria-label={$t('nav.launchpad')}>
-    {#each navLinks as link}
-      {@const resolved = resolveLink(link.href)}
-      {@const state = navState(link.href)}
-      {@const active = Boolean(state)}
-      <a
-        class="tag"
-        class:is-active={active}
-        href={resolved}
-        aria-current={navAriaCurrent(link.href)}
-      >
-        <svelte:component this={link.icon} size={16} /> {$t(link.labelKey)}
-      </a>
-    {/each}
-  </nav>
+  <div class="app-header__nav">
+    <TopNav items={navItems} />
+  </div>
 
   <div class="app-header__actions" role="group" aria-label={$t('header.actions')}>
     <button
@@ -142,7 +121,6 @@
               {/each}
             </select>
           </div>
-          <a class="menu-row tag" href={`${base}/launchpad`} role="menuitem">{$t('nav.launchpad')}</a>
           <a class="menu-row tag" href={`${base}/settings`} role="menuitem">{$t('nav.settings')}</a>
         </div>
       {/if}
@@ -242,7 +220,6 @@
 
   .app-header__nav {
     display: flex;
-    gap: 8px;
     align-items: center;
     overflow-x: auto;
     padding: 0;
@@ -252,6 +229,14 @@
 
   .app-header__nav::-webkit-scrollbar {
     display: none;
+  }
+
+  .app-header__nav :global(.topnav) {
+    flex: 1;
+  }
+
+  .app-header__nav :global(.nav-list) {
+    flex-wrap: wrap;
   }
 
   .app-header__actions {
@@ -317,10 +302,6 @@
     .app-header__actions {
       order: 1;
       gap: 8px;
-    }
-
-    .tag-group {
-      display: none;
     }
 
     .brand-logo {

@@ -1,5 +1,6 @@
 <script lang="ts">
   import { t } from 'svelte-i18n';
+  import { base } from '$app/paths';
   import { HelpCircle, ChevronDown, ChevronRight } from 'lucide-svelte';
   
   let expandedItems: Set<string> = new Set(['q1']);
@@ -55,7 +56,7 @@
     Need more help? Contact your system administrator or refer to the user documentation.
   </p>
   <div style="margin-top: 12px;">
-    <a href="/launchpad" class="tag">← Back to Launchpad</a>
+    <a href={`${base}/`} class="tag">← {$t('nav.dashboard')}</a>
   </div>
 </section>
 
