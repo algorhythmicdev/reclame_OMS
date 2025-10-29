@@ -6,6 +6,7 @@
   import LanguageSwitch from '$lib/ui/LanguageSwitch.svelte';
   import TextSizeSwitch from '$lib/ui/TextSizeSwitch.svelte';
   import OperationsDigest from '$lib/ui/OperationsDigest.svelte';
+  import Tooltip from '$lib/ui/Tooltip.svelte';
 
   const sanitizeBase = () => {
     const trimmed = (base ?? '').trim();
@@ -42,7 +43,10 @@
 </script>
 
 <section class="card">
-  <h2 style="margin:0 0 8px 0">{$t('nav.launchpad')}</h2>
+  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+    <h2 style="margin:0">{$t('nav.launchpad')}</h2>
+    <Tooltip text="Quick access to all main sections of the system" />
+  </div>
 
   <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px">
     {#each links as link}

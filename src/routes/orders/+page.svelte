@@ -2,6 +2,7 @@
   import { assets, base } from '$app/paths';
   import { onMount } from 'svelte';
   import Input from '$lib/ui/Input.svelte';
+  import Tooltip from '$lib/ui/Tooltip.svelte';
   import type { Order, Station, Badge as BadgeCode } from '$lib/order/types';
   import { listOrders, createOrder } from '$lib/order/signage-store';
   import OrderForm from '$lib/order/OrderForm.svelte';
@@ -139,14 +140,21 @@
 </script>
 
 <section class="card">
-  <div class="row" style="justify-content:space-between">
-    <h2 style="margin:0">{$t('orderLists.title')}</h2>
+  <div class="row" style="justify-content:space-between; align-items:center;">
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <h2 style="margin:0">{$t('orderLists.title')}</h2>
+      <Tooltip text="Click column headers to sort. Click the arrow button to expand order details." />
+    </div>
     <div class="row" style="gap:8px; align-items:center">
       {#if isSuperAdmin}
-        <button class="tag" on:click={() => (draftFormOpen = true)}>{$t('draft.add')}</button>
+        <button class="tag" on:click={() => (draftFormOpen = true)}>
+          {$t('draft.add')}
+        </button>
       {/if}
       {#if isAdmin}
-        <button class="tag" on:click={() => (formOpen = true)}>{$t('orderLists.new')}</button>
+        <button class="tag" on:click={() => (formOpen = true)}>
+          {$t('orderLists.new')}
+        </button>
       {/if}
       <div style="width:280px">
         <Input bind:value={q} placeholder={$t('orderLists.filter_placeholder')} ariaLabel={$t('orderLists.filter_label')} />
