@@ -1,9 +1,13 @@
 <script lang="ts">
   import { base } from '$app/paths';
+  import { page } from '$app/stores';
   import { onMount } from 'svelte';
-  import AppHeader from '$lib/ui/AppHeader.svelte';
-  import NotificationsFeed from '$lib/ui/NotificationsFeed.svelte';
-  import ChatPane from '$lib/ui/ChatPane.svelte';
+  import Logo from '$lib/brand/Logo.svelte';
+  import NotificationsBell from '$lib/topbar/NotificationsBell.svelte';
+  import ChatPopover from '$lib/topbar/ChatPopover.svelte';
+  import ThemeSwitch from '$lib/topbar/ThemeSwitch.svelte';
+  import LangSwitch from '$lib/topbar/LangSwitch.svelte';
+  import TextSizeSwitch from '$lib/topbar/TextSizeSwitch.svelte';
   import Toaster from '$lib/ui/Toaster.svelte';
   import LiveRegion from '$lib/ui/LiveRegion.svelte';
   import { role } from '$lib/ui/RoleSwitch.svelte';
@@ -11,10 +15,6 @@
   import CommandPalette from '$lib/ui/CommandPalette.svelte';
   import { t } from 'svelte-i18n';
   import { startPreferenceUrlSync } from '$lib/settings/url-sync';
-  import { notices } from '$lib/notify/bus';
-  
-  let noticesList = [];
-  const unsubNotices = notices.subscribe(v => noticesList = v);
 
   let searchOpen = false;
 
@@ -87,123 +87,101 @@
   {$t('a11y.skip')}
 </a>
 
-
-<div class="rf-app">
-  <AppHeader on:opensearch={openSearch} />
-
-  <div class="rf-shell">
-    <!-- Main content + right rail -->
-    <main id="main" class="rf-main">
-      <slot />
-    </main>
-
-    <aside class="rf-right">
-      <!-- Notifications panel -->
-      <section class="rf-panel">
-        <header class="row" style="justify-content:space-between;padding:8px 10px;border-bottom:1px solid var(--border)">
-          <strong>{$t('layout.notifications')}</strong>
-        </header>
-        <div class="rf-scroll" aria-live="polite">
-          {#if noticesList.length > 0}
-            <div style="display:grid;gap:8px;margin-bottom:12px;padding:0 8px">
-              {#each noticesList.slice(0, 10) as n}
-                <div class="row" style="justify-content:space-between;font-size:0.85rem;padding:6px 8px;border-radius:8px;background:var(--bg-0);border:1px solid var(--border)">
-                  <span class="tag" data-kind={n.kind} style="flex:1">{n.text}</span>
-                  <span class="muted" style="font-size:0.75rem" title={n.time}>{new Date(n.time).toLocaleTimeString()}</span>
-                </div>
-              {/each}
-            </div>
-          {/if}
-          <NotificationsFeed />
-        </div>
-      </section>
-      <!-- Chat panel -->
-      <section class="rf-panel">
-        <header class="row" style="justify-content:space-between;padding:8px 10px;border-bottom:1px solid var(--border)">
-          <strong>{$t('layout.chat')}</strong>
-        </header>
-        <div class="rf-scroll">
-          <ChatPane />
-        </div>
-      </section>
-    </aside>
+<header class="rf-topbar">
+  <a href="{base}/" class="brand"><Logo /></a>
+  <nav class="main">
+    <a href="{base}/orders">{$t('nav.orders') || 'Заказы'}</a>
+    <a href="{base}/calendar">{$t('nav.calendar') || 'Календарь'}</a>
+    <a href="{base}/inventory">{$t('nav.inventory') || 'Склад'}</a>
+    <a href="{base}/stations">{$t('nav.stations') || 'Станции'}</a>
+    <a href="{base}/assets">{$t('nav.assets') || 'Активы'}</a>
+    <a href="{base}/settings">{$t('nav.settings') || 'Настройки'}</a>
+  </nav>
+  <div class="actions">
+    <LangSwitch />
+    <TextSizeSwitch />
+    <ThemeSwitch />
+    <NotificationsBell />
+    <ChatPopover />
   </div>
-</div>
+</header>
+
+<main id="main" class="rf-page"><slot /></main>
 
 <Toaster />
 <LiveRegion />
 <CommandPalette open={searchOpen} onClose={closeSearch} />
 
 <style>
-.rf-app{
-  min-height:100vh;
-  display:flex;
-  flex-direction:column;
-}
-
-.rf-shell{
-  flex:1;
-  display:grid;
-  grid-template-columns:minmax(0,1fr) clamp(360px, 35vw, 460px);
-  gap:20px;
-  padding:clamp(16px, 3.5vw, 28px);
-  align-items:start;
-  min-height:0;
-}
-
-.rf-main{
-  min-width:0;
-  min-height:0;
-}
-
-.rf-right{
-  display:grid;
-  gap:20px;
-  align-self:start;
-  min-width:0;
+.rf-topbar{
   position:sticky;
-  top:calc(72px + clamp(16px, 3.5vw, 28px));
-}
-
-.rf-panel{ 
-  display:flex; 
-  flex-direction:column; 
-  gap:14px; 
-  min-height:0; 
-  padding:18px; 
-}
-
-.rf-panel > header{
+  top:0;
+  z-index:100;
   display:flex;
   align-items:center;
-  justify-content:space-between;
+  gap:24px;
+  padding:12px clamp(16px,3vw,28px);
+  background:var(--bg-1);
+  border-bottom:1px solid var(--border);
+}
+
+.rf-topbar .brand{
+  display:inline-flex;
+  align-items:center;
+  text-decoration:none;
+}
+
+.rf-topbar nav.main{
+  flex:1;
+  display:flex;
+  gap:16px;
+  overflow-x:auto;
+  scrollbar-width:none;
+}
+.rf-topbar nav.main::-webkit-scrollbar{display:none}
+
+.rf-topbar nav.main a{
+  padding:8px 12px;
+  border-radius:999px;
+  text-decoration:none;
+  color:var(--text);
+  white-space:nowrap;
+  transition:background .2s ease;
+}
+.rf-topbar nav.main a:hover,.rf-topbar nav.main a:focus-visible{
+  background:color-mix(in oklab,var(--bg-2) 70%,var(--bg-1) 30%);
+}
+
+.rf-topbar .actions{
+  display:flex;
+  align-items:center;
   gap:8px;
 }
 
-.rf-panel .rf-scroll{
-  flex:1;
-  min-height:0;
-}
-
 @media (max-width: 1280px){
-  .rf-shell{
-    grid-template-columns:minmax(0,1fr);
+  .rf-topbar{
+    gap:16px;
   }
-
-  .rf-right{
-    grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+  .rf-topbar nav.main{
+    gap:12px;
   }
 }
 
 @media (max-width: 720px){
-  .rf-shell{
+  .rf-topbar{
+    flex-wrap:wrap;
+    padding:10px 16px;
     gap:12px;
-    padding:12px;
   }
-
-  .rf-right{
-    grid-template-columns:1fr;
-    gap:12px;
+  .rf-topbar .brand{
+    order:1;
+  }
+  .rf-topbar nav.main{
+    order:3;
+    width:100%;
+  }
+  .rf-topbar .actions{
+    order:2;
   }
 }
 </style>

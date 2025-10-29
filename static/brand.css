@@ -2,7 +2,11 @@
 *{ box-sizing:border-box }
 html, body{ height:100% }
 
-:root{
+/* Fluid type – keeps headings legible without crowding cards */
+:root{ 
+  --step-0: clamp(.95rem, .85rem + .4vw, 1.05rem);
+  --step-1: clamp(1.05rem, .9rem + .7vw, 1.35rem);
+  --step-2: clamp(1.25rem, 1rem + 1.2vw, 1.8rem);
   --rf-scale: md;
   --rf-font-size: 16px;
 }
@@ -15,6 +19,8 @@ html, body{ height:100% }
 html{ font-size: var(--rf-font-size, 16px) }
 
 body{ margin:0; font: 400 1rem/1.55 system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif }
+
+.rf-page{ --content-max: 1280px; width:min(100%, var(--content-max)); margin:0 auto; padding:16px; }
 
 :root{
   /* Spacing tokens */
@@ -80,7 +86,7 @@ a:visited{ color:var(--link-visited) }
   border-radius:var(--radius-lg); 
   box-shadow:0 16px 32px rgba(var(--shadow-rgb)/.12); 
 }
-.card{ padding:var(--space-lg); }
+.card{ padding:var(--space-lg); container-type: inline-size; container-name: card; }
 
 /* Improved tag/button styling */
 .tag{ 
@@ -182,3 +188,13 @@ a:visited{ color:var(--link-visited) }
 
 @media (prefers-reduced-motion: reduce){ *{ animation:none !important; transition:none !important } }
 @media (forced-colors: active){ :root{ --border: CanvasText } .card,.rf-panel,.rf-input{ border:1px solid CanvasText } }
+
+/* Container queries - scale inner UI based on card width */
+@container card (width <= 420px){
+  .card{ padding:12px }
+  .rf-table td, .rf-table th{ padding:6px }
+  h2, .card h2{ font-size: var(--step-1) }
+}
+@container card (width > 900px){
+  h2, .card h2{ font-size: var(--step-2) }
+}
