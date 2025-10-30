@@ -49,7 +49,7 @@
       "options": {
         "LightVim": "Светлая",
         "DarkVim": "Тёмная",
-        "HighContrastVim": "Высокий контраст"
+        "HighContrast": "Высокий контраст"
       }
     },
     "language": {
@@ -68,6 +68,26 @@
       "label": "Пользователь",
       "switch": "Сменить пользователя"
     }
+  },
+  "topbar": {
+    "theme": "Тема",
+    "language": "Язык",
+    "textSize": "Размер текста",
+    "chat": "Чат",
+    "notifications": "Уведомления"
+  },
+  "orders": {
+    "status": "Статус",
+    "rd": "R&D (этапы могут повторяться)",
+    "redoStage": "Отметить этап на переделку…",
+    "reason": "Причина",
+    "reasons": {
+      "recut": "Перерезка",
+      "resand": "Перешлифовка",
+      "reweld": "Пересварка",
+      "repaint": "Перекраска"
+    },
+    "compare": "Сравнить"
   },
   "roles": {
     "label": "Роль",
@@ -315,6 +335,12 @@
   },
   "calendar": {
     "title": "Календарь",
+    "upcoming": "Предстоящие",
+    "all": "Все",
+    "loading": "Погрузка",
+    "meeting": "Встреча",
+    "note": "Заметка",
+    "quickCreate": "Быстрое создание",
     "loading_mode": "Режим загрузки",
     "loading_on": "Вкл.",
     "loading_off": "Выкл.",
@@ -507,6 +533,12 @@
     "low_stock": "Малый остаток",
     "minimum_label": "Минимум {value}",
     "count": "{count} позиций",
+    "newItem": "Новая позиция",
+    "editItem": "Редактировать",
+    "save": "Сохранить",
+    "section": "Раздел",
+    "group": "Группа",
+    "subgroup": "Подгруппа",
     "materials": "Материалы",
     "leftovers": "Остатки",
     "paints": "Краски",

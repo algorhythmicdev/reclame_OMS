@@ -38,6 +38,7 @@ export interface Item {
   // New fields for section-based organization
   section?: Section;
   group?: string;
+  subgroup?: string;
 }
 
 export interface Movement {

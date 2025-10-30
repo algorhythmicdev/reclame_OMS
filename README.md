@@ -79,7 +79,7 @@ Avoid percentages for process: show stage names and counts (e.g., “CNC: Comple
 
 Tokens: --bg-0/1/2, --text, --muted, --border, --accent-1/2, status (--ok, --warn, --danger), --focus.
 
-Themes: LightVim, DarkVim, HighContrastVim, stored on <html data-theme=>.
+Themes: LightVim, DarkVim, HighContrast, stored on <html data-theme=>.
 
 WCAG: Body text ≥ 4.5:1; large text ≥ 3:1; UI outlines/borders/focus/indicators ≥ 3:1; chart lines/keys ≥ 3:1. Validate each theme. 
 w3c.github.io

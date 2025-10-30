@@ -13,8 +13,9 @@
   import RevisionsList from '$lib/order/RevisionsList.svelte';
   import BranchesTable from '$lib/order/BranchesTable.svelte';
   import { role } from '$lib/ui/RoleSwitch.svelte';
-  import CompareView from '$lib/order/CompareView.svelte';
-  import FileCompareView from '$lib/compare/CompareView.svelte';
+  import OrderCompareView from '$lib/order/CompareView.svelte';
+  import CompareView from '$lib/compare/CompareView.svelte';
+  import PdfCompare from '$lib/compare/PdfCompare.svelte';
   import StationQuickLogger from '$lib/order/StationQuickLogger.svelte';
   import BadgesManager from '$lib/order/BadgesManager.svelte';
   import GanttLine from '$lib/order/GanttLine.svelte';
@@ -30,6 +31,7 @@
   import ReworkQuick from '$lib/order/ReworkQuick.svelte';
   import { adminSendToRework, adminApplyStage, trackStageProposal } from '$lib/order/signage-actions';
   import { ClipboardList, Boxes, CalendarDays } from 'lucide-svelte';
+  import { setTicketRedo } from '$lib/stations/store';
 
   import type { Order, StationLog, Badge } from '$lib/order/types.signage';
   import {
@@ -41,9 +43,11 @@
     openChangeRequest,
     approveChangeRequest,
     declineChangeRequest,
-    setLoadingDate
+    setLoadingDate,
+    addRedoFlag,
+    setRedoSelection
   } from '$lib/order/signage-store';
-  import { blankStages, type StageState, type StationTag, type ReworkReason } from '$lib/order/stages';
+  import { blankStages, STATIONS, type StageState, type StationTag, type ReworkReason } from '$lib/order/stages';
   import { getOrderSeed } from '$lib/order/order-seeds';
 
   export let params;
@@ -98,6 +102,27 @@
 
   let o = getOrder(id)!;
   $: pdf = o.revisions.find((r) => r.id === o.defaultRevisionId)?.file;
+  let compareRevisionId: string | null = null;
+  let leftPdf = { url: '', name: '' };
+  let rightPdf = { url: '', name: '' };
+  let left = { url: '', name: '' };
+  let right = { url: '', name: '' };
+  $: currentRevision = o.revisions.find((r) => r.id === o.defaultRevisionId) ?? o.revisions[0];
+  $: if (!compareRevisionId || !o.revisions.some((r) => r.id === compareRevisionId)) {
+    const alternate = o.revisions.find((r) => r.id !== currentRevision?.id);
+    compareRevisionId = alternate?.id ?? currentRevision?.id ?? null;
+  }
+  $: const compareRevision = compareRevisionId
+    ? o.revisions.find((r) => r.id === compareRevisionId) ?? currentRevision
+    : currentRevision;
+  $: leftPdf = currentRevision
+    ? { url: currentRevision.file.path, name: currentRevision.file.name ?? currentRevision.name ?? 'Current' }
+    : { url: '', name: '' };
+  $: rightPdf = compareRevision
+    ? { url: compareRevision.file.path, name: compareRevision.file.name ?? compareRevision.name ?? 'Candidate' }
+    : leftPdf;
+  $: left = { ...leftPdf };
+  $: right = { ...rightPdf };
   let loadingSelection = o.loadingDate ?? '';
   let showPicker = false;
   
@@ -106,6 +131,47 @@
 
   let tab = 'overview';
   let tabs: { id: string; label: string }[] = [];
+  const redoStageChoices: StationTag[] = ['CNC', 'SANDING', 'WELDING', 'PAINT', 'ASSEMBLY', 'QC'];
+  const redoReasonChoices = ['recut', 'resand', 'reweld', 'repaint'] as const;
+  type RedoReason = (typeof redoReasonChoices)[number];
+  let redoStage: StationTag | '' = o.redoStage ?? '';
+  let redoReason: RedoReason | '' = (o.redoReason as RedoReason) ?? '';
+  $: redoFlags = Array.from(new Set([
+    ...(o.redo ?? []),
+    ...(o.cycles ?? []).map((cycle) => cycle.station)
+  ]));
+  $: if (o) {
+    o.redoStage = redoStage;
+    o.redoReason = redoReason;
+    setRedoSelection(o.id, redoStage, redoReason);
+  }
+  $: setTicketRedo(o.id, (o.redo ?? []).length > 0);
+  const stagePriority: StageState[] = ['IN_PROGRESS', 'REWORK', 'BLOCKED', 'QUEUED'];
+  $: activeStage = (() => {
+    for (const state of stagePriority) {
+      const match = STATIONS.find((station) => o.stages?.[station] === state);
+      if (match) return match;
+    }
+    return STATIONS[STATIONS.length - 1];
+  })();
+
+  function stageName(station: StationTag) {
+    const names = TERMS.stations as Record<string, string>;
+    return get(t)(names?.[station] ?? station);
+  }
+
+  function applyRedoFlag() {
+    if (!redoStage || !redoReason) return;
+    const updated = addRedoFlag(o.id, redoStage, redoReason);
+    if (updated && updated.length) {
+      o.redo = updated;
+      const reasonLabel = get(t)(`orders.reasons.${redoReason}`) ?? redoReason;
+      announceToast(`${stageName(redoStage)} • ${reasonLabel}`, 'info');
+    }
+    redoStage = '';
+    redoReason = '';
+  }
+
   $: tabs = [
     { id: 'overview', label: $t('order.overview') },
     { id: 'revisions', label: $t('order.revisions') },
@@ -154,8 +220,13 @@
   }
   function useRevision(revisionId: string) {
     setDefaultRevision(o.id, revisionId, 'admin');
+    compareRevisionId = revisionId;
     refreshOrder();
     announce(get(t)('toast.revision_switched'));
+  }
+
+  function useAsCurrent(revisionId: string) {
+    useRevision(revisionId);
   }
 
   function createCR(title: string, changes: StationLog['changes'], message?: string) {
@@ -383,6 +454,37 @@
         </section>
       {/if}
 
+      <section class="card">
+        <div class="row" style="justify-content:space-between;align-items:center">
+          <h3>{$t('orders.status')}</h3>
+          <label class="row" style="gap:6px"><input type="checkbox" bind:checked={o.isRD}> {$t('orders.rd')}</label>
+        </div>
+
+        <div class="row" style="flex-wrap:wrap; gap:8px">
+          {#each ['CAD','CNC','SANDING','BENDING','WELDING','PAINT','ASSEMBLY','QC','LOGISTICS'] as st}
+            <span class="chip" data-active={activeStage===st}>{st}{#if redoFlags.includes(st)}<em class="muted">&nbsp;• redo</em>{/if}</span>
+          {/each}
+        </div>
+
+        <div class="row" style="gap:8px;margin-top:8px">
+          <label class="row" style="gap:6px">
+            <select bind:value={redoStage}>
+              <option value="">{$t('orders.redoStage')}</option>
+              {#each redoStageChoices as option}
+                <option value={option}>{stageName(option)}</option>
+              {/each}
+            </select>
+            <select bind:value={redoReason}>
+              <option value="">{$t('orders.reason')}</option>
+              {#each redoReasonChoices as option}
+                <option value={option}>{$t(`orders.reasons.${option}`)}</option>
+              {/each}
+            </select>
+            <button class="tag" type="button" on:click={applyRedoFlag}>Apply</button>
+          </label>
+        </div>
+      </section>
+
       <section class="card order-detail order-detail--fields">
         <h3 class="order-detail__heading">
           <ClipboardList size={16} aria-hidden="true" />
@@ -436,6 +538,9 @@
   .order-detail--rd{ background:color-mix(in oklab,var(--accent-2) 14%, var(--bg-1)) }
   .order-detail--rd p{ margin:0; white-space:pre-wrap }
 
+  .chip{ display:inline-flex; align-items:center; gap:4px; padding:6px 12px; border-radius:999px; border:1px solid color-mix(in oklab,var(--border) 85%, transparent); background:color-mix(in oklab,var(--bg-1) 60%, var(--bg-2) 40%); font-size:0.8rem; text-transform:uppercase; letter-spacing:0.04em; }
+  .chip[data-active='true']{ background:linear-gradient(135deg,var(--accent-1),color-mix(in oklab,var(--accent-1) 70%, var(--accent-2))); color:#fff; border-color:color-mix(in oklab,var(--accent-1) 60%, transparent); }
+  select{ min-width:160px; }
   @media (max-width: 960px){
     .order-overview__modules{ grid-template-columns:1fr }
   }
@@ -465,17 +570,21 @@
       {/if}
     </div>
     
-    <FileCompareView
-      baseFields={{client: o.client, due: o.due, loadingDate: o.loadingDate}}
-      candidateFields={{client: o.client, due: o.due, loadingDate: o.loadingDate}}
+    <PdfCompare {left} {right} />
+    <CompareView
+      baseFields={{ client: o.client, due: o.due, loadingDate: o.loadingDate }}
+      candidateFields={{ client: o.client, due: o.due, loadingDate: o.loadingDate }}
       fileList={o.revisions.map((r, idx) => ({
-        rev: r.id.slice(0,8),
+        rev: r.id,
         name: r.name,
         size: Math.floor(200000 + Math.random() * 800000),
         date: new Date(Date.now() - idx * 86400000).toISOString()
       }))}
       canManage={$role==='Admin'}
-      onUseAsCurrent={useRevision}
+      onUseAsCurrent={useAsCurrent}
+      activeRev={o.defaultRevisionId}
+      previewRev={compareRevision?.id ?? null}
+      on:preview={(event) => (compareRevisionId = event.detail)}
     />
   </div>
 </section>
@@ -516,7 +625,7 @@
         bind:selectedId={selectedCRId}
       />
       {#if selectedChangeRequest}
-        <CompareView
+        <OrderCompareView
           leftTitle={$t('compare.before')}
           rightTitle={$t('compare.after')}
           leftFields={o.fields}

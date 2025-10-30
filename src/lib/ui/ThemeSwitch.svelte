@@ -6,7 +6,7 @@
   let currentTheme: ThemeName;
   $: theme.subscribe((v) => (currentTheme = v));
 
-  const themes: ThemeName[] = ['LightVim','DarkVim','HighContrastVim'];
+  const themes: ThemeName[] = ['LightVim','DarkVim','HighContrast'];
 
   function setTheme(newTheme: ThemeName) {
     theme.set(newTheme);

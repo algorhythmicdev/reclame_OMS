@@ -1,66 +1,90 @@
 <script lang="ts">
+  import { t } from 'svelte-i18n';
   import { createItem, updateItem, type Item } from './store';
   import type { Section } from './types';
-  
-  export let item: Partial<Item> = {}; // new or existing
+
+  export let item: Partial<Item> = {};
   export let onClose = () => {};
-  
+
+  const sectionOptions: { id: Section; labelKey: string }[] = [
+    { id: 'materials', labelKey: 'inventory.materials' },
+    { id: 'leftovers', labelKey: 'inventory.leftovers' },
+    { id: 'paints', labelKey: 'inventory.paints' },
+    { id: 'tools', labelKey: 'inventory.tools' },
+    { id: 'cons', labelKey: 'inventory.consumables' }
+  ];
+
   const isNew = !item.id;
-  
+
+  $: if (!item.section) {
+    item.section = 'materials';
+  }
+
   function save() {
-    if (isNew) createItem(item);
-    else updateItem(item.id!, item);
+    const payload = { ...item } as Partial<Item> & { id?: string };
+    const section = (payload.section as Section) ?? 'materials';
+    payload.section = section;
+
+    if (isNew) {
+      const { id: _id, ...rest } = payload;
+      createItem(rest);
+    } else if (item.id) {
+      const { id: _id, ...rest } = payload as Item;
+      updateItem(item.id, rest);
+    }
     onClose();
   }
 </script>
 
-<div class="sheet" role="dialog" aria-modal="true" aria-label="Inventory item">
+<div class="sheet" role="dialog" aria-modal="true" aria-label={isNew ? $t('inventory.newItem') : $t('inventory.editItem')}>
   <form class="card" on:submit|preventDefault={save}>
     <header class="row" style="justify-content:space-between">
-      <strong>{isNew ? 'New item' : 'Edit item'}</strong>
+      <strong>{isNew ? $t('inventory.newItem') : $t('inventory.editItem')}</strong>
       <div class="row">
-        <button class="tag ghost" type="button" on:click={onClose}>Cancel</button>
-        <button class="tag" type="submit">Save</button>
+        <button class="tag ghost" type="button" on:click={onClose}>{$t('actions.cancel')}</button>
+        <button class="tag" type="submit">{$t('inventory.save')}</button>
       </div>
     </header>
 
     <div class="grid" style="grid-template-columns:1fr 1fr">
       <label>
-        Section
-        <select bind:value={item.section}>
-          <option value="materials">materials</option>
-          <option value="leftovers">leftovers</option>
-          <option value="paints">paints</option>
-          <option value="tools">tools</option>
-          <option value="cons">cons</option>
+        {$t('inventory.section')}
+        <select bind:value={item.section as Section}>
+          {#each sectionOptions as option}
+            <option value={option.id}>{$t(option.labelKey)}</option>
+          {/each}
         </select>
       </label>
       <label>
-        Group
+        {$t('inventory.group')}
         <input bind:value={item.group} placeholder="e.g., Acrylic / Aluminium" />
+      </label>
+      <label>
+        {$t('inventory.subgroup')}
+        <input bind:value={item.subgroup} placeholder="e.g., Sheets / Profiles" />
       </label>
       <label>
         SKU
         <input bind:value={item.sku} />
       </label>
       <label>
-        Name
+        {$t('inventory.headers.name')}
         <input bind:value={item.name} />
       </label>
       <label>
-        Unit
+        {$t('inventory.headers.unit')}
         <input bind:value={item.unit} placeholder="pcs / m² / m / l" />
       </label>
       <label>
-        Stock
+        {$t('inventory.headers.stock')}
         <input type="number" bind:value={item.stock} />
       </label>
       <label>
-        Min
+        {$t('inventory.headers.minimum')}
         <input type="number" bind:value={item.min} />
       </label>
       <label>
-        Location
+        {$t('inventory.headers.location')}
         <input bind:value={item.location} placeholder="Rack A / Bin 3" />
       </label>
     </div>

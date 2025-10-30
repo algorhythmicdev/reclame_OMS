@@ -1,4 +1,4 @@
-import type { ChangeRequest, Badge, Field } from './types.signage';
+import type { ChangeRequest, Badge, Field, StationTag } from './types.signage';
 import {
   getOrder as _get,
   listOrders,
@@ -10,7 +10,10 @@ import {
   closePR as _close,
   setBadges as _setBadges,
   addBadge,
-  removeBadge
+  removeBadge,
+  addRedoFlag as _addRedoFlag,
+  setRedoSelection as _setRedoSelection,
+  clearRedoFlag as _clearRedoFlag
 } from './vcs-store';
 
 // Re-export for read ops
@@ -32,6 +35,18 @@ export function declineChangeRequest(orderId: string, crId: string) {
 
 export function setBadges(orderId: string, badges: Badge[]) {
   _setBadges(orderId, badges);
+}
+
+export function setRedoSelection(orderId: string, stage: StationTag | '', reason: string): void {
+  _setRedoSelection(orderId, stage, reason);
+}
+
+export function addRedoFlag(orderId: string, stage: StationTag, reason: string): StationTag[] {
+  return _addRedoFlag(orderId, stage, reason);
+}
+
+export function clearRedoFlag(orderId: string, stage: StationTag): StationTag[] {
+  return _clearRedoFlag(orderId, stage);
 }
 
 export function setLoadingDate(orderId: string, dateISO: string, admin = 'admin') {

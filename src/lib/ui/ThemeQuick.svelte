@@ -16,7 +16,7 @@
   const options: ThemeOption[] = [
     { value: 'LightVim', labelKey: 'header.theme.options.LightVim', Icon: Sun },
     { value: 'DarkVim', labelKey: 'header.theme.options.DarkVim', Icon: Moon },
-    { value: 'HighContrastVim', labelKey: 'header.theme.options.HighContrastVim', Icon: Contrast }
+    { value: 'HighContrast', labelKey: 'header.theme.options.HighContrast', Icon: Contrast }
   ];
 
   function selectTheme(value: ThemeName) {
