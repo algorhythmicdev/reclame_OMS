@@ -188,6 +188,8 @@
 .pdf-host{ 
   height: 60vh; 
   min-height: 400px;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .overlay{
@@ -238,10 +240,11 @@
   border-color: color-mix(in oklab, var(--danger) 40%, transparent);
 }
 .viewer{
-  width:100%;
+  max-width:100%;
   height:auto;
   border-radius:12px;
   border:1px solid color-mix(in oklab,var(--border) 85%, transparent);
   background:var(--bg-0);
+  display: block;
 }
 </style>

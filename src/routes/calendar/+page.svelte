@@ -118,10 +118,14 @@
         <h3 style="margin:0 0 4px 0">{$t('loading.schedule')}: {selectedISO}</h3>
         {#if selectedMeta}
           <div class="muted" style="font-size:.85rem">
-            {$t('calendar.meta', {
-              capacity: selectedMeta.capacity,
-              note: selectedMeta.note || $t('calendar.note_empty')
-            })}
+            {#if selectedMeta.carrier}
+              Carrier: {selectedMeta.carrier}
+              {#if selectedMeta.note} · Note: {selectedMeta.note}{/if}
+            {:else if selectedMeta.note}
+              Note: {selectedMeta.note}
+            {:else}
+              {$t('calendar.note_empty')}
+            {/if}
           </div>
         {/if}
       </div>

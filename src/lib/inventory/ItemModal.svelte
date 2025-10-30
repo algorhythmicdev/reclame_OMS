@@ -49,7 +49,7 @@
     <div class="grid" style="grid-template-columns:1fr 1fr">
       <label>
         {$t('inventory.section')}
-        <select bind:value={item.section as Section}>
+        <select bind:value={item.section}>
           {#each sectionOptions as option}
             <option value={option.id}>{$t(option.labelKey)}</option>
           {/each}

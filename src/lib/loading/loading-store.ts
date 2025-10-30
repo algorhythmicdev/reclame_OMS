@@ -5,7 +5,7 @@ import type { Badge, StageMap } from '$lib/order/types';
 export type LoadingDay = {
   id: string; // YYYY-MM-DD
   date: string; // YYYY-MM-DD
-  capacity: number;
+  carrier?: string;
   note?: string;
   active: boolean;
 };
@@ -28,7 +28,7 @@ export function get(id: string): LoadingDay | null {
   return DB[id] ?? null;
 }
 
-export function toggleDay(dateISO: string, defaults = { capacity: 6, note: '' }) {
+export function toggleDay(dateISO: string, defaults = { carrier: '', note: '' }) {
   const id = dateISO;
   const existing = DB[id];
   if (existing) {
@@ -37,7 +37,7 @@ export function toggleDay(dateISO: string, defaults = { capacity: 6, note: '' })
     DB[id] = {
       id,
       date: dateISO,
-      capacity: defaults.capacity,
+      carrier: defaults.carrier,
       note: defaults.note,
       active: true
     };
@@ -45,10 +45,10 @@ export function toggleDay(dateISO: string, defaults = { capacity: 6, note: '' })
   persist();
 }
 
-export function setCapacity(dateISO: string, capacity: number) {
+export function setCarrier(dateISO: string, carrier: string) {
   const d = DB[dateISO];
   if (!d) return;
-  d.capacity = Math.max(0, capacity);
+  d.carrier = carrier;
   persist();
 }
 
@@ -85,6 +85,6 @@ export function usage(dateISO: string) {
     }))
     .sort((a, b) => a.due.localeCompare(b.due));
 
-  const cap = DB[dateISO]?.capacity ?? 0;
-  return { assigned: orders.length, capacity: cap, full: cap > 0 && orders.length >= cap, orders };
+  const carrier = DB[dateISO]?.carrier ?? '';
+  return { assigned: orders.length, carrier, orders };
 }

@@ -13,7 +13,7 @@
     Activity,
     Ban
   } from 'lucide-svelte';
-  import { toggleDay, listAll, setCapacity, setNote, usage } from '$lib/loading/loading-store';
+  import { toggleDay, listAll, setCarrier, setNote, usage } from '$lib/loading/loading-store';
   import { TERMS } from '$lib/order/names';
   import {
     STATE_LABEL,
@@ -43,9 +43,7 @@
   const statusIcons = {
     idle: CalendarClock,
     open: PlusCircle,
-    available: CircleCheck,
-    busy: Activity,
-    full: Ban
+    available: CircleCheck
   } as const;
   const legendKeys = Object.keys(statusIcons) as (keyof typeof statusIcons)[];
 
@@ -118,7 +116,7 @@
     return {
       active: Boolean(day?.active),
       note: day?.note ?? '',
-      capacity: day?.capacity ?? 0,
+      carrier: day?.carrier ?? stats.carrier ?? '',
       ...stats
     };
   }
@@ -155,18 +153,12 @@
 
   function statusKey(info: ReturnType<typeof meta>) {
     if (!info.active) return 'idle';
-    if (!info.capacity) return 'open';
-    if (info.assigned >= info.capacity) return 'full';
-    if (info.assigned / info.capacity >= 0.75) return 'busy';
-    return 'available';
+    return info.assigned > 0 ? 'available' : 'open';
   }
 
   function capacityLabel(info: ReturnType<typeof meta>) {
     if (!info.active) return $t('calendar.summary.idle');
-    if (!info.capacity) {
-      return $t('calendar.summary.unlimited', { assigned: info.assigned });
-    }
-    return $t('calendar.summary.capacity', { assigned: info.assigned, capacity: info.capacity });
+    return $t('calendar.summary.unlimited', { assigned: info.assigned });
   }
 
   function noteLabel(info: ReturnType<typeof meta>) {
@@ -207,12 +199,11 @@
     return BADGE_ICONS[badge];
   }
 
-  function handleCapacityChange(event: Event, iso: string | null) {
+  function handleCarrierChange(event: Event, iso: string | null) {
     if (!iso) return;
     const target = event.target as HTMLInputElement | null;
     if (!target) return;
-    const value = Number.parseInt(target.value, 10);
-    setCapacity(iso, Number.isFinite(value) ? value : 0);
+    setCarrier(iso, target.value);
   }
 
   function handleNoteChange(event: Event, iso: string | null) {
@@ -236,7 +227,6 @@
         <button
           class="cell"
           class:fade-in={info.active}
-          style={`--fill:${info.capacity ? Math.min(info.assigned / Math.max(info.capacity, 1), 1) : 0};`}
           aria-pressed={info.active}
           data-active={info.active}
           data-tone={statusKey(info)}
@@ -249,31 +239,26 @@
             {#if info.active}
               <span class="tag tag--status" data-tone={statusKey(info)}>
                 <CalendarCheck size={14} aria-hidden="true" />
-                {info.capacity ? `${info.assigned}/${info.capacity}` : info.assigned}
-              </span>
-            {:else}
-              <span class="tag tag--status ghost" data-tone="idle">
-                <CalendarClock size={14} aria-hidden="true" />
-                {$t('calendar.summary.idle')}
+                {info.assigned}
               </span>
             {/if}
           </div>
-          <div class="cell__body">
-            <div class="cell__row" data-variant="capacity">
-              <Users size={14} aria-hidden="true" />
-              <span>{capacityLabel(info)}</span>
-            </div>
-            <div class="cell__row" data-variant={info.note ? 'note' : 'note-empty'}>
+          {#if info.active}
+            <div class="cell__body">
+              {#if info.carrier}
+                <div class="cell__row" data-variant="carrier">
+                  <Users size={14} aria-hidden="true" />
+                  <span>{info.carrier}</span>
+                </div>
+              {/if}
               {#if info.note}
-                <StickyNote size={14} aria-hidden="true" />
-                <span>{info.note}</span>
-              {:else}
-                <AlertTriangle size={14} aria-hidden="true" />
-                <span>{$t('calendar.summary.no_note')}</span>
+                <div class="cell__row" data-variant="note">
+                  <StickyNote size={14} aria-hidden="true" />
+                  <span>{info.note}</span>
+                </div>
               {/if}
             </div>
-          </div>
-          <div class="cell__progress" role="presentation"></div>
+          {/if}
         </button>
       {:else}
         <div class="cell muted"></div>
@@ -315,13 +300,15 @@
     </header>
     <dl class="day-summary__grid">
       <div>
-        <dt>{$t('calendar.detail.capacity')}</dt>
-        <dd>{capacityLabel(info)}</dd>
-      </div>
-      <div>
         <dt>{$t('calendar.detail.assignments')}</dt>
         <dd>{$t('calendar.detail.orders_count', { count: info.assigned ?? 0 })}</dd>
       </div>
+      {#if info.carrier}
+        <div>
+          <dt>Carrier</dt>
+          <dd>{info.carrier}</dd>
+        </div>
+      {/if}
       <div class="day-summary__note">
         <dt>{$t('calendar.detail.note')}</dt>
         <dd>{info.note ? info.note : $t('calendar.detail.no_note')}</dd>
@@ -383,13 +370,12 @@
     <h3>{$t('calendar.loading_day_with_date', { date: currentISO })}</h3>
     <div class="editor__grid">
       <label>
-        <span>{$t('calendar.capacity')}</span>
+        <span>Carrier</span>
         <input
           class="rf-input"
-          type="number"
-          min="0"
-          value={info.capacity}
-          on:change={(event) => handleCapacityChange(event, currentISO)}
+          type="text"
+          value={info.carrier}
+          on:change={(event) => handleCarrierChange(event, currentISO)}
         />
       </label>
       <label>
@@ -416,14 +402,11 @@
   .cell__header{ display:flex; justify-content:space-between; align-items:flex-start; gap:8px }
   .cell__date{ font-weight:700; font-size:1.1rem }
   .cell__body{ display:grid; gap:6px; font-size:.82rem; line-height:1.35 }
-  .cell__row{ display:flex; gap:6px; align-items:flex-start; color:var(--muted) }
-  .cell__row[data-variant="capacity"]{ color:var(--text) }
+  .cell__row{ display:flex; gap:6px; align-items:flex-start; color:var(--muted); overflow:hidden }
+  .cell__row span{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
+  .cell__row[data-variant="carrier"]{ color:var(--text) }
   .cell__row :global(svg){ flex:0 0 auto; margin-top:2px }
-  .cell__progress{ position:absolute; left:12px; right:12px; bottom:12px; height:4px; border-radius:999px; background:color-mix(in oklab,var(--accent-1) 35%, transparent); transform-origin:left; transform:scaleX(var(--fill, 0)); transition:transform .2s ease }
-  .cell[data-active="true"] .cell__progress{ background:linear-gradient(90deg,var(--accent-1),var(--accent-2)) }
-  .cell[data-tone="busy"] .cell__progress{ background:linear-gradient(90deg,var(--warn),var(--accent-1)) }
-  .cell[data-tone="full"] .cell__progress{ background:linear-gradient(90deg,var(--danger),var(--accent-1)) }
-  .cell[data-tone="idle"] .cell__progress{ background:color-mix(in oklab,var(--border) 70%, transparent) }
+
   .grid > .cell, .grid > .cell.muted{ min-height:120px }
   .cell.muted{ opacity:.35; border-style:dashed }
   .cell[data-selected="true"]{ outline:2px solid color-mix(in oklab,var(--accent-2) 45%, transparent); outline-offset:2px }
