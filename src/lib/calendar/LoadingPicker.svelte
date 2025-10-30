@@ -1,12 +1,10 @@
 <script lang="ts">
   import dayjs from 'dayjs';
-  import { getDay, book } from './capacity';
   export let po = '';                 // PO id
   export let onPick = (date:string)=>{}; // callback to parent
   let month = dayjs(); let open=true; let message='';
   function dates(){ const start=month.startOf('month'); return Array.from({length:month.daysInMonth()},(_,i)=>start.add(i,'day')); }
-  function pick(d:string){ const {ok,left} = book(d, po, 6); message = ok ? `Booked. ${left} slots left` : `No slots available`; if(ok){ onPick(d); open=false; } }
-  function slotsLeft(d: string) { const info = getDay(d, 6); return info.max - info.booked.length; }
+  function pick(d:string){ message = `Selected ${d}`; onPick(d); open=false; }
 </script>
 
 {#if open}
@@ -24,9 +22,8 @@
       {#each dates() as d}
         {#key d.format('YYYY-MM-DD')}
         <button class="tile" on:click={()=>pick(d.format('YYYY-MM-DD'))}
-          aria-label={`Book ${d.format('YYYY MMM DD')}`}>
+          aria-label={`Select ${d.format('YYYY MMM DD')}`}>
           <div>{d.date()}</div>
-          <small class="muted">{slotsLeft(d.format('YYYY-MM-DD'))} left</small>
         </button>
         {/key}
       {/each}

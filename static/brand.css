@@ -14,7 +14,7 @@ html, body{ height:100% }
 
 body{ margin:0; font: 400 1rem/1.55 system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif }
 
-.rf-page{ --content-max: 1280px; width:min(100%, var(--content-max)); margin:0 auto; padding:16px; }
+.rf-page{ --content-max: 1600px; width:min(100%, var(--content-max)); margin:0 auto; padding:16px; }
 
 :root{
   /* Spacing tokens */
