@@ -18,6 +18,11 @@ const svelteUntrackShim = {
 
 export default defineConfig({
   plugins: [svelteUntrackShim, sveltekit()],
+  server: {
+    fs: {
+      allow: ['.', './packages']
+    }
+  },
   resolve: {
     alias: [
       {

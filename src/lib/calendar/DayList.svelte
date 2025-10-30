@@ -38,9 +38,9 @@
     <li class="row" style="justify-content:space-between">
       <div>
         <b>{e.date}</b>
-        {#if e.kind==='loading'} – Carrier: {(e as any).carrier || 'n/a'}; POs: {(e as any).poList?.length || 0}{/if}
-        {#if e.kind==='meeting'} – {(e as any).title}{/if}
-        {#if e.kind==='note'} – {(e as any).title || 'Note'}{/if}
+        {#if e.kind==='loading'} – Carrier: {e.carrier || 'n/a'}; POs: {e.poList?.length || 0}{/if}
+        {#if e.kind==='meeting'} – {e.title}{/if}
+        {#if e.kind==='note'} – {e.title || 'Note'}{/if}
       </div>
       <span class="muted">{new Date(e.createdAt).toLocaleString()}</span>
     </li>
