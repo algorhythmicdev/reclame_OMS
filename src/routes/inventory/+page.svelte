@@ -37,30 +37,51 @@
     currentTab = id as Section;
   }
   
-  function sect(id: Section): Item[] {
-    return list.filter(i => (i.section || 'materials') === id);
-  }
-  
-  function groups(id: Section) {
-    const sectionItems = sect(id);
-    const uniqueGroups = Array.from(new Set(sectionItems.map(i => i.group || 'General')));
-    return uniqueGroups.map(g => ({id: `${id}-${g}`, title: g}));
-  }
-  
-  let editing: any = null;
-  
-  function handleCreateItem(section: Section, group: string) {
-    editing = { section, group };
+  function buildStructure(section: Section) {
+    const sectionItems = filtered.filter((item) => (item.section || 'materials') === section);
+    const groupMap = new Map<string, Map<string, Item[]>>();
+    for (const item of sectionItems) {
+      const group = item.group || 'General';
+      const subgroup = item.subgroup || 'General';
+      if (!groupMap.has(group)) {
+        groupMap.set(group, new Map());
+      }
+      const subgroupMap = groupMap.get(group)!;
+      if (!subgroupMap.has(subgroup)) {
+        subgroupMap.set(subgroup, []);
+      }
+      subgroupMap.get(subgroup)!.push(item);
+    }
+    return Array.from(groupMap.entries())
+      .map(([groupName, subgroupMap]) => ({
+        id: `${section}-${groupName}`,
+        title: groupName,
+        subgroups: Array.from(subgroupMap.entries())
+          .map(([subName, items]) => ({
+            id: `${section}-${groupName}-${subName}`,
+            title: subName,
+            items: items.sort((a, b) => a.name.localeCompare(b.name))
+          }))
+          .sort((a, b) => a.title.localeCompare(b.title))
+      }))
+      .sort((a, b) => a.title.localeCompare(b.title));
   }
 
   $: filtered = list.filter((it) =>
-    [it.sku, it.name, it.category, it.location, it.colorCode]
+    [it.sku, it.name, it.category, it.location, it.colorCode, it.group, it.subgroup]
       .filter(Boolean)
       .join(' ')
       .toLowerCase()
       .includes(q.toLowerCase())
   );
 
+  $: grouped = buildStructure(currentTab);
+
+  let editing: any = null;
+
+  function handleCreateItem(section: Section, group: string, subgroup = '') {
+    editing = { section, group, subgroup };
+  }
   function exportCSV(){ downloadCSV(`inventory-${new Date().toISOString().slice(0,10)}.csv`, toCSV(list)); }
 </script>
 
@@ -106,54 +127,58 @@
   <Tabs tabs={tabs} active={currentTab} onChange={handleTabChange} />
   
   <div style="margin-top:16px">
-    {#each groups(currentTab) as g}
-      <div class="group-section">
-        <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:8px">
-          <h3 class="group-title">{g.title}</h3>
-          <button class="tag" on:click={() => handleCreateItem(currentTab, g.title)}>
-            <Plus size={14} aria-hidden="true"/> {$t('inventory.add')}
-          </button>
-        </div>
-        <div class="table-wrap">
-          <table class="rf-table">
-            <thead>
-              <tr>
-                <th scope="col">{$t('inventory.headers.sku')}</th>
-                <th scope="col">{$t('inventory.headers.name')}</th>
-                <th scope="col">{$t('inventory.headers.unit')}</th>
-                <th scope="col">{$t('inventory.headers.stock')}</th>
-                <th scope="col">{$t('inventory.headers.minimum')}</th>
-                <th scope="col">{$t('inventory.headers.location')}</th>
-                <th scope="col"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {#each sect(currentTab).filter(i=> (i.group||'General')===g.title) as it (it.id)}
-                <tr>
-                  <td data-label={$t('inventory.headers.sku')}>
-                    <a href={`${base}/inventory/${it.id}`} class="link">{it.sku}</a>
-                  </td>
-                  <td data-label={$t('inventory.headers.name')}>{it.name}</td>
-                  <td data-label={$t('inventory.headers.unit')}>{it.unit}</td>
-                  <td data-label={$t('inventory.headers.stock')}>{it.stock}</td>
-                  <td data-label={$t('inventory.headers.minimum')}>{it.min}</td>
-                  <td data-label={$t('inventory.headers.location')}>{it.location}</td>
-                  <td class="row" style="gap:6px">
-                    <a href={`${base}/inventory/${it.id}`} class="icon" aria-label={`Edit ${it.name}`}>
-                      <Edit size={16} aria-hidden="true"/>
-                    </a>
-                    <button class="icon warn" aria-label={`Delete ${it.name}`} on:click={()=>{ if(confirm(`Delete ${it.name}?`)) removeItem(it.id); }}>
-                      <Trash size={16} aria-hidden="true"/>
-                    </button>
-                  </td>
-                </tr>
-              {/each}
-            </tbody>
-          </table>
-        </div>
-      </div>
+    {#if grouped.length === 0}
+      <div class="muted">{$t('inventory.empty_filter')}</div>
+    {/if}
+    {#each grouped as g (g.id)}
+      <details class="group-section" open>
+        <summary class="group-summary">
+          <span>{g.title}</span>
+          <button class="tag" on:click|stopPropagation={() => handleCreateItem(currentTab, g.title)}><Plus size={14} aria-hidden="true"/> {$t('inventory.add')}</button>
+        </summary>
+        {#each g.subgroups as sub (sub.id)}
+          <details class="sub-section" open>
+            <summary class="sub-summary">
+              <span>{sub.title}</span>
+              <button class="tag" on:click|stopPropagation={() => handleCreateItem(currentTab, g.title, sub.title)}><Plus size={14} aria-hidden="true"/> {$t('inventory.add')}</button>
+            </summary>
+            <div class="table-wrap">
+              <table class="rf-table">
+                <thead>
+                  <tr>
+                    <th scope="col">{$t('inventory.headers.sku')}</th>
+                    <th scope="col">{$t('inventory.headers.name')}</th>
+                    <th scope="col">{$t('inventory.headers.unit')}</th>
+                    <th scope="col">{$t('inventory.headers.stock')}</th>
+                    <th scope="col">{$t('inventory.headers.minimum')}</th>
+                    <th scope="col">{$t('inventory.headers.location')}</th>
+                    <th scope="col"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {#each sub.items as it (it.id)}
+                    <tr>
+                      <td data-label={$t('inventory.headers.sku')}><a href={`${base}/inventory/${it.id}`} class="link">{it.sku}</a></td>
+                      <td data-label={$t('inventory.headers.name')}>{it.name}</td>
+                      <td data-label={$t('inventory.headers.unit')}>{it.unit}</td>
+                      <td data-label={$t('inventory.headers.stock')}>{it.stock}</td>
+                      <td data-label={$t('inventory.headers.minimum')}>{it.min}</td>
+                      <td data-label={$t('inventory.headers.location')}>{it.location}</td>
+                      <td class="row" style="gap:6px">
+                        <a href={`${base}/inventory/${it.id}`} class="icon" aria-label={`Edit ${it.name}`}><Edit size={16} aria-hidden="true"/></a>
+                        <button class="icon warn" aria-label={`Delete ${it.name}`} on:click={() => { if (confirm(`Delete ${it.name}?`)) removeItem(it.id); }}><Trash size={16} aria-hidden="true"/></button>
+                      </td>
+                    </tr>
+                  {/each}
+                </tbody>
+              </table>
+            </div>
+          </details>
+        {/each}
+      </details>
     {/each}
   </div>
+
 </section>
 
 {#if editing}
@@ -185,15 +210,28 @@
   border-color:var(--danger);
 }
 .group-section{
-  margin-bottom:24px;
-  padding-bottom:16px;
-  border-bottom:1px solid var(--border);
+  margin-bottom:20px;
+  padding:12px;
+  border:1px solid color-mix(in oklab,var(--border) 85%, transparent);
+  border-radius:12px;
+  background:var(--bg-0);
 }
-.group-section:last-child{
-  border-bottom:none;
+.group-summary, .sub-summary{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:8px;
+  list-style:none;
+  cursor:pointer;
 }
-.group-title{
-  margin:0;
-  font-size:1.1rem;
+.group-summary::-webkit-details-marker, .sub-summary::-webkit-details-marker{display:none}
+.sub-section{
+  margin-top:12px;
+  padding:12px;
+  border:1px solid color-mix(in oklab,var(--border) 75%, transparent);
+  border-radius:10px;
+  background:var(--bg-1);
 }
+.sub-summary{font-weight:600}
+
 </style>

@@ -1,4 +1,4 @@
-import type { Order, Revision, PullRequest, Commit, Badge } from './types';
+import type { Order, Revision, PullRequest, Commit, Badge, StationTag } from './types';
 import { blankStages, STATIONS } from './stages';
 
 const KEY = 'rf_orders_vcs';
@@ -29,6 +29,22 @@ function normalise(order: Order): Order {
   }
   if (order.rdNotes === undefined) {
     order.rdNotes = '';
+    mutated = true;
+  }
+  if (!order.redo) {
+    order.redo = [];
+    mutated = true;
+  }
+  if (!order.redoReasons) {
+    order.redoReasons = {};
+    mutated = true;
+  }
+  if (order.redoStage === undefined) {
+    order.redoStage = '';
+    mutated = true;
+  }
+  if (order.redoReason === undefined) {
+    order.redoReason = '';
     mutated = true;
   }
   if (!order.progress) {
@@ -81,6 +97,10 @@ export function createOrder(
     loadingDate: seed.loadingDate ?? '',
     isRD: seed.isRD ?? false,
     rdNotes: seed.rdNotes ?? '',
+    redo: seed.redo ?? [],
+    redoStage: seed.redoStage ?? '',
+    redoReason: seed.redoReason ?? '',
+    redoReasons: seed.redoReasons ?? {},
     badges: seed.badges,
     fields: seed.fields,
     materials: seed.materials,
@@ -197,6 +217,38 @@ export function addBadge(orderId: string, b: Badge) {
 export function removeBadge(orderId: string, b: Badge) {
   const o = DB[orderId]; if (!o) return;
   o.badges = o.badges.filter(x=>x!==b); persist();
+}
+
+export function setRedoSelection(orderId: string, stage: StationTag | '', reason: string) {
+  const o = DB[orderId];
+  if (!o) return;
+  o.redoStage = stage;
+  o.redoReason = reason;
+  persist();
+}
+
+export function addRedoFlag(orderId: string, stage: StationTag, reason: string) {
+  const o = DB[orderId];
+  if (!o) return [] as StationTag[];
+  const next = new Set(o.redo ?? []);
+  next.add(stage);
+  o.redo = Array.from(next);
+  o.redoReasons = { ...(o.redoReasons ?? {}), [stage]: reason };
+  o.redoStage = '';
+  o.redoReason = '';
+  persist();
+  return o.redo;
+}
+
+export function clearRedoFlag(orderId: string, stage: StationTag) {
+  const o = DB[orderId];
+  if (!o) return [] as StationTag[];
+  o.redo = (o.redo ?? []).filter((entry) => entry !== stage);
+  if (o.redoReasons) {
+    delete o.redoReasons[stage];
+  }
+  persist();
+  return o.redo;
 }
 
 export function setBadges(orderId: string, badges: Badge[]) {

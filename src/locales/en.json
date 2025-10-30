@@ -49,7 +49,7 @@
       "options": {
         "LightVim": "Light",
         "DarkVim": "Dark",
-        "HighContrastVim": "High contrast"
+        "HighContrast": "High contrast"
       }
     },
     "language": {
@@ -68,6 +68,26 @@
       "label": "User",
       "switch": "Switch user"
     }
+  },
+  "topbar": {
+    "theme": "Theme",
+    "language": "Language",
+    "textSize": "Text size",
+    "chat": "Chat",
+    "notifications": "Notifications"
+  },
+  "orders": {
+    "status": "Status",
+    "rd": "R&D (may repeat stages)",
+    "redoStage": "Mark stage for redo…",
+    "reason": "Reason",
+    "reasons": {
+      "recut": "Re-cut",
+      "resand": "Re-sand",
+      "reweld": "Re-weld",
+      "repaint": "Re-paint"
+    },
+    "compare": "Compare"
   },
   "roles": {
     "label": "Role",
@@ -202,7 +222,7 @@
   "themes": {
     "light": "LightVim",
     "dark": "DarkVim",
-    "hc": "HighContrastVim"
+    "hc": "HighContrast"
   },
   "a11y": {
     "toggle_right": "Toggle right panel (Shift+R)",
@@ -315,6 +335,12 @@
   },
   "calendar": {
     "title": "Calendar",
+    "upcoming": "Upcoming",
+    "all": "All",
+    "loading": "Loading",
+    "meeting": "Meeting",
+    "note": "Note",
+    "quickCreate": "Quick create",
     "loading_mode": "Loading Mode",
     "loading_on": "On",
     "loading_off": "Off",
@@ -507,6 +533,13 @@
     "low_stock": "Low stock",
     "minimum_label": "Minimum {value}",
     "count": "{count} items",
+    "newItem": "New item",
+    "editItem": "Edit item",
+    "save": "Save",
+    "section": "Section",
+    "group": "Group",
+    "subgroup": "Subgroup",
+    "empty_filter": "No items match this filter.",
     "materials": "Materials",
     "leftovers": "Leftovers",
     "paints": "Paints",

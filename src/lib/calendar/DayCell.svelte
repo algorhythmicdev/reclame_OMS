@@ -5,33 +5,34 @@
   import Calendar from 'lucide-svelte/icons/calendar';
   import Sticky from 'lucide-svelte/icons/sticky-note';
 
-  export let iso = '';       // 'YYYY-MM-DD'
+  export let iso = '';
   export let dayNum = 1;
   export let canEdit = false;
 
-  let open = false;
+  let open=false; let pressTimer:any;
   let items = byDate(iso);
-  
-  function refresh(){ 
-    items = byDate(iso); 
-  }
+
+  function refresh(){ items = byDate(iso); }
+  function onDown(){ clearTimeout(pressTimer); pressTimer=setTimeout(()=>open=true, 450); }
+  function onUp(){ clearTimeout(pressTimer); }
 </script>
 
-<div class="day" tabindex="0" aria-label={`Day ${iso}`}>
+<div class="day" tabindex="0" aria-label={`Day ${iso}`} on:pointerdown={onDown} on:pointerup={onUp} on:pointerleave={onUp}>
   <div class="row" style="justify-content:space-between">
     <div class="day-num">{dayNum}</div>
     {#if canEdit}
-      <button class="tag ghost" title="Add entry" on:click={()=>open=true}>+</button>
+      <button class="tag ghost" title="Add entry" on:click={() => (open = true)}>+</button>
     {/if}
   </div>
 
   <div class="stack">
     {#each items as e (e.id)}
-      <button 
-        class="chip" 
-        data-kind={e.kind} 
+      <button
+        class="chip"
+        data-kind={e.kind}
         title={e.kind==='loading' ? `Carrier: ${(e as any).carrier||'-'}` : (e as any).title || e.kind}
-        on:click={()=>{open=true;}}>
+        on:click={() => { open = true; }}
+      >
         {#if e.kind==='loading'}<Truck size={14} aria-hidden="true"/>{/if}
         {#if e.kind==='meeting'}<Calendar size={14} aria-hidden="true"/>{/if}
         {#if e.kind==='note'}<Sticky size={14} aria-hidden="true"/>{/if}
@@ -44,38 +45,35 @@
     {/each}
   </div>
 </div>
-
-{#if open}
-  <EventEditor dateISO={iso} onClose={()=>{open=false; refresh();}} />
-{/if}
+{#if open}<EventEditor dateISO={iso} onClose={()=>{open=false; refresh();}} />{/if}
 
 <style>
 .day{
-  background:var(--cal-day); 
-  border:1px solid var(--cal-day-border); 
-  border-radius:12px; 
-  padding:8px; 
-  display:grid; 
+  background:var(--cal-day);
+  border:1px solid var(--cal-day-border);
+  border-radius:12px;
+  padding:8px;
+  display:grid;
   gap:6px;
   min-height: 100px;
 }
 .day-num{
-  font-weight:700; 
+  font-weight:700;
   color:var(--cal-num);
 }
 .stack{
-  display:grid; 
-  gap:6px; 
-  max-height:120px; 
+  display:grid;
+  gap:6px;
+  max-height:120px;
   overflow:auto;
 }
 .chip{
-  display:flex; 
-  gap:6px; 
-  align-items:center; 
-  border:1px solid var(--border); 
-  border-radius:999px; 
-  padding:4px 8px; 
+  display:flex;
+  gap:6px;
+  align-items:center;
+  border:1px solid var(--border);
+  border-radius:999px;
+  padding:4px 8px;
   font-size:.9rem;
   background: var(--bg-1);
   color: var(--text);

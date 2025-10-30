@@ -69,6 +69,10 @@ export type Order = {
   carrier?: string;           // Carrier for this order
   isRD?: boolean;
   rdNotes?: string;
+  redo?: StationTag[];
+  redoStage?: StationTag | '';
+  redoReason?: string;
+  redoReasons?: Partial<Record<StationTag, string>>;
   isDraft?: boolean;          // Draft orders visible only to admin/superadmin
   cdrFile?: FileRef | null;   // CDR file for draft orders
   badges: Badge[];

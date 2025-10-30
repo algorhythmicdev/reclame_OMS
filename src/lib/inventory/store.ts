@@ -1,6 +1,6 @@
 import { derived, get, writable } from 'svelte/store';
 import { createId } from '$lib/utils/id';
-import type { Category, Item, Movement, MovementKind, Unit } from './types';
+import type { Category, Item, Movement, MovementKind, Section, Unit } from './types';
 
 export type NewItemInput = Omit<Item, 'id' | 'updatedAt'> & {
   id?: string;
@@ -66,12 +66,19 @@ export type InventorySummary = {
   latestUpdate: string | null;
 };
 
-export const items = writable<Item[]>([
+export type SectionId = Section;
+export const SECTIONS: SectionId[] = ['materials', 'leftovers', 'paints', 'tools', 'cons'];
+
+const ITEM_STORAGE_KEY = 'rf_items';
+const fallbackItems: Item[] = [
   {
     id: 'A-001',
     sku: 'ACR-CL-3',
     name: 'Acrylic Clear 3mm',
     category: 'ACRYLIC',
+    section: 'materials',
+    group: 'Acrylic',
+    subgroup: 'Sheets',
     unit: 'M2',
     stock: 24.5,
     min: 10,
@@ -80,10 +87,28 @@ export const items = writable<Item[]>([
     updatedAt: new Date().toISOString()
   },
   {
+    id: 'L-050',
+    sku: 'ALU-OFF-1200',
+    name: 'Aluminium Offcut 1200mm',
+    category: 'ALUMINIUM',
+    section: 'leftovers',
+    group: 'Aluminium',
+    subgroup: 'Profiles',
+    unit: 'PCS',
+    stock: 3,
+    min: 1,
+    location: 'LEFT B2',
+    leftover: { lengthMM: 1200, widthMM: 60, heightMM: 5, bin: 'B2' },
+    updatedAt: new Date().toISOString()
+  },
+  {
     id: 'P-010',
     sku: 'RAL-3020',
     name: 'Paint RAL 3020 Red',
     category: 'PAINT',
+    section: 'paints',
+    group: 'RAL',
+    subgroup: 'Red tones',
     unit: 'L',
     stock: 7,
     min: 5,
@@ -96,13 +121,40 @@ export const items = writable<Item[]>([
     sku: 'BIT-6MM',
     name: 'CNC Endmill 6mm',
     category: 'INSTRUMENT',
+    section: 'tools',
+    group: 'CNC',
+    subgroup: 'Cutters',
     unit: 'PCS',
     stock: 12,
     min: 8,
     location: 'TOOLBOX C',
     updatedAt: new Date().toISOString()
   }
-]);
+];
+
+function loadItems(): Item[] {
+  if (typeof localStorage === 'undefined') {
+    return fallbackItems.map((entry) => ({ ...entry }));
+  }
+  try {
+    const stored = localStorage.getItem(ITEM_STORAGE_KEY);
+    if (!stored) {
+      return fallbackItems.map((entry) => ({ ...entry }));
+    }
+    const parsed = JSON.parse(stored);
+    if (Array.isArray(parsed)) {
+      return parsed as Item[];
+    }
+  } catch (error) {
+    console.warn('Failed to parse inventory items from storage', error);
+  }
+  return fallbackItems.map((entry) => ({ ...entry }));
+}
+
+export const items = writable<Item[]>(loadItems());
+if (typeof localStorage !== 'undefined') {
+  items.subscribe((value) => localStorage.setItem(ITEM_STORAGE_KEY, JSON.stringify(value)));
+}
 
 export const movements = writable<Movement[]>([]);
 
@@ -120,29 +172,41 @@ export function addItem(input: NewItemInput): Item {
   const id = input.id ?? createId('inv');
   const updatedAt = input.updatedAt ?? new Date().toISOString();
   const entry: Item = { ...input, id, updatedAt };
-  items.update((list) => [...list, entry]);
+  items.update((list) => [entry, ...list]);
   return entry;
 }
 
 export function createItem(partial: Partial<Item> = {}): Item {
+  const timestamp = partial.updatedAt ?? new Date().toISOString();
   const newItem: Item = {
-    id: createId('inv'),
+    id: partial.id ?? createId('inv'),
     sku: '',
     name: '',
     category: 'HARDWARE',
+    section: 'materials',
+    group: 'General',
+    subgroup: 'General',
     unit: 'PCS',
     stock: 0,
     min: 0,
-    updatedAt: new Date().toISOString(),
-    ...partial
+    updatedAt: timestamp,
+    ...partial,
+    updatedAt: timestamp
   };
-  items.update((list) => [...list, newItem]);
+  items.update((list) => [newItem, ...list]);
   return newItem;
 }
 
-export function updateItem(itemId: string, patch: ItemUpdate): Item | null {
+export function updateItem(itemId: string, patch: ItemUpdate): Item | null;
+export function updateItem(entry: Item): Item | null;
+export function updateItem(arg1: string | Item, patch: ItemUpdate = {}): Item | null {
+  if (typeof arg1 !== 'string') {
+    const { id, ...rest } = arg1;
+    return updateItem(id, { ...rest, updatedAt: arg1.updatedAt });
+  }
   let updated: Item | null = null;
   const stamp = patch.updatedAt ?? new Date().toISOString();
+  const itemId = arg1;
   items.update((list) =>
     list.map((item) => {
       if (item.id !== itemId) return item;

@@ -1,7 +1,7 @@
 // src/routes/api/settings/+server.ts
 import type { RequestHandler } from './$types';
 
-type Prefs = { theme: 'LightVim'|'DarkVim'|'HighContrastVim'; lang: 'en'|'ru'|'lv'; scale?: 'sm'|'md'|'lg'|'xl' };
+type Prefs = { theme: 'LightVim'|'DarkVim'|'HighContrast'; lang: 'en'|'ru'|'lv'; scale?: 'sm'|'md'|'lg'|'xl' };
 
 let inMem: Prefs = { theme: 'DarkVim', lang: 'en', scale: 'md' }; // replace with DB later
 

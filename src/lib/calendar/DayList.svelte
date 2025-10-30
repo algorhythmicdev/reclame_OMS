@@ -1,78 +1,53 @@
 <script lang="ts">
-  import dayjs from 'dayjs';
-  import { listAll } from '$lib/loading/loading-store';
-  import { listOrders } from '$lib/order/signage-store';
-  
-  let days = listAll();
-  let orders = listOrders();
-  
-  // Memoize current date to avoid recalculation on every render
-  const today = dayjs().subtract(1, 'day');
-  
-  // Get upcoming 14 days with loadings
-  $: upcoming = days
-    .filter(d => dayjs(d.id).isAfter(today))
-    .slice(0, 14);
+  import { onDestroy } from 'svelte';
+  import { t } from 'svelte-i18n';
+  import { calEvents } from './store';
+
+  type Kind = 'all' | 'loading' | 'meeting' | 'note';
+
+  let entries: any[] = [];
+  let kind: Kind = 'all';
+
+  const unsubscribe = calEvents.subscribe((value) => {
+    entries = [...value].sort((a, b) => a.date.localeCompare(b.date));
+  });
+
+  onDestroy(() => {
+    unsubscribe?.();
+  });
+
+  const filters: { value: Kind; label: string }[] = [
+    { value: 'all', label: 'calendar.all' },
+    { value: 'loading', label: 'calendar.loading' },
+    { value: 'meeting', label: 'calendar.meeting' },
+    { value: 'note', label: 'calendar.note' }
+  ];
 </script>
 
-<div class="day-list">
-  {#each upcoming as day}
-    {@const dayOrders = orders.filter(o => o.loadingDate === day.id)}
-    <div class="day-item">
-      <div class="day-header">
-        <strong>{dayjs(day.id).format('MMM D, YYYY')}</strong>
-        <span class="tag tag--meta">{dayOrders.length} orders</span>
-      </div>
-      {#if day.note}
-        <div class="muted" style="font-size:0.85rem;margin-top:4px">{day.note}</div>
-      {/if}
-      {#if dayOrders.length > 0}
-        <div class="order-list">
-          {#each dayOrders as order}
-            <div class="order-item">
-              <div class="row" style="justify-content:space-between">
-                <strong>{order.client}</strong>
-                <span class="muted">{order.id}</span>
-              </div>
-              <div class="muted" style="font-size:0.85rem">{order.title}</div>
-            </div>
-          {/each}
-        </div>
-      {/if}
-    </div>
-  {/each}
-  {#if upcoming.length === 0}
-    <div class="muted" style="text-align:center;padding:20px">No upcoming loadings scheduled.</div>
-  {/if}
+<div class="row" style="justify-content:space-between;align-items:center">
+  <h3>{$t('calendar.upcoming')}</h3>
+  <select bind:value={kind}>
+    {#each filters as option}
+      <option value={option.value}>{$t(option.label)}</option>
+    {/each}
+  </select>
 </div>
 
+<ul class="list">
+  {#each entries.filter((event) => kind==='all' || event.kind===kind).slice(0, 100) as e}
+    <li class="row" style="justify-content:space-between">
+      <div>
+        <b>{e.date}</b>
+        {#if e.kind==='loading'} – Carrier: {(e as any).carrier || 'n/a'}; POs: {(e as any).poList?.length || 0}{/if}
+        {#if e.kind==='meeting'} – {(e as any).title}{/if}
+        {#if e.kind==='note'} – {(e as any).title || 'Note'}{/if}
+      </div>
+      <span class="muted">{new Date(e.createdAt).toLocaleString()}</span>
+    </li>
+  {/each}
+</ul>
+
 <style>
-.day-list{
-  display:grid;
-  gap:12px;
-  margin-top:12px;
-}
-.day-item{
-  border:1px solid var(--border);
-  border-radius:12px;
-  padding:12px;
-  background:var(--bg-1);
-}
-.day-header{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:8px;
-}
-.order-list{
-  margin-top:8px;
-  display:grid;
-  gap:6px;
-}
-.order-item{
-  padding:8px;
-  border:1px solid var(--border);
-  border-radius:8px;
-  background:var(--bg-0);
-}
+.list{display:grid;gap:6px}
+.list li{border:1px solid var(--border);border-radius:10px;padding:8px;background:var(--bg-0)}
 </style>

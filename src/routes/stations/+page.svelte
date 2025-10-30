@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { base } from '$app/paths';
   import { board, moveTicket } from '$lib/stations/store';
   import { WIP, atLimit, type Stage } from '$lib/stations/wip';
   import AlertTriangle from 'lucide-svelte/icons/alert-triangle';
@@ -35,9 +36,12 @@
 
       <div class="col-body">
         {#each boardData.filter(t=>t.stage===s) as t (t.id)}
-          <article class="ticket" draggable="true" on:dragstart={(e)=>onDragStart(e,t.id,s)}>
+          <article class="ticket" draggable="true" on:dragstart={(e)=>onDragStart(e,t.id,s)} on:dblclick={() => window.location.href=`/reclame_OMS/orders/${t.po}`}`>
             <div class="row" style="justify-content:space-between"><b>{t.po}</b><span class="muted">{t.client}</span></div>
-            <div>{t.title}</div>
+            <div class="row" style="justify-content:space-between;align-items:center">
+              <span>{t.title}</span>
+              {#if t.needsRedo}<span class="tag warn">redo</span>{/if}
+            </div>
           </article>
         {/each}
       </div>

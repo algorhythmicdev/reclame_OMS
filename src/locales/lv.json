@@ -49,7 +49,7 @@
       "options": {
         "LightVim": "Gaiša",
         "DarkVim": "Tumša",
-        "HighContrastVim": "Augsts kontrasts"
+        "HighContrast": "Augsts kontrasts"
       }
     },
     "language": {
@@ -68,6 +68,26 @@
       "label": "Lietotājs",
       "switch": "Mainīt lietotāju"
     }
+  },
+  "topbar": {
+    "theme": "Tēma",
+    "language": "Valoda",
+    "textSize": "Teksta izmērs",
+    "chat": "Čats",
+    "notifications": "Paziņojumi"
+  },
+  "orders": {
+    "status": "Statuss",
+    "rd": "R&D (var atkārtot posmus)",
+    "redoStage": "Atzīmēt posmu pārstrādei…",
+    "reason": "Iemesls",
+    "reasons": {
+      "recut": "Pārgriešana",
+      "resand": "Pārslīpēšana",
+      "reweld": "Pārmetināšana",
+      "repaint": "Pārkrāsošana"
+    },
+    "compare": "Salīdzināt"
   },
   "roles": {
     "label": "Loma",
@@ -315,6 +335,12 @@
   },
   "calendar": {
     "title": "Kalendārs",
+    "upcoming": "Tuvākie",
+    "all": "Visi",
+    "loading": "Iekraušana",
+    "meeting": "Tikšanās",
+    "note": "Piezīme",
+    "quickCreate": "Ātrā izveide",
     "loading_mode": "Iekraušanas režīms",
     "loading_on": "Ieslēgts",
     "loading_off": "Izslēgts",
@@ -507,6 +533,12 @@
     "low_stock": "Zems atlikums",
     "minimum_label": "Minimums {value}",
     "count": "{count} vienības",
+    "newItem": "Jauns vienums",
+    "editItem": "Rediģēt vienumu",
+    "save": "Saglabāt",
+    "section": "Sadaļa",
+    "group": "Grupa",
+    "subgroup": "Apakšgrupa",
     "materials": "Materiāli",
     "leftovers": "Atlikumi",
     "paints": "Krāsas",
