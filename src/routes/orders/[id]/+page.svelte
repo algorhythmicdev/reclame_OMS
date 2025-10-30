@@ -112,7 +112,7 @@
     const alternate = o.revisions.find((r) => r.id !== currentRevision?.id);
     compareRevisionId = alternate?.id ?? currentRevision?.id ?? null;
   }
-  $: const compareRevision = compareRevisionId
+  $: compareRevision = compareRevisionId
     ? o.revisions.find((r) => r.id === compareRevisionId) ?? currentRevision
     : currentRevision;
   $: leftPdf = currentRevision
