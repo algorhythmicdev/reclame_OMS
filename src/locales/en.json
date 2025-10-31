@@ -78,6 +78,7 @@
   },
   "orders": {
     "status": "Status",
+    "stage": "Stage",
     "rd": "R&D (may repeat stages)",
     "redoStage": "Mark stage for redo…",
     "reason": "Reason",
@@ -706,5 +707,15 @@
     "cdr_attached": "CDR file attached and ready for review",
     "convert_to_order": "Convert to Order",
     "download_cdr": "Download CDR"
+  },
+  "ui": {
+    "density": { "compact": "Compact", "cozy": "Cozy", "comfortable": "Comfortable" },
+    "new_loading": "New loading",
+    "new_meeting": "New meeting",
+    "new_note": "New note",
+    "export_ics": "Export ICS",
+    "print_pack": "Print pack",
+    "save": "Save", 
+    "discard": "Discard"
   }
 }
