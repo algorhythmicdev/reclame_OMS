@@ -4,6 +4,10 @@
   export let zoom = 1;
   export let setPage: (n:number)=>void; 
   export let setZoom: (z:number)=>void;
+  
+  const MIN_ZOOM = 0.5;
+  const MAX_ZOOM = 3;
+  const ZOOM_STEP = 0.1;
 </script>
 
 <div class="toolbar">
@@ -11,9 +15,9 @@
   <span>{page} / {pages}</span>
   <button class="tag ghost" on:click={()=>setPage(Math.min(pages,page+1))} aria-label="Next page">›</button>
   <span class="sep"></span>
-  <button class="tag ghost" on:click={()=>setZoom(Math.max(.5,+(zoom-0.1).toFixed(2)))} aria-label="Zoom out">–</button>
+  <button class="tag ghost" on:click={()=>setZoom(Math.max(MIN_ZOOM,+(zoom-ZOOM_STEP).toFixed(2)))} aria-label="Zoom out">–</button>
   <span>{Math.round(zoom*100)}%</span>
-  <button class="tag ghost" on:click={()=>setZoom(Math.min(3,+(zoom+0.1).toFixed(2)))} aria-label="Zoom in">+</button>
+  <button class="tag ghost" on:click={()=>setZoom(Math.min(MAX_ZOOM,+(zoom+ZOOM_STEP).toFixed(2)))} aria-label="Zoom in">+</button>
 </div>
 
 <style>

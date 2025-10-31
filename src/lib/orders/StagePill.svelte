@@ -5,7 +5,7 @@
 </script>
 
 <span class="pill" data-done={done} data-redo={!!redo} title={redo ? `Redo: ${redo}` : stage}>
-  {stage}{#if redo}<small>⟲</small>{/if}
+  {stage}{#if redo}<small aria-label="Redo required">⟲</small>{/if}
 </span>
 
 <style>

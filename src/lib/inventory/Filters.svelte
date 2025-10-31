@@ -6,6 +6,8 @@
   export let group=''; 
   export let subgroup='';
   
+  const FILTER_SECTIONS = ['all', 'materials', 'leftovers', 'paints', 'tools', 'cons'];
+  
   function fire(){ 
     d('change',{ query, section, group, subgroup }); 
   }
@@ -13,7 +15,7 @@
 
 <div class="row" style="align-items:center">
   <div class="row" role="tablist" aria-label="Sections">
-    {#each ['all','materials','leftovers','paints','tools','cons'] as s}
+    {#each FILTER_SECTIONS as s}
       <button role="tab" class="tag ghost" aria-selected={section===s} on:click={()=>{section=s;fire();}}>{s}</button>
     {/each}
   </div>
