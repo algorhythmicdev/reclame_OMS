@@ -494,7 +494,29 @@
     "assign": "Assign",
     "schedule": "Schedule",
     "export_csv": "Export CSV",
-    "updated": "Loading date updated"
+    "updated": "Loading date updated",
+    "board": "Loading Board",
+    "remove": "Remove",
+    "carrier": "Carrier",
+    "notes": "Notes"
+  },
+  "materials": {
+    "title": "Materials",
+    "add": "Add",
+    "type": "Type",
+    "thk": "Thk (mm)",
+    "colorSys": "Color system",
+    "code": "Code",
+    "qty": "Qty",
+    "notes": "Notes"
+  },
+  "inv": {
+    "import": "Bulk import",
+    "scan": "Scan barcode",
+    "labels": "Print labels"
+  },
+  "help": {
+    "title": "Keyboard shortcuts"
   },
   "users": {
     "current": "User"

@@ -494,7 +494,29 @@
     "assign": "Piešķirt",
     "schedule": "Grafiks",
     "export_csv": "Eksportēt CSV",
-    "updated": "Iekraušanas datums atjaunots"
+    "updated": "Iekraušanas datums atjaunots",
+    "board": "Iekraušanas dēlis",
+    "remove": "Noņemt",
+    "carrier": "Pārvadātājs",
+    "notes": "Piezīmes"
+  },
+  "materials": {
+    "title": "Materiāli",
+    "add": "Pievienot",
+    "type": "Tips",
+    "thk": "Biezums (mm)",
+    "colorSys": "Krāsu sistēma",
+    "code": "Kods",
+    "qty": "Daudzums",
+    "notes": "Piezīmes"
+  },
+  "inv": {
+    "import": "Masveida imports",
+    "scan": "Skenēt svītrkodu",
+    "labels": "Drukāt etiķetes"
+  },
+  "help": {
+    "title": "Tastatūras saīsnes"
   },
   "users": {
     "current": "Lietotājs"

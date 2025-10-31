@@ -14,10 +14,12 @@
   import { role } from '$lib/ui/RoleSwitch.svelte';
   import { seed } from '$lib/dev/seed';
   import CommandPalette from '$lib/ui/CommandPalette.svelte';
+  import Keybindings from '$lib/help/Keybindings.svelte';
   import { t } from 'svelte-i18n';
   import { startPreferenceUrlSync } from '$lib/settings/url-sync';
 
   let searchOpen = false;
+  let showKb = false;
 
   const openSearch = () => {
     searchOpen = true;
@@ -41,6 +43,11 @@
       if ((e.metaKey || e.ctrlKey) && key === 'k') {
         e.preventDefault();
         openSearch();
+        return;
+      }
+      if (key === '?') {
+        e.preventDefault();
+        showKb = !showKb;
         return;
       }
       if (!e.shiftKey) return;
@@ -93,6 +100,7 @@
   <nav class="main">
     <a href="{base}/orders">{$t('nav.orders') || 'Заказы'}</a>
     <a href="{base}/calendar">{$t('nav.calendar') || 'Календарь'}</a>
+    <a href="{base}/loading">{$t('loading.board') || 'Loading'}</a>
     <a href="{base}/inventory">{$t('nav.inventory') || 'Склад'}</a>
     <a href="{base}/stations">{$t('nav.stations') || 'Станции'}</a>
     <a href="{base}/assets">{$t('nav.assets') || 'Активы'}</a>
@@ -114,6 +122,7 @@
 <Toaster />
 <LiveRegion />
 <CommandPalette open={searchOpen} onClose={closeSearch} />
+<Keybindings bind:open={showKb} />
 
 <style>
 .rf-topbar{
