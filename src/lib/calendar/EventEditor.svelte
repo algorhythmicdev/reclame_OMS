@@ -15,8 +15,11 @@
   function save() {
     if(kind==='loading') upsertLoad({ id: dateISO, carrier, notes });
     // (meeting/note would write to a separate mock store as needed)
-    if (onClose) onClose();
-    else dispatchEvent(new CustomEvent('close'));
+    if (onClose) {
+      onClose();
+    } else {
+      dispatchEvent(new CustomEvent('close'));
+    }
   }
 </script>
 
@@ -24,7 +27,7 @@
   <div class="card">
     <div class="row" style="justify-content:space-between;align-items:center">
       <strong>{event ? 'Edit' : 'Create'} — {dateISO}</strong>
-      <button class="tag ghost" on:click={()=>onClose ? onClose() : dispatchEvent(new CustomEvent('close'))}>Close</button>
+      <button class="tag ghost" on:click={() => onClose ? onClose() : dispatchEvent(new CustomEvent('close'))}>Close</button>
     </div>
 
     <label>Type

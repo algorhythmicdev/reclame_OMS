@@ -21,12 +21,18 @@
     }
   });
   
-  function set(u){ me=u; localStorage.setItem('rf_user', JSON.stringify(u)); dispatchEvent(new CustomEvent('user-change',{detail:u})); }
-  const initials = (n:string)=> n.split(' ').map(x=>x[0]).slice(0,2).join('').toUpperCase();
+  function set(u) { 
+    me = u; 
+    localStorage.setItem('rf_user', JSON.stringify(u)); 
+    dispatchEvent(new CustomEvent('user-change', {detail: u})); 
+  }
+  
+  const initials = (n: string) => 
+    n.split(' ').filter(Boolean).map(x => x[0]).slice(0, 2).join('').toUpperCase();
 </script>
 
 <div class="menu">
-  <button class="avatar" aria-haspopup="menu" aria-expanded="false" aria-label="User">
+  <button class="avatar" aria-haspopup="menu" aria-label="User">
     <span>{initials(me.name)}</span>
   </button>
   <div class="dropdown" role="menu" style="min-width:220px">

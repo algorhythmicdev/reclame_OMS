@@ -14,7 +14,15 @@
     } 
   }
   
-  $: count = (typeof localStorage !== 'undefined' ? (JSON.parse(localStorage.getItem('rf_notifications')||'[]')).length : 0) || noticesList.length;
+  $: count = (() => {
+    if (typeof localStorage === 'undefined') return noticesList.length;
+    try {
+      const stored = JSON.parse(localStorage.getItem('rf_notifications') || '[]');
+      return stored.length || noticesList.length;
+    } catch {
+      return noticesList.length;
+    }
+  })();
 </script>
 
 <div class="menu">
