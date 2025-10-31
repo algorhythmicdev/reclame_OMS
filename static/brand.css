@@ -59,7 +59,7 @@ body{ margin:0; font: 400 1rem/1.55 system-ui, -apple-system, Segoe UI, Roboto, 
 
   /* Text */
   --ink-0: oklch(0.22 0.03 245);  /* primary text: ~#222 */
-  --ink-1: oklch(0.38 0.04 245);  /* secondary */
+  --ink-1: oklch(0.32 0.03 245);  /* dark grey (~#333). Better legibility for captions/labels */
   --ink-2: oklch(0.55 0.03 245);  /* muted on chips/badges */
   --text: var(--ink-0);
   --muted: var(--ink-1);
@@ -228,3 +228,18 @@ button.icon{
 
 .dropdown{animation:fade .18s ease}
 @keyframes fade{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+
+/* Density tokens */
+:root{ --density:cozy; --space: 10px; } /* default */
+:root[data-density="compact"]      { --density:compact;      --space: 6px; }
+:root[data-density="cozy"]         { --density:cozy;         --space: 10px; }
+:root[data-density="comfortable"]  { --density:comfortable;  --space: 14px; }
+
+.grid{ gap: var(--space); }
+.row{  gap: var(--space); }
+.card{ padding: calc(var(--space) + 2px); }
+.rf-table .rowi > *{ padding-block: calc(var(--space) * .25); }
+
+/* Sticky headers */
+.sticky-top{ position:sticky; top: calc(56px + 8px); z-index: 5; background:var(--bg-0); }
+.cal-header{ position:sticky; top: calc(56px + 8px); z-index:4; background:var(--bg-0); }

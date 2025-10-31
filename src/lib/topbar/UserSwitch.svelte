@@ -46,6 +46,9 @@
       </button>
     {/each}
     <hr>
+    <a class="tag ghost" href="/reclame_OMS/settings">Profile (mock)</a>
+    <a class="tag ghost" href="/reclame_OMS/orders">My orders (mock)</a>
+    <hr>
     <button role="menuitem" on:click={()=>alert('Mock: sign out')}>Sign out</button>
   </div>
 </div>
