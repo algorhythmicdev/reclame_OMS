@@ -38,7 +38,7 @@
 
       <div class="col-body">
         {#each boardData.filter(t=>t.stage===s) as t (t.id)}
-          <article class="ticket" draggable="true" on:dragstart={(e)=>onDragStart(e,t.id,s)} on:dblclick={() => window.location.href=`/reclame_OMS/orders/${t.po}`}`>
+          <article class="ticket" draggable="true" on:dragstart={(e)=>onDragStart(e,t.id,s)} on:dblclick={() => window.location.href=`/reclame_OMS/orders/${t.po}`}>
             <div class="row" style="justify-content:space-between"><b>{t.po}</b><span class="muted">{t.client}</span></div>
             <div class="row" style="justify-content:space-between;align-items:center">
               <span>{t.title}</span>
