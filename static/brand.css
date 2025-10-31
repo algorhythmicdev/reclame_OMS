@@ -49,10 +49,42 @@ body{ margin:0; font: 400 1rem/1.55 system-ui, -apple-system, Segoe UI, Roboto, 
   --cal-focus: color-mix(in oklab, var(--accent) 60%, black); /* focus ≥3:1 */
 }
 
+/* ---------- LIGHTVIM (WCAG AA+) ---------- */
 :root[data-theme="LightVim"]{
-  --bg-0:#eef1f8; --bg-1:#ffffff; --bg-2:#e3e7f5;
-  --text:#0f172a; --muted:#475569; --border:#c8d2f0; --shadow-rgb:15 23 42;
-  --accent-1: var(--brand-red-ink); --accent-2:#1e3a8a; --chip: var(--brand-graphite);
+  /* Surfaces */
+  --bg-0: oklch(0.98 0.01 240);   /* page */
+  --bg-1: oklch(0.97 0.01 240);   /* cards */
+  --bg-2: oklch(0.94 0.01 240);   /* headers/stripes */
+  --elev: color-mix(in oklab, var(--bg-1) 84%, white);
+
+  /* Text */
+  --ink-0: oklch(0.22 0.03 245);  /* primary text: ~#222 */
+  --ink-1: oklch(0.38 0.04 245);  /* secondary */
+  --ink-2: oklch(0.55 0.03 245);  /* muted on chips/badges */
+  --text: var(--ink-0);
+  --muted: var(--ink-1);
+
+  /* Borders / outlines */
+  --border: oklch(0.86 0.01 245);
+  --border-strong: oklch(0.78 0.02 245);
+  --focus: oklch(0.69 0.13 280);  /* visible on light+dark */
+
+  /* Accents (brand) */
+  --brand:   oklch(0.64 0.22 30);   /* warm red (Reclame badge) */
+  --brand-2: oklch(0.62 0.06 80);   /* cube sand/beige */
+  --accent-1: var(--brand);
+  --accent-2: var(--brand-2);
+  --chip: var(--ink-0);
+
+  /* States */
+  --ok:      oklch(0.74 0.14 150);
+  --warn:    oklch(0.83 0.12 80);
+  --error:   oklch(0.62 0.20 20);
+  --danger:  var(--error);
+  --link:    oklch(0.56 0.17 260);
+
+  --shadow-rgb: 15 23 42;
+  color-scheme: light;
 }
 :root[data-theme="DarkVim"]{
   --bg-0:#0f172a; --bg-1:#131c2f; --bg-2:#1c2942;
@@ -63,6 +95,29 @@ body{ margin:0; font: 400 1rem/1.55 system-ui, -apple-system, Segoe UI, Roboto, 
   --bg-0:#000; --bg-1:#090909; --bg-2:#151515; --text:#fff; --muted:#f5f5f5; --border:#fff; --shadow-rgb:0 0 0;
   --accent-1:#ff3b3c; --accent-2:#f0dfc8; --chip:#fff;
 }
+
+/* Global text & backgrounds use the tokens above */
+body{ color:var(--ink-0, var(--text)); background:var(--bg-0); }
+.rf-page .card{ background:var(--bg-1); border:1px solid var(--border); }
+.muted{ color:var(--ink-2, var(--muted)); }
+a{ color:var(--link); }
+.tag, .chip, .icon{
+  color:var(--ink-0, var(--text));
+  background:var(--bg-1);
+  border:1px solid var(--border);
+}
+
+/* Calendar specifics (fix invisible labels) */
+.cal-day .label,
+.cal-day .meta,
+.cal-legend span{ color:var(--ink-1, var(--muted)); }
+.cal-day{ background:var(--bg-1); border:1px dashed var(--border); }
+.cal-day[aria-current="date"]{ border-color:var(--border-strong, var(--border)); }
+.cal-day .badge{ background:var(--elev, var(--bg-1)); color:var(--ink-0, var(--text)); border:1px solid var(--border); }
+
+/* Buttons: readable in light theme */
+.tag.primary{ background:var(--brand, var(--accent-1)); color:white; border-color:color-mix(in oklab,var(--brand, var(--accent-1)) 80%, black); }
+.tag.ghost{ background:transparent; color:var(--ink-0, var(--text)); border-color:var(--border); }
 
 /* Calendar-specific styling for Light mode */
 .cal .day-num { color: var(--cal-num); }

@@ -24,6 +24,7 @@ export interface Item {
   min: number;
   location?: string;
   vendor?: string;
+  supplier?: string;
   note?: string;
   colorCode?: string;
   thicknessMM?: number;
@@ -39,6 +40,8 @@ export interface Item {
   section?: Section;
   group?: string;
   subgroup?: string;
+  price?: number;
+  barcode?: string;
 }
 
 export interface Movement {

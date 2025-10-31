@@ -8,6 +8,7 @@
   import ThemeSwitch from '$lib/topbar/ThemeSwitch.svelte';
   import LangSwitch from '$lib/topbar/LangSwitch.svelte';
   import TextSizeSwitch from '$lib/topbar/TextSizeSwitch.svelte';
+  import UserSwitch from '$lib/topbar/UserSwitch.svelte';
   import MobileNav from '$lib/topbar/MobileNav.svelte';
   import Toaster from '$lib/ui/Toaster.svelte';
   import LiveRegion from '$lib/ui/LiveRegion.svelte';
@@ -112,6 +113,7 @@
     <ThemeSwitch />
     <NotificationsBell />
     <ChatPopover />
+    <UserSwitch />
   </div>
 </header>
 

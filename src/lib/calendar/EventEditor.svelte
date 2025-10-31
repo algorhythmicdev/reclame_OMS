@@ -1,169 +1,68 @@
 <script lang="ts">
-  import type { CalEvent, EventKind } from './types';
-  import { addEvent, updateEvent, removeEvent } from './store';
-  export let dateISO = '';              // injected from day cell
-  export let existing: CalEvent | null = null;
+  import { upsertLoad } from '$lib/state/loads';
+  export let dateISO: string;                 // yyyy-mm-dd
+  export let event: any = null;               // edit path
+  export let presetKind:'loading'|'meeting'|'note'='loading';
   export let onClose = () => {};
-  
-  let kind: EventKind = existing?.kind || 'loading';
-  let carrier = (existing as any)?.carrier || '';
-  let poList = (existing as any)?.poList || [];
-  let title = (existing as any)?.title || '';
-  let start = (existing as any)?.start || '';
-  let end   = (existing as any)?.end   || '';
-  let note  = existing?.note || '';
-  let attendees = (existing as any)?.attendees || [];
-  let location  = (existing as any)?.location  || '';
-  
-  // For input handling
-  let poInput = poList.join(', ');
-  let attendeesInput = attendees.join(', ');
 
-  function commit(){
-    const base = existing ?? {
-      id: crypto.randomUUID(), 
-      date: dateISO, 
-      createdAt: new Date().toISOString(), 
-      kind
-    } as CalEvent;
-    
-    const shaped: CalEvent =
-      kind==='loading' ? { ...base, kind, poList, carrier, window:{ start, end }, note } :
-      kind==='meeting' ? { ...base, kind, title, start, end, attendees, location, note } :
-                         { ...base, kind, title, note };
-    existing ? updateEvent(shaped) : addEvent(shaped);
-    onClose();
-  }
-  
-  function handlePoInput(e: Event) {
-    const val = (e.currentTarget as HTMLInputElement).value;
-    poList = val.split(',').map(s=>s.trim()).filter(Boolean);
-  }
-  
-  function handleAttendeesInput(e: Event) {
-    const val = (e.currentTarget as HTMLInputElement).value;
-    attendees = val.split(',').map(s=>s.trim()).filter(Boolean);
+  let kind = event?.kind ?? presetKind;
+  let carrier = event?.carrier ?? '';
+  let title   = event?.title ?? '';
+  let time    = event?.time  ?? '09:00';
+  let place   = event?.place ?? '';
+  let notes   = event?.notes ?? '';
+
+  function save() {
+    if(kind==='loading') upsertLoad({ id: dateISO, carrier, notes });
+    // (meeting/note would write to a separate mock store as needed)
+    if (onClose) {
+      onClose();
+    } else {
+      dispatchEvent(new CustomEvent('close'));
+    }
   }
 </script>
 
-<div class="sheet" role="dialog" aria-modal="true" aria-label="Calendar event">
-  <form class="card" on:submit|preventDefault={commit}>
-    <header class="row" style="justify-content:space-between">
-      <strong>Calendar entry — {dateISO}</strong>
-      <div class="row" style="gap:8px">
-        {#if existing}
-          <button class="tag warn" type="button" on:click={()=>{removeEvent(existing.id); onClose();}}>
-            Delete
-          </button>
-        {/if}
-        <button class="tag ghost" type="button" on:click={onClose}>Cancel</button>
-        <button class="tag" type="submit">Save</button>
-      </div>
-    </header>
+<div class="sheet" role="dialog" aria-modal="true" aria-label="Event">
+  <div class="card">
+    <div class="row" style="justify-content:space-between;align-items:center">
+      <strong>{event ? 'Edit' : 'Create'} — {dateISO}</strong>
+      <button class="tag ghost" on:click={() => onClose ? onClose() : dispatchEvent(new CustomEvent('close'))}>Close</button>
+    </div>
 
-    <fieldset>
-      <legend class="sr-only">Type</legend>
-      <label><input type="radio" name="k" value="loading" bind:group={kind}> Loading</label>
-      <label><input type="radio" name="k" value="meeting" bind:group={kind}> Meeting</label>
-      <label><input type="radio" name="k" value="note" bind:group={kind}> Note</label>
-    </fieldset>
+    <label>Type
+      <select bind:value={kind}>
+        <option value="loading">Loading</option>
+        <option value="meeting">Meeting</option>
+        <option value="note">Note</option>
+      </select>
+    </label>
 
     {#if kind==='loading'}
-      <label>
-        Carrier 
-        <input type="text" bind:value={carrier} placeholder="e.g., DHL / in-house truck">
-      </label>
-      <label>
-        POs (comma-separated) 
-        <input type="text" value={poInput} on:input={handlePoInput} placeholder="PO-001, PO-002">
-      </label>
-      <div class="row">
-        <label>From <input type="time" bind:value={start}></label>
-        <label>To <input type="time" bind:value={end}></label>
-      </div>
-    {:else if kind==='meeting'}
-      <label>
-        Title 
-        <input required type="text" bind:value={title}>
-      </label>
-      <div class="row">
-        <label>Start <input type="time" bind:value={start}></label>
-        <label>End <input type="time" bind:value={end}></label>
-      </div>
-      <label>
-        Location 
-        <input type="text" bind:value={location} placeholder="Room / site / online">
-      </label>
-      <label>
-        Attendees (comma-separated) 
-        <input type="text" value={attendeesInput} on:input={handleAttendeesInput} placeholder="John, Jane">
-      </label>
+      <label>Carrier <input bind:value={carrier} placeholder="DHL / Own truck"/></label>
+      <label>Notes <textarea rows="3" bind:value={notes}/></label>
     {:else}
-      <label>
-        Title 
-        <input type="text" bind:value={title} placeholder="Short note title">
-      </label>
+      <label>Title <input bind:value={title} placeholder="Project sync / Site visit"/></label>
+      <div class="row" style="gap:6px">
+        <label>Time <input type="time" bind:value={time}></label>
+        <label>Location <input bind:value={place} placeholder="Workshop / Customer site"/></label>
+      </div>
+      <label>Notes <textarea rows="3" bind:value={notes}/></label>
     {/if}
 
-    <label>
-      Notes 
-      <textarea rows="3" bind:value={note}></textarea>
-    </label>
-  </form>
+    <div class="row" style="justify-content:flex-end;gap:8px;margin-top:8px">
+      <button class="tag ghost" on:click={()=>onClose ? onClose() : dispatchEvent(new CustomEvent('close'))}>Cancel</button>
+      <button class="tag" on:click={save}>Save</button>
+    </div>
+  </div>
 </div>
 
 <style>
-.sheet{
-  position:fixed;
-  inset:0;
-  background:color-mix(in oklab, var(--bg-0) 55%, transparent);
-  display:grid;
-  place-items:center;
-  z-index:60;
-  padding: 16px;
-}
-.card {
-  max-width: 600px;
-  width: 100%;
-  max-height: 90vh;
-  overflow-y: auto;
-}
-.sr-only{
-  position:absolute;
-  clip:rect(1px,1px,1px,1px);
-  width:1px;
-  height:1px;
-  overflow:hidden;
-}
-label{
-  display:grid;
-  gap:6px;
-  margin:8px 0;
-}
-input, textarea, select{
-  background:var(--bg-0);
-  border:1px solid var(--border);
-  border-radius:10px;
-  padding:8px;
-  color: var(--text);
-}
-fieldset {
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 12px;
-  margin: 8px 0;
-  display: flex;
-  gap: 16px;
-}
-fieldset label {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin: 0;
-}
-.tag.warn {
-  background: color-mix(in oklab, var(--danger) 20%, transparent);
-  border-color: var(--danger);
-  color: var(--danger);
-}
+.sheet{ position:fixed; inset:0; display:grid; place-items:end center; padding:12px;
+        background:color-mix(in oklab,var(--bg-0) 30%, black 35%); z-index:80; }
+.card{ width:min(680px, 100%); background:var(--bg-1); border:1px solid var(--border);
+       border-radius:16px 16px 0 0; padding:12px; }
+@media (min-width:821px){ .sheet{ place-items:center } .card{ border-radius:12px; max-height:80vh; overflow:auto } }
+label{ display:grid; gap:6px; margin:8px 0; }
+input, textarea, select{ background:var(--bg-0); border:1px solid var(--border); border-radius:10px; padding:8px; color:var(--text); }
 </style>

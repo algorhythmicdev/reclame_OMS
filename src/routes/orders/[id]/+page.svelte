@@ -455,6 +455,29 @@
       {/if}
 
       <section class="card">
+        <h3>Overview</h3>
+        <div class="grid" style="--cols:2">
+          <label>Client <input bind:value={o.client}></label>
+          <label>Project <input bind:value={o.title}></label>
+          <label>Region <input bind:value={o.region} placeholder="LT / LV / EE…"></label>
+          <label>Priority
+            <select bind:value={o.priority}>
+              <option>Low</option><option>Normal</option><option>High</option>
+            </select>
+          </label>
+          <label>Due date <input type="date" bind:value={o.due}></label>
+          <label>Loading link <input bind:value={o.loadingDate} placeholder="pick from Loading Board/Calendar"></label>
+          <label>Carrier <input bind:value={o.carrier}></label>
+          <label>Manager <input bind:value={o.manager} placeholder="Who owns it"></label>
+        </div>
+
+        <div class="row" style="justify-content:flex-end;gap:8px;margin-top:12px">
+          <button class="tag ghost" on:click={()=>alert('Mock: revert form')}>Discard</button>
+          <button class="tag primary" on:click={()=>alert('Mock: saved')}>Save</button>
+        </div>
+      </section>
+
+      <section class="card">
         <div class="row" style="justify-content:space-between;align-items:center">
           <h3>{$t('orders.status')}</h3>
           <label class="row" style="gap:6px"><input type="checkbox" bind:checked={o.isRD}> {$t('orders.rd')}</label>

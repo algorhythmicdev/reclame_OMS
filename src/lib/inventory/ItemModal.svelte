@@ -46,7 +46,7 @@
       </div>
     </header>
 
-    <div class="grid" style="grid-template-columns:1fr 1fr">
+    <div class="grid" style="--cols:2">
       <label>
         {$t('inventory.section')}
         <select bind:value={item.section}>
@@ -60,7 +60,7 @@
         <input bind:value={item.group} placeholder="e.g., Acrylic / Aluminium" />
       </label>
       <label>
-        {$t('inventory.subgroup')}
+        Subgroup
         <input bind:value={item.subgroup} placeholder="e.g., Sheets / Profiles" />
       </label>
       <label>
@@ -73,19 +73,31 @@
       </label>
       <label>
         {$t('inventory.headers.unit')}
-        <input bind:value={item.unit} placeholder="pcs / m² / m / l" />
+        <input bind:value={item.unit} placeholder="pcs / m / kg" />
       </label>
       <label>
         {$t('inventory.headers.stock')}
-        <input type="number" bind:value={item.stock} />
+        <input type="number" min="0" bind:value={item.stock} />
       </label>
       <label>
         {$t('inventory.headers.minimum')}
-        <input type="number" bind:value={item.min} />
+        <input type="number" min="0" bind:value={item.min} />
       </label>
       <label>
         {$t('inventory.headers.location')}
-        <input bind:value={item.location} placeholder="Rack A / Bin 3" />
+        <input bind:value={item.location} placeholder="Rack A2" />
+      </label>
+      <label>
+        Supplier
+        <input bind:value={item.supplier} />
+      </label>
+      <label>
+        Price (EUR)
+        <input type="number" step="0.01" bind:value={item.price} />
+      </label>
+      <label>
+        Barcode
+        <input bind:value={item.barcode} placeholder="EAN/QR id" />
       </label>
     </div>
   </form>
