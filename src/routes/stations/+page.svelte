@@ -3,12 +3,14 @@
   import { board, moveTicket } from '$lib/stations/store';
   import { WIP, atLimit, type Stage } from '$lib/stations/wip';
   import AlertTriangle from 'lucide-svelte/icons/alert-triangle';
+  import QuickLogger from '$lib/stations/QuickLogger.svelte';
   
   let boardData = [];
   const unsub = board.subscribe(v => boardData = v);
   const stages:Stage[]=['CNC','SANDING','BENDING','WELDING','PAINT','ASSEMBLY','QC','LOGISTICS'];
 
   let dragging: { id:string; from:Stage } | null = null;
+  let log = false;
 
   function onDragStart(e:DragEvent, id:string, from:Stage){
     dragging = { id, from }; e.dataTransfer?.setData('text/plain', id);
@@ -49,9 +51,28 @@
   {/each}
 </section>
 
+<button class="fab" aria-label="Quick log" on:click={()=>log=true}>＋</button>
+{#if log}<QuickLogger on:close={()=>log=false} />{/if}
+
 <style>
 .column{min-height:280px}
 .col-body{display:grid;gap:8px;margin-top:8px}
 .ticket{border:1px solid var(--border);background:var(--bg-0);border-radius:10px;padding:8px}
 .warn{display:flex;gap:6px;align-items:center;color:var(--warn)}
+.fab{ 
+  position:fixed; 
+  right:18px; 
+  bottom:calc(18px + var(--rail-safe, 0px)); 
+  width:52px; 
+  height:52px;
+  border-radius:999px; 
+  border:1px solid var(--border); 
+  background:var(--bg-0);
+  font-size: 24px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+.fab:hover {
+  background: var(--bg-1);
+}
 </style>

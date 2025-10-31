@@ -7,6 +7,8 @@
   import { toCSV, downloadCSV } from '$lib/inventory/export';
   import Tabs from '$lib/ui/Tabs.svelte';
   import ItemModal from '$lib/inventory/ItemModal.svelte';
+  import ImportCSV from '$lib/inventory/ImportCSV.svelte';
+  import ScanBarcode from '$lib/inventory/ScanBarcode.svelte';
   import Plus from 'lucide-svelte/icons/plus';
   import Edit from 'lucide-svelte/icons/pencil';
   import Trash from 'lucide-svelte/icons/trash-2';
@@ -78,6 +80,8 @@
   $: grouped = buildStructure(currentTab);
 
   let editing: any = null;
+  let showImport = false;
+  let showScan = false;
 
   function handleCreateItem(section: Section, group: string, subgroup = '') {
     editing = { section, group, subgroup };
@@ -98,12 +102,17 @@
       />
     </div>
     <div class="row">
+      <button class="tag" on:click={()=>showImport=!showImport}>{$t('inv.import') || 'Bulk import'}</button>
+      <button class="tag" on:click={()=>showScan=!showScan}>{$t('inv.scan') || 'Scan barcode'}</button>
       <button class="tag" on:click={exportCSV}>Export CSV</button>
       <a class="tag" href={`${base}/inventory/new`}>{$t('inventory.add_item')}</a>
       <a class="tag" href={`${base}/inventory/movements`}>{$t('inventory.movements')}</a>
     </div>
   </div>
 </section>
+
+{#if showImport}<ImportCSV/>{/if}
+{#if showScan}<ScanBarcode/>{/if}
 
 {#if low.length}
   <section class="card">

@@ -10,6 +10,7 @@
   import { get } from 'svelte/store';
   import { t } from 'svelte-i18n';
   import type { Order } from '$lib/order/types';
+  import { loads } from '$lib/state/loads';
 
   let today = new Date();
   let y = today.getFullYear();
@@ -79,6 +80,25 @@
   $: selectedMeta = selectedISO
     ? listAll().find((day) => day.id === selectedISO) || null
     : null;
+
+  let loadsList: any[] = [];
+  loads.subscribe(v => loadsList = v);
+
+  function toICS(){
+    const lines = ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//RF OMS//EN'];
+    for(const l of loadsList){
+      lines.push('BEGIN:VEVENT');
+      lines.push(`UID:${l.id}@reclame-oms`);
+      lines.push(`DTSTART;VALUE=DATE:${l.dateISO.replaceAll('-','')}`);
+      lines.push(`SUMMARY:Loading day (${l.carrier||'carrier n/a'})`);
+      if (l.notes) lines.push(`DESCRIPTION:${l.notes.replace(/\n/g,'\\n')}`);
+      lines.push('END:VEVENT');
+    }
+    lines.push('END:VCALENDAR');
+    const blob = new Blob([lines.join('\r\n')], {type:'text/calendar'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href=url; a.download='reclame-loading.ics'; a.click(); URL.revokeObjectURL(url);
+  }
 </script>
 
 <section class="card cal-card">
@@ -98,6 +118,7 @@
       <button class="tag" on:click={() => (adminMode = !adminMode)} aria-pressed={adminMode}>
         {$t('calendar.loading_mode')}: {$t(adminMode ? 'calendar.loading_on' : 'calendar.loading_off')}
       </button>
+      <button class="tag" on:click={toICS}>Export ICS</button>
     </div>
   </div>
 
