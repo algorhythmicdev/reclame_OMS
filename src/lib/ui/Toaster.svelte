@@ -18,7 +18,7 @@ const colors = {
 .bar{height:4px;border-radius:999px;margin-top:8px;overflow:hidden}
 </style>
 
-<div class="wrap" role="status" aria-live="polite">
+<div id="rf-toasts" class="wrap" role="status" aria-live="polite" aria-atomic="true">
   {#each list as t (t.id)}
     <div class="box" data-kind={t.kind}>
       {#if t.title}<div class="title">{t.title}</div>{/if}

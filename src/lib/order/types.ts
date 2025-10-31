@@ -88,6 +88,10 @@ export type Order = {
   revisions: Revision[];      // file history, newest first
   defaultRevisionId: string;  // which revision is "current"
   file?: FileRef;             // Main file reference
+  // Additional overview form fields
+  region?: string;
+  priority?: string;
+  manager?: string;
 };
 
 export type { StageMap, StageCycle, StageState, StationTag };

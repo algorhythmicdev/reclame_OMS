@@ -34,7 +34,7 @@
           on:click={()=>open=!open}><MessageSquare aria-hidden="true"/></button>
 
   {#if open}
-  <div class="sheet mobile-sheet" role="dialog" aria-modal="true" aria-label="Team chat" on:keydown={onKey}>
+  <div class="sheet mobile-sheet" role="dialog" aria-modal="true" aria-label="Team chat" style="min-width:360px;max-width:92vw" on:keydown={onKey}>
     <div class="panel card">
       <header class="row" style="justify-content:space-between"><strong>Team chat</strong>
         <button class="tag ghost" on:click={()=>{open=false;btn?.focus();}}>Close</button>

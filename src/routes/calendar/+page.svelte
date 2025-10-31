@@ -11,6 +11,7 @@
   import { t } from 'svelte-i18n';
   import type { Order } from '$lib/order/types';
   import { loads } from '$lib/state/loads';
+  import EventEditor from '$lib/calendar/EventEditor.svelte';
 
   let today = new Date();
   let y = today.getFullYear();
@@ -19,6 +20,11 @@
   let selectedISO: string | null = null;
   let orders = listOrders();
   let mode:'grid'|'list'='grid';
+  let quick:{kind:'loading'|'meeting'|'note', dateISO?:string}|null=null;
+  
+  function openQuick(kind:'loading'|'meeting'|'note'){ 
+    quick={kind, dateISO:new Date().toISOString().slice(0,10)}; 
+  }
 
   function refreshOrders() {
     orders = listOrders();
@@ -108,6 +114,11 @@
       <Tooltip text="Toggle admin mode to mark loading days. Click days to view or assign orders." />
     </div>
     <div class="row" style="gap:8px; align-items:center;flex-wrap:wrap">
+      <div class="row" style="gap:6px">
+        <button class="tag" on:click={()=>openQuick('loading')}>New loading</button>
+        <button class="tag ghost" on:click={()=>openQuick('meeting')}>New meeting</button>
+        <button class="tag ghost" on:click={()=>openQuick('note')}>New note</button>
+      </div>
       <div class="row" role="tablist" aria-label="View mode">
         <button class="tag" role="tab" aria-selected={mode==='grid'} on:click={()=>mode='grid'}>Grid</button>
         <button class="tag" role="tab" aria-selected={mode==='list'} on:click={()=>mode='list'}>List</button>
@@ -181,6 +192,8 @@
     </div>
   </section>
 {/if}
+
+{#if quick}<EventEditor dateISO={quick.dateISO} presetKind={quick.kind} onClose={()=>quick=null}/>{/if}
 
 <style>
 :global(.rf-table){
