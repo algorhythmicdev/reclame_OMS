@@ -167,13 +167,13 @@
       <table class="rf-table orders-table">
         <thead>
           <tr>
-            <th style="width:50px"></th>
-            <th style="width:140px">
+            <th style="width:40px"></th>
+            <th style="width:120px">
               <button class="tag ghost" data-sort={sortKey === 'id' ? (sortAsc ? 'asc' : 'desc') : ''} on:click={() => toggleSort('id')}>
                 {$t('orderLists.headers.po')}
               </button>
             </th>
-            <th>
+            <th style="width:140px">
               <button class="tag ghost" data-sort={sortKey === 'client' ? (sortAsc ? 'asc' : 'desc') : ''} on:click={() => toggleSort('client')}>
                 {$t('orderLists.headers.client')}
               </button>
@@ -183,17 +183,17 @@
                 {$t('orderLists.headers.title')}
               </button>
             </th>
-            <th style="width:140px">
+            <th style="width:110px">
               <button class="tag ghost" data-sort={sortKey === 'loadingDate' ? (sortAsc ? 'asc' : 'desc') : ''} on:click={() => toggleSort('loadingDate')}>
                 {$t('orderLists.headers.loading')}
               </button>
             </th>
-            <th style="width:120px">
+            <th style="width:100px">
               <button class="tag ghost" data-sort={sortKey === 'due' ? (sortAsc ? 'asc' : 'desc') : ''} on:click={() => toggleSort('due')}>
                 {$t('orderLists.headers.due')}
               </button>
             </th>
-            <th style="width:200px">{$t('orderLists.headers.badges')}</th>
+            <th style="width:240px">{$t('orderLists.headers.badges')}</th>
           </tr>
         </thead>
         <tbody>
@@ -230,16 +230,13 @@
               <td>
                 <div class="badges-cell">
                   {#if row.badges.length}
-                    {#each row.badges.slice(0, 3) as badge}
+                    {#each row.badges as badge}
                       {@const label = badgeLabel(badge)}
                       <Badge tone={badgeTone(badge)} label={label}>
-                        <svelte:component this={BADGE_ICONS[badge]} size={12} aria-hidden="true" />
+                        <svelte:component this={BADGE_ICONS[badge]} size={14} aria-hidden="true" />
                         <span class="badge-text">{label}</span>
                       </Badge>
                     {/each}
-                    {#if row.badges.length > 3}
-                      <span class="muted">+{row.badges.length - 3}</span>
-                    {/if}
                   {:else}
                     <span class="muted">{$t('orderLists.no_badges')}</span>
                   {/if}
@@ -354,13 +351,18 @@
   }
 
   .badge-text {
-    display: none;
+    display: inline;
+    font-size: 0.75rem;
   }
-
-  @media (min-width: 1200px) {
-    .badge-text {
-      display: inline;
-    }
+  
+  /* Scale down table font sizes for better fit */
+  .orders-table {
+    font-size: 0.9rem;
+  }
+  
+  .orders-table td,
+  .orders-table th {
+    padding: 8px;
   }
 
   .expanded-row {

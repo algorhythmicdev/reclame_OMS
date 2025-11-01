@@ -12,6 +12,7 @@
   import type { Order } from '$lib/order/types';
   import { loads } from '$lib/state/loads';
   import EventEditor from '$lib/calendar/EventEditor.svelte';
+  import { Calendar, TruckIcon, Users, StickyNote, Grid3x3, List, Download } from 'lucide-svelte';
 
   let today = new Date();
   let y = today.getFullYear();
@@ -108,28 +109,57 @@
 </script>
 
 <section class="card cal-card">
-  <div class="cal-header row" style="justify-content:space-between;align-items:center">
-    <div style="display: flex; align-items: center; gap: 8px;">
-      <h2 class="cal-month-title" style="margin:0">{$t('calendar.title')}</h2>
-      <Tooltip text="Toggle admin mode to mark loading days. Click days to view or assign orders." />
-    </div>
-    <div class="row" style="gap:8px; align-items:center;flex-wrap:wrap">
-      <div class="row" style="gap:6px">
-        <button class="tag" on:click={()=>openQuick('loading')}>New loading</button>
-        <button class="tag ghost" on:click={()=>openQuick('meeting')}>New meeting</button>
-        <button class="tag ghost" on:click={()=>openQuick('note')}>New note</button>
+  <div class="cal-header-sticky">
+    <div class="cal-header-content">
+      <div class="cal-header-title">
+        <Calendar size={20} aria-hidden="true" />
+        <h2 class="cal-month-title">{$t('calendar.title')}</h2>
+        <Tooltip text="Toggle admin mode to mark loading days. Click days to view or assign orders." />
       </div>
-      <div class="row" role="tablist" aria-label="View mode">
-        <button class="tag" role="tab" aria-selected={mode==='grid'} on:click={()=>mode='grid'}>Grid</button>
-        <button class="tag" role="tab" aria-selected={mode==='list'} on:click={()=>mode='list'}>List</button>
+      
+      <div class="cal-header-actions">
+        <div class="cal-actions-group">
+          <button class="tag" on:click={()=>openQuick('loading')}>
+            <TruckIcon size={14} aria-hidden="true" />
+            <span>New loading</span>
+          </button>
+          <button class="tag ghost" on:click={()=>openQuick('meeting')}>
+            <Users size={14} aria-hidden="true" />
+            <span>New meeting</span>
+          </button>
+          <button class="tag ghost" on:click={()=>openQuick('note')}>
+            <StickyNote size={14} aria-hidden="true" />
+            <span>New note</span>
+          </button>
+        </div>
+        
+        <div class="cal-actions-group" role="tablist" aria-label="View mode">
+          <button class="tag" class:is-active={mode==='grid'} role="tab" aria-selected={mode==='grid'} on:click={()=>mode='grid'}>
+            <Grid3x3 size={14} aria-hidden="true" />
+            <span>Grid</span>
+          </button>
+          <button class="tag" class:is-active={mode==='list'} role="tab" aria-selected={mode==='list'} on:click={()=>mode='list'}>
+            <List size={14} aria-hidden="true" />
+            <span>List</span>
+          </button>
+        </div>
+        
+        <div class="cal-actions-group cal-nav-group">
+          <button class="tag" on:click={prev} aria-label="Previous month">◀</button>
+          <div class="cal-month-display">{y} · {m + 1}</div>
+          <button class="tag" on:click={next} aria-label="Next month">▶</button>
+        </div>
+        
+        <div class="cal-actions-group">
+          <button class="tag" on:click={() => (adminMode = !adminMode)} aria-pressed={adminMode}>
+            {$t('calendar.loading_mode')}: {$t(adminMode ? 'calendar.loading_on' : 'calendar.loading_off')}
+          </button>
+          <button class="tag ghost" on:click={toICS}>
+            <Download size={14} aria-hidden="true" />
+            <span>Export ICS</span>
+          </button>
+        </div>
       </div>
-      <button class="tag" on:click={prev}>◀</button>
-      <div style="min-width:140px;text-align:center;font-weight:700">{y} · {m + 1}</div>
-      <button class="tag" on:click={next}>▶</button>
-      <button class="tag" on:click={() => (adminMode = !adminMode)} aria-pressed={adminMode}>
-        {$t('calendar.loading_mode')}: {$t(adminMode ? 'calendar.loading_on' : 'calendar.loading_off')}
-      </button>
-      <button class="tag" on:click={toICS}>Export ICS</button>
     </div>
   </div>
 
@@ -208,11 +238,69 @@
 }
 
 .cal-card{ 
-  container-type:inline-size; 
+  container-type:inline-size;
+  padding: 0 !important;
+}
+
+.cal-header-sticky {
+  position: sticky;
+  top: calc(var(--topbar-h, 56px) + 8px);
+  z-index: 10;
+  background: var(--bg-1);
+  border-bottom: 1px solid var(--border);
+  padding: var(--space-lg);
+  margin: 0 -1px;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+
+.cal-header-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cal-header-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cal-month-title {
+  margin: 0;
+  font-weight: 700;
+  font-size: 1.25rem;
+  letter-spacing: 0.2px;
+}
+
+.cal-header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.cal-actions-group {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.cal-nav-group {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  padding: 2px;
+}
+
+.cal-month-display {
+  min-width: 140px;
+  text-align: center;
+  font-weight: 700;
+  padding: 0 8px;
 }
 
 .cal-month{
   display:block;
+  padding: var(--space-lg);
 }
 
 /* Container query breakpoint at 560px - applies when the card itself is narrow,
@@ -227,11 +315,19 @@
   :global(.cal-weekstrip){ 
     display:block 
   }
-}
-
-/* Calendar header styling */
-.cal-month-title{
-  font-weight: 700;
-  letter-spacing: 0.2px;
+  
+  .cal-header-content {
+    gap: 8px;
+  }
+  
+  .cal-header-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .cal-actions-group {
+    width: 100%;
+    justify-content: center;
+  }
 }
 </style>
