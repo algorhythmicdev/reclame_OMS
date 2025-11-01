@@ -2,17 +2,20 @@
   import { ui } from '$lib/state/ui';
   import { t } from 'svelte-i18n';
   
-  let currentUi: any;
-  ui.subscribe(v => currentUi = v);
+  type DensityOption = 'compact' | 'cozy' | 'comfortable';
+  type UiState = { theme: string; density: DensityOption; fontScale: number };
   
-  const opts: any[] = [
+  let currentUi: UiState | undefined;
+  ui.subscribe(v => currentUi = v as UiState);
+  
+  const opts: Array<{k: DensityOption; label: () => string}> = [
     {k:'compact',      label: () => $t('ui.density.compact','Compact')},
     {k:'cozy',         label: () => $t('ui.density.cozy','Cozy')},
     {k:'comfortable',  label: () => $t('ui.density.comfortable','Comfortable')}
   ];
   
-  function set(k: string) {
-    ui.update(p => ({...p, density: k as any}));
+  function set(k: DensityOption) {
+    ui.update(p => ({...p, density: k}));
   }
 </script>
 

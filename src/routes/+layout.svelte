@@ -43,7 +43,7 @@
     const lang    = q.get('lang');
     const font    = q.get('font');
 
-    if(lang) setLocale(lang);
+    if (lang) setLocale(lang);
     ui.update(p=>({
       ...p,
       theme:   theme   || p.theme,
