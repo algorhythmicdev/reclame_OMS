@@ -49,6 +49,7 @@
   } from '$lib/order/signage-store';
   import { blankStages, STATIONS, type StageState, type StationTag, type ReworkReason } from '$lib/order/stages';
   import { getOrderSeed } from '$lib/order/order-seeds';
+  import { logStage } from '$lib/orders/journal';
 
   export let params;
   const id = params.id;
@@ -166,6 +167,7 @@
     if (updated && updated.length) {
       o.redo = updated;
       const reasonLabel = get(t)(`orders.reasons.${redoReason}`) ?? redoReason;
+      logStage(o.id, redoStage, '', redoReason);
       announceToast(`${stageName(redoStage)} • ${reasonLabel}`, 'info');
     }
     redoStage = '';
@@ -235,6 +237,7 @@
   }
   function applyStage(station: StationTag, state: StageState, note?: string) {
     adminApplyStage(o.id, station, state, note, 'admin');
+    logStage(o.id, station, note || `Stage changed to ${state}`);
     refreshOrder();
   }
   function proposeStage(station: StationTag, state: StageState, note?: string) {

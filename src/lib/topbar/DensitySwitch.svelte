@@ -1,32 +1,29 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { ui } from '$lib/state/ui';
   import { t } from 'svelte-i18n';
   
-  const opts = ['compact','cozy','comfortable'];
-  let v = 'cozy';
+  type DensityOption = 'compact' | 'cozy' | 'comfortable';
+  type UiState = { theme: string; density: DensityOption; fontScale: number };
   
-  onMount(() => {
-    const stored = localStorage.getItem('rf_density');
-    if (stored && opts.includes(stored)) {
-      v = stored;
-    }
-    document.documentElement.dataset.density = v;
-  });
+  let currentUi: UiState | undefined;
+  ui.subscribe(v => currentUi = v as UiState);
   
-  function set(d: string) { 
-    v = d; 
-    document.documentElement.dataset.density = d; 
-    localStorage.setItem('rf_density', d);
+  const opts: Array<{k: DensityOption; label: () => string}> = [
+    {k:'compact',      label: () => $t('ui.density.compact','Compact')},
+    {k:'cozy',         label: () => $t('ui.density.cozy','Cozy')},
+    {k:'comfortable',  label: () => $t('ui.density.comfortable','Comfortable')}
+  ];
+  
+  function set(k: DensityOption) {
+    ui.update(p => ({...p, density: k}));
   }
 </script>
 
 <div class="menu">
-  <button class="icon" aria-haspopup="menu" title="Density">T</button>
+  <button class="icon" aria-haspopup="menu" aria-expanded="false" title={$t('ui.density.title','Density')}>D</button>
   <div class="dropdown" role="menu">
-    {#each opts as d}
-      <button role="menuitem" aria-pressed={v===d} on:click={()=>set(d)}>
-        {$t(`ui.density.${d}`)}
-      </button>
+    {#each opts as o}
+      <button role="menuitem" aria-pressed={currentUi?.density===o.k} on:click={()=>set(o.k)}>{o.label()}</button>
     {/each}
   </div>
 </div>

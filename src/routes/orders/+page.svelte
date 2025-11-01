@@ -167,27 +167,37 @@
         <thead>
           <tr>
             <th style="width:50px"></th>
-            <th style="width:140px" on:click={() => toggleSort('id')} class="sortable">
-              {$t('orderLists.headers.po')} {sortKey === 'id' ? (sortAsc ? '▲' : '▼') : ''}
+            <th style="width:140px">
+              <button class="tag ghost" data-sort={sortKey === 'id' ? (sortAsc ? 'asc' : 'desc') : ''} on:click={() => toggleSort('id')}>
+                {$t('orderLists.headers.po')}
+              </button>
             </th>
-            <th on:click={() => toggleSort('client')} class="sortable">
-              {$t('orderLists.headers.client')} {sortKey === 'client' ? (sortAsc ? '▲' : '▼') : ''}
+            <th>
+              <button class="tag ghost" data-sort={sortKey === 'client' ? (sortAsc ? 'asc' : 'desc') : ''} on:click={() => toggleSort('client')}>
+                {$t('orderLists.headers.client')}
+              </button>
             </th>
-            <th on:click={() => toggleSort('title')} class="sortable">
-              {$t('orderLists.headers.title')} {sortKey === 'title' ? (sortAsc ? '▲' : '▼') : ''}
+            <th>
+              <button class="tag ghost" data-sort={sortKey === 'title' ? (sortAsc ? 'asc' : 'desc') : ''} on:click={() => toggleSort('title')}>
+                {$t('orderLists.headers.title')}
+              </button>
             </th>
-            <th style="width:140px" on:click={() => toggleSort('loadingDate')} class="sortable">
-              {$t('orderLists.headers.loading')} {sortKey === 'loadingDate' ? (sortAsc ? '▲' : '▼') : ''}
+            <th style="width:140px">
+              <button class="tag ghost" data-sort={sortKey === 'loadingDate' ? (sortAsc ? 'asc' : 'desc') : ''} on:click={() => toggleSort('loadingDate')}>
+                {$t('orderLists.headers.loading')}
+              </button>
             </th>
-            <th style="width:120px" on:click={() => toggleSort('due')} class="sortable">
-              {$t('orderLists.headers.due')} {sortKey === 'due' ? (sortAsc ? '▲' : '▼') : ''}
+            <th style="width:120px">
+              <button class="tag ghost" data-sort={sortKey === 'due' ? (sortAsc ? 'asc' : 'desc') : ''} on:click={() => toggleSort('due')}>
+                {$t('orderLists.headers.due')}
+              </button>
             </th>
             <th style="width:200px">{$t('orderLists.headers.badges')}</th>
           </tr>
         </thead>
         <tbody>
           {#each visible as row (row.id)}
-            <tr class="order-row" class:expanded={row.expanded}>
+            <tr class="order-row rowi" class:expanded={row.expanded}>
               <td>
                 <button 
                   class="expand-btn" 

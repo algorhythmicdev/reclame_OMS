@@ -108,9 +108,9 @@
 </script>
 
 <section class="card cal-card">
-  <div class="row" style="justify-content:space-between;align-items:center">
+  <div class="cal-header row" style="justify-content:space-between;align-items:center">
     <div style="display: flex; align-items: center; gap: 8px;">
-      <h2 style="margin:0">{$t('calendar.title')}</h2>
+      <h2 class="cal-month-title" style="margin:0">{$t('calendar.title')}</h2>
       <Tooltip text="Toggle admin mode to mark loading days. Click days to view or assign orders." />
     </div>
     <div class="row" style="gap:8px; align-items:center;flex-wrap:wrap">
@@ -227,5 +227,11 @@
   :global(.cal-weekstrip){ 
     display:block 
   }
+}
+
+/* Calendar header styling */
+.cal-month-title{
+  font-weight: 700;
+  letter-spacing: 0.2px;
 }
 </style>

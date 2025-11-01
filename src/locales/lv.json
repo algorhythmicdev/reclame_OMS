@@ -708,7 +708,16 @@
     "download_cdr": "Lejupielādēt CDR"
   },
   "ui": {
-    "density": { "compact": "Kompakts", "cozy": "Ērts", "comfortable": "Komfortabls" },
+    "density": { 
+      "title": "Blīvums",
+      "compact": "Kompakts", 
+      "cozy": "Ērts", 
+      "comfortable": "Komfortabls" 
+    },
+    "quickCreate": "Ātrā izveide",
+    "notifications": "Paziņojumi",
+    "chat": "Komandas čats",
+    "textsize": "Teksta izmērs",
     "new_loading": "Jauna iekraušana",
     "new_meeting": "Jauna sanāksme",
     "new_note": "Jauna piezīme",

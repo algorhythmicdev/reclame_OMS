@@ -3,8 +3,8 @@
   import { t } from 'svelte-i18n';
 
   export let src = '';
-  export let maxScale = 1.5; // Limit maximum scale to reduce memory usage
-  export let defaultScale = 1.0; // Reduce default scale for faster loading
+  export let maxScale = 3.0; // Allow higher zoom
+  export let defaultScale = +(localStorage.getItem('rf_pdf_zoom') || '1.0'); // Load saved zoom
   
   let canvasEl;
   let pageNum = 1;
@@ -20,6 +20,8 @@
   let lastSrc = '';
   let full = false;
   let hostEl;
+  let container;
+  let ro;
 
   async function ensurePdf() {
     if (pdfjsLib) return;
@@ -105,14 +107,38 @@
     }
   };
 
+  function setZoom(z) {
+    scale = Math.min(maxScale, Math.max(0.5, +z.toFixed(2)));
+    localStorage.setItem('rf_pdf_zoom', String(scale));
+    render();
+  }
+
+  function fitToWidth() {
+    if (!pdfDoc || !container) return;
+    pdfDoc.getPage(pageNum).then(page => {
+      const viewport = page.getViewport({ scale: 1.0 });
+      const containerWidth = container.clientWidth - 24; // padding
+      const fitScale = Math.max(0.5, Math.min(maxScale, containerWidth / viewport.width));
+      if (Math.abs(fitScale - scale) > 0.01) {
+        setZoom(fitScale);
+      }
+    });
+  }
+
   onMount(() => {
     mounted = true;
+    
+    // ResizeObserver to fit PDF to width on container resize
+    ro = new ResizeObserver(() => {
+      if (pdfDoc) fitToWidth();
+    });
+    if (container) ro.observe(container);
     
     // Lazy load PDF when it becomes visible
     const observer = new IntersectionObserver((entries) => {
       const entry = entries.find(e => e.isIntersecting);
       if (entry && src && !pdfDoc) {
-        render(true);
+        render(true).then(() => fitToWidth());
       }
     }, { threshold: 0.1 });
     
@@ -123,6 +149,7 @@
     return () => {
       mounted = false;
       observer.disconnect();
+      ro?.disconnect();
       renderTask?.cancel();
       renderTask = undefined;
       currentSrc = '';
@@ -135,11 +162,11 @@
 
   $: if (mounted && src && src !== lastSrc) {
     lastSrc = src;
-    render(true);
+    render(true).then(() => fitToWidth());
   }
 </script>
 <div class="pdf-host" class:overlay={full} bind:this={hostEl}>
-  <div class="pdf-controls">
+  <div class="pdf-controls" bind:this={container}>
     <div class="row" style="justify-content:space-between;margin-bottom:8px">
       <strong>PDF</strong>
       <div class="row">
@@ -151,21 +178,16 @@
         <div class="row">
           <button
             class="tag"
-            on:click={async () => {
-              scale = Math.max(0.5, scale - 0.2);
-              await render();
-            }}
+            on:click={() => setZoom(scale - 0.2)}
             disabled={scale <= 0.5}>-
           </button>
           <div class="tag">{Math.round(scale * 100)}%</div>
           <button
             class="tag"
-            on:click={async () => {
-              scale = Math.min(maxScale, scale + 0.2);
-              await render();
-            }}
+            on:click={() => setZoom(scale + 0.2)}
             disabled={scale >= maxScale}>+
           </button>
+          <button class="tag" on:click={fitToWidth}>Fit</button>
         </div>
         <button class="tag" on:click={()=>full=!full}>{full?'Close':'Full screen'}</button>
       </div>

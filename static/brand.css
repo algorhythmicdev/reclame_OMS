@@ -243,3 +243,41 @@ button.icon{
 /* Sticky headers */
 .sticky-top{ position:sticky; top: calc(56px + 8px); z-index: 5; background:var(--bg-0); }
 .cal-header{ position:sticky; top: calc(56px + 8px); z-index:4; background:var(--bg-0); }
+
+/* ========== FIX PACK: CSS TOKENS & LAYERING ========== */
+
+/* Layout constants */
+:root{ --topbar-h: 56px; }
+
+/* Dropdown layering and shape */
+.menu > .dropdown{
+  z-index: 9999;
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px color-mix(in oklab, black 14%, transparent);
+  padding: 6px;
+  min-width: 220px;
+}
+
+/* Stronger header/legend contrast in Light */
+:root[data-theme="LightVim"] .muted { color: oklch(0.38 0.03 245); } /* darker captions */
+:root[data-theme="LightVim"] .cal-month-title,
+:root[data-theme="LightVim"] .cal-day .label { color: var(--ink-0); }
+
+/* Sticky helpers that respect topbar */
+.sticky-top  { position: sticky; top: calc(var(--topbar-h) + 8px); z-index: 5; background: var(--bg-0); }
+.cal-header  { position: sticky; top: calc(var(--topbar-h) + 8px); z-index: 4; background: var(--bg-0); }
+
+/* Sort caret & header focus */
+.table thead th button.tag.ghost{
+  outline-offset: 2px;
+}
+.table thead th button.tag.ghost[data-sort="asc"]::after { content: " ▲"; }
+.table thead th button.tag.ghost[data-sort="desc"]::after{ content: " ▼"; }
+
+/* Safer overflow for menu parents */
+.menu{ position: relative; overflow: visible; }
+
+/* Consistent table row heights */
+.table tbody tr.rowi > td{ padding-block: calc(var(--space)*.60); }

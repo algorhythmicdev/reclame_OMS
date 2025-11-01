@@ -19,6 +19,8 @@
   import Keybindings from '$lib/help/Keybindings.svelte';
   import { t } from 'svelte-i18n';
   import { startPreferenceUrlSync } from '$lib/settings/url-sync';
+  import { ui } from '$lib/state/ui';
+  import { setLocale } from '$lib/i18n';
 
   let searchOpen = false;
   let showKb = false;
@@ -33,6 +35,22 @@
 
   onMount(() => {
     seed(base);
+    
+    // Apply query params for deep-linking preferences
+    const q = new URLSearchParams(location.search);
+    const theme   = q.get('theme') as any;
+    const density = q.get('density') as any;
+    const lang    = q.get('lang');
+    const font    = q.get('font');
+
+    if (lang) setLocale(lang);
+    ui.update(p=>({
+      ...p,
+      theme:   theme   || p.theme,
+      density: density || p.density,
+      fontScale: font ? Math.max(0.85, Math.min(1.3, +font)) : p.fontScale
+    }));
+    
     const stopPreferenceSync = startPreferenceUrlSync();
     const handler = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement | null;
@@ -109,12 +127,12 @@
     <a href="{base}/settings">{$t('nav.settings') || 'Настройки'}</a>
   </nav>
   <div class="actions">
-    <LangSwitch />
-    <TextSizeSwitch />
-    <DensitySwitch />
-    <ThemeSwitch />
-    <NotificationsBell />
-    <ChatPopover />
+    <div title={$t('topbar.language', 'Language')}><LangSwitch /></div>
+    <div title={$t('ui.textsize', 'Text size')}><TextSizeSwitch /></div>
+    <div title={$t('ui.density.title', 'Density')}><DensitySwitch /></div>
+    <div title={$t('topbar.theme', 'Theme')}><ThemeSwitch /></div>
+    <div title={$t('ui.notifications', 'Notifications')}><NotificationsBell /></div>
+    <div title={$t('ui.chat', 'Team chat')}><ChatPopover /></div>
     <UserSwitch />
   </div>
 </header>
