@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onDestroy } from 'svelte';
   import { byDate } from './store';
   import EventEditor from './EventEditor.svelte';
   import Truck from 'lucide-svelte/icons/truck';
@@ -17,6 +18,10 @@
   let over = false;
   
   const unsub = loads.subscribe(v => $loads = v);
+  
+  onDestroy(() => {
+    unsub?.();
+  });
 
   function refresh(){ items = byDate(iso); }
   function onDown(){ clearTimeout(pressTimer); pressTimer=setTimeout(()=>open=true, 450); }

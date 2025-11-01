@@ -2,6 +2,18 @@
   export let po: string;
   export let revision: string = 'current';
   
+  // Fallback for crypto.randomUUID for older browsers
+  function generateId() {
+    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+      return crypto.randomUUID();
+    }
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+      const r = (Math.random() * 16) | 0;
+      const v = c === 'x' ? r : (r & 0x3) | 0x8;
+      return v.toString(16);
+    });
+  }
+  
   let notes: { id: string; x: number; y: number; text: string }[] =
     JSON.parse(localStorage.getItem(key()) || '[]');
   
@@ -22,7 +34,7 @@
     const bb = el.getBoundingClientRect();
     const x = (e.clientX - bb.left) / bb.width;
     const y = (e.clientY - bb.top) / bb.height;
-    notes = [...notes, { id: crypto.randomUUID(), x, y, text: '' }];
+    notes = [...notes, { id: generateId(), x, y, text: '' }];
   }
   
   function addRect() {
@@ -50,7 +62,7 @@
     const x2 = (e.clientX - bb.left) / bb.width;
     const y2 = (e.clientY - bb.top) / bb.height;
     const r = {
-      id: crypto.randomUUID(),
+      id: generateId(),
       x: Math.min(start.x, x2),
       y: Math.min(start.y, y2),
       w: Math.abs(x2 - start.x),
