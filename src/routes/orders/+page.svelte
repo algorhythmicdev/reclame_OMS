@@ -15,6 +15,7 @@
   import Badge from '$lib/ui/Badge.svelte';
   import { currentUser } from '$lib/users/user-store';
   import { dragging } from '$lib/dnd';
+  import { Plus, FilePlus } from 'lucide-svelte';
 
   type OrderRow = {
     id: string;
@@ -149,11 +150,13 @@
     <div class="row" style="gap:8px; align-items:center">
       {#if isSuperAdmin}
         <button class="tag" on:click={() => (draftFormOpen = true)}>
+          <FilePlus size={14} aria-hidden="true" />
           {$t('draft.add')}
         </button>
       {/if}
       {#if isAdmin}
         <button class="tag" on:click={() => (formOpen = true)}>
+          <Plus size={14} aria-hidden="true" />
           {$t('orderLists.new')}
         </button>
       {/if}
@@ -420,5 +423,57 @@
     justify-content: flex-end;
     padding-top: 8px;
     border-top: 1px solid var(--border);
+  }
+
+  /* Mobile responsive improvements */
+  @media (max-width: 768px) {
+    .orders-table {
+      font-size: 0.85rem;
+    }
+    
+    .orders-table td,
+    .orders-table th {
+      padding: 6px 4px;
+    }
+    
+    /* Hide less important columns on mobile */
+    .orders-table th:nth-child(4), /* Title */
+    .orders-table td:nth-child(4),
+    .orders-table th:nth-child(5), /* Loading */
+    .orders-table td:nth-child(5) {
+      display: none;
+    }
+    
+    .badges-cell {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 2px;
+    }
+    
+    .stages-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .expanded-content {
+      padding: 12px;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .orders-table {
+      font-size: 0.8rem;
+    }
+    
+    /* Show only essential columns on very small screens */
+    .orders-table th:nth-child(3), /* Client */
+    .orders-table td:nth-child(3),
+    .orders-table th:nth-child(6), /* Due */
+    .orders-table td:nth-child(6) {
+      display: none;
+    }
+    
+    .badges-cell :global(.badge) {
+      font-size: 0.7rem;
+    }
   }
 </style>

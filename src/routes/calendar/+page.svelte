@@ -12,7 +12,7 @@
   import type { Order } from '$lib/order/types';
   import { loads } from '$lib/state/loads';
   import EventEditor from '$lib/calendar/EventEditor.svelte';
-  import { Calendar, TruckIcon, Users, StickyNote, Grid3x3, List, Download } from 'lucide-svelte';
+  import { Calendar, TruckIcon, Users, StickyNote, Grid3x3, List, Download, Truck } from 'lucide-svelte';
 
   let today = new Date();
   let y = today.getFullYear();
@@ -152,6 +152,7 @@
         
         <div class="cal-actions-group">
           <button class="tag" on:click={() => (adminMode = !adminMode)} aria-pressed={adminMode}>
+            <Truck size={14} aria-hidden="true" />
             {$t('calendar.loading_mode')}: {$t(adminMode ? 'calendar.loading_on' : 'calendar.loading_off')}
           </button>
           <button class="tag ghost" on:click={toICS}>
@@ -191,7 +192,10 @@
           </div>
         {/if}
       </div>
-      <button class="tag" on:click={exportCSV}>{$t('loading.export_csv')}</button>
+      <button class="tag" on:click={exportCSV}>
+        <Download size={14} aria-hidden="true" />
+        {$t('loading.export_csv')}
+      </button>
     </div>
     <div class="rf-scroll" style="margin-top:8px;max-height:320px">
       <table class="rf-table">
