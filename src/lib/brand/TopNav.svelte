@@ -14,8 +14,6 @@
     { path: '/calendar', label: 'Calendar' },
     { path: '/inventory', label: 'Inventory' },
     { path: '/', label: 'Dashboard' },
-    { path: '/stations', label: 'Stations' },
-    { path: '/assets', label: 'Assets' },
     { path: '/settings', label: 'Settings' }
   ];
 

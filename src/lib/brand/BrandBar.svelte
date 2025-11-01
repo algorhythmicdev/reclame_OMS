@@ -21,8 +21,6 @@
     { path: '/calendar', label: $t('nav.calendar'), icon: 'calendar' },
     { path: '/inventory', label: $t('nav.inventory'), icon: 'inventory' },
     { path: '/', label: $t('nav.dashboard'), icon: 'home' },
-    { path: '/stations', label: $t('nav.stations') || 'Stations', icon: 'stations' },
-    { path: '/assets', label: $t('nav.assets') || 'Assets', icon: 'assets' },
     { path: '/settings', label: $t('nav.settings'), icon: 'settings' }
   ];
 </script>
