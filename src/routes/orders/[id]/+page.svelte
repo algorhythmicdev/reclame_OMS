@@ -415,7 +415,7 @@
   <div class="order-overview">
     <div class="order-overview__preview" aria-label={$t('order.currentPdf')}>
       {#if pdf}
-        <PdfFrame src={pdf.path} />
+        <PdfFrame src={pdf.path} po={o.id} revision={o.defaultRevisionId || 'current'} />
       {:else}
         <section class="card order-preview--empty">
           <h3>{$t('order.currentPdf')}</h3>

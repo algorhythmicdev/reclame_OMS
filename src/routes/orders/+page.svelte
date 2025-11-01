@@ -14,6 +14,7 @@
   import { BADGE_ICONS, badgeTone } from '$lib/order/badges';
   import Badge from '$lib/ui/Badge.svelte';
   import { currentUser } from '$lib/users/user-store';
+  import { dragging } from '$lib/dnd';
 
   type OrderRow = {
     id: string;
@@ -207,7 +208,21 @@
                   {row.expanded ? '▼' : '▶'}
                 </button>
               </td>
-              <td><a href={row.href} class="order-link">{row.id}</a></td>
+              <td>
+                <a 
+                  href={row.href} 
+                  class="order-link"
+                  draggable="true"
+                  on:dragstart={(e) => {
+                    e.dataTransfer?.setData('text/plain', row.id);
+                    dragging.set({ type: 'po', po: row.id });
+                  }}
+                  on:dragend={() => dragging.set(null)}
+                  aria-grabbed="true"
+                  aria-label={`Drag ${row.id} to a loading day`}>
+                  {row.id}
+                </a>
+              </td>
               <td>{row.client}</td>
               <td>{row.title}</td>
               <td>{row.loadingDate ? row.loadingDate : '—'}</td>

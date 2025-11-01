@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { base } from '$app/paths';
   import Badge from '$lib/ui/Badge.svelte';
   import { t } from 'svelte-i18n';
   import { TERMS } from '$lib/order/names';
@@ -31,5 +32,6 @@
     <a class="tag" href="#logs">{$t('terms.stationLogs')}</a>
     <a class="tag" href="#workstreams">{$t('terms.workstreams')}</a>
     <a class="tag" href="#revisions">{$t('terms.currentRevision')}</a>
+    <a class="tag ghost" href="{base}/orders/{id}/print" target="_blank" rel="noopener">Print pack</a>
   </div>
 </div>

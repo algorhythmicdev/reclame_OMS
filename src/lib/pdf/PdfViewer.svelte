@@ -1,10 +1,13 @@
 <script>
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
+  import PdfAnnotationsLayer from './PdfAnnotationsLayer.svelte';
 
   export let src = '';
   export let maxScale = 3.0; // Allow higher zoom
   export let defaultScale = +(localStorage.getItem('rf_pdf_zoom') || '1.0'); // Load saved zoom
+  export let po = ''; // For annotations
+  export let revision = 'current'; // For annotations
   
   let canvasEl;
   let pageNum = 1;
@@ -199,11 +202,16 @@
   {#if error}
     <div class="tag tag-error" style="margin-bottom:8px">{error}</div>
   {/if}
-  <canvas
-    class="viewer"
-    bind:this={canvasEl}
-    aria-busy={loading}
-  ></canvas>
+  <div class="pdf-stage" style="position:relative">
+    <canvas
+      class="viewer"
+      bind:this={canvasEl}
+      aria-busy={loading}
+    ></canvas>
+    {#if po}
+      <PdfAnnotationsLayer {po} {revision} />
+    {/if}
+  </div>
 </div>
 
 <style>

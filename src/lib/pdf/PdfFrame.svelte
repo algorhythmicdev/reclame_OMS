@@ -3,6 +3,8 @@
   import { t } from 'svelte-i18n';
 
   export let src = '';
+  export let po = '';
+  export let revision = 'current';
 </script>
 
 <div class="pdf-frame card">
@@ -13,7 +15,7 @@
     {/if}
   </div>
   {#if src}
-    <PdfViewer {src} />
+    <PdfViewer {src} {po} {revision} />
   {:else}
     <div class="placeholder muted">{$t('pdf.placeholder')}</div>
   {/if}
