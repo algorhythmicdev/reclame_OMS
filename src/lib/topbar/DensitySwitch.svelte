@@ -1,6 +1,7 @@
 <script lang="ts">
   import { ui } from '$lib/state/ui';
   import { t } from 'svelte-i18n';
+  import PanelTop from 'lucide-svelte/icons/panel-top';
   
   type DensityOption = 'compact' | 'cozy' | 'comfortable';
   type UiState = { theme: string; density: DensityOption; fontScale: number };
@@ -20,7 +21,9 @@
 </script>
 
 <div class="menu">
-  <button class="icon" aria-haspopup="menu" aria-expanded="false" title={$t('ui.density.title','Density')}>D</button>
+  <button class="icon" aria-haspopup="menu" aria-expanded="false" title={$t('ui.density.title','Density')}>
+    <PanelTop size={18} aria-hidden="true"/>
+  </button>
   <div class="dropdown" role="menu">
     {#each opts as o}
       <button role="menuitem" aria-pressed={currentUi?.density===o.k} on:click={()=>set(o.k)}>{o.label()}</button>

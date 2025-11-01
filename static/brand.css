@@ -264,6 +264,11 @@ button.icon{
 :root[data-theme="LightVim"] .muted { color: oklch(0.38 0.03 245); } /* darker captions */
 :root[data-theme="LightVim"] .cal-month-title,
 :root[data-theme="LightVim"] .cal-day .label { color: var(--ink-0); }
+:root[data-theme="LightVim"] .cal .head,
+:root[data-theme="LightVim"] .legend__item { color: oklch(0.38 0.03 245); } /* darker calendar headers */
+:root[data-theme="LightVim"] .cell__date { color: var(--ink-0); } /* ensure date numbers are dark */
+:root[data-theme="LightVim"] .cell__row { color: oklch(0.38 0.03 245); } /* calendar cell metadata */
+:root[data-theme="LightVim"] .rf-topbar nav.main a { color: var(--ink-0); } /* ensure navbar links are visible */
 
 /* Sticky helpers that respect topbar */
 .sticky-top  { position: sticky; top: calc(var(--topbar-h) + 8px); z-index: 5; background: var(--bg-0); }

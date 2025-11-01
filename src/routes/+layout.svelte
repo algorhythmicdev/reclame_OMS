@@ -120,10 +120,7 @@
   <nav class="main">
     <a href="{base}/orders">{$t('nav.orders') || 'Заказы'}</a>
     <a href="{base}/calendar">{$t('nav.calendar') || 'Календарь'}</a>
-    <a href="{base}/loading">{$t('loading.board') || 'Loading'}</a>
     <a href="{base}/inventory">{$t('nav.inventory') || 'Склад'}</a>
-    <a href="{base}/stations">{$t('nav.stations') || 'Станции'}</a>
-    <a href="{base}/assets">{$t('nav.assets') || 'Активы'}</a>
     <a href="{base}/settings">{$t('nav.settings') || 'Настройки'}</a>
   </nav>
   <div class="actions">
