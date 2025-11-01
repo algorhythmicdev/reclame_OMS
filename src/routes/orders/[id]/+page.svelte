@@ -30,7 +30,7 @@
   import StageEditor from '$lib/order/StageEditor.svelte';
   import ReworkQuick from '$lib/order/ReworkQuick.svelte';
   import { adminSendToRework, adminApplyStage, trackStageProposal } from '$lib/order/signage-actions';
-  import { ClipboardList, Boxes, CalendarDays } from 'lucide-svelte';
+  import { ClipboardList, Boxes, CalendarDays, FileText, Activity, FlaskConical } from 'lucide-svelte';
   import { setTicketRedo } from '$lib/stations/store';
 
   import type { Order, StationLog, Badge } from '$lib/order/types.signage';
@@ -458,7 +458,10 @@
       {/if}
 
       <section class="card">
-        <h3>Overview</h3>
+        <h3 class="order-detail__heading">
+          <FileText size={18} aria-hidden="true" />
+          Overview
+        </h3>
         <div class="grid" style="--cols:2">
           <label>Client <input bind:value={o.client}></label>
           <label>Project <input bind:value={o.title}></label>
@@ -482,7 +485,10 @@
 
       <section class="card">
         <div class="row" style="justify-content:space-between;align-items:center">
-          <h3>{$t('orders.status')}</h3>
+          <h3 class="order-detail__heading">
+            <Activity size={18} aria-hidden="true" />
+            {$t('orders.status')}
+          </h3>
           <label class="row" style="gap:6px"><input type="checkbox" bind:checked={o.isRD}> {$t('orders.rd')}</label>
         </div>
 
@@ -526,7 +532,10 @@
 
       {#if o.isRD}
         <section class="card order-detail order-detail--rd">
-          <h3>{$t('rd.flag')}</h3>
+          <h3 class="order-detail__heading">
+            <FlaskConical size={18} aria-hidden="true" />
+            {$t('rd.flag')}
+          </h3>
           <p class="muted">{o.rdNotes || '—'}</p>
         </section>
       {/if}
