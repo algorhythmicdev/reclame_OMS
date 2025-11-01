@@ -189,7 +189,6 @@ export function createItem(partial: Partial<Item> = {}): Item {
     unit: 'PCS',
     stock: 0,
     min: 0,
-    updatedAt: timestamp,
     ...partial,
     updatedAt: timestamp
   };

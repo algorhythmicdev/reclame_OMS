@@ -3,7 +3,6 @@
   import Home from 'lucide-svelte/icons/layout-dashboard';
   import Calendar from 'lucide-svelte/icons/calendar';
   import Boxes from 'lucide-svelte/icons/boxes';
-  import Factory from 'lucide-svelte/icons/factory';
   import Cog from 'lucide-svelte/icons/settings';
 </script>
 
@@ -11,7 +10,6 @@
   <a href="{base}/"><Home/></a>
   <a href="{base}/calendar"><Calendar/></a>
   <a href="{base}/inventory"><Boxes/></a>
-  <a href="{base}/stations"><Factory/></a>
   <a href="{base}/settings"><Cog/></a>
 </nav>
 

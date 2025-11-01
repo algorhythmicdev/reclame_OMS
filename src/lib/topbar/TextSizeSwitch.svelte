@@ -1,6 +1,8 @@
 <script lang="ts">
   import { ui } from '$lib/state/ui';
   import Type from 'lucide-svelte/icons/type';
+  import AArrowDown from 'lucide-svelte/icons/a-arrow-down';
+  import AArrowUp from 'lucide-svelte/icons/a-arrow-up';
   
   const steps = [0.90, 1.00, 1.10, 1.20, 1.30];
   
@@ -14,8 +16,8 @@
 </script>
 
 <div class="row">
-  <button class="icon" aria-label="Smaller text" on:click={dec}>T</button>
-  <button class="icon" aria-label="Larger text" on:click={inc}><strong>T</strong></button>
+  <button class="icon" aria-label="Smaller text" on:click={dec}><AArrowDown size={18} aria-hidden="true"/></button>
+  <button class="icon" aria-label="Larger text" on:click={inc}><AArrowUp size={18} aria-hidden="true"/></button>
 </div>
 
 <style>

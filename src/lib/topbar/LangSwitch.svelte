@@ -1,15 +1,22 @@
 <script>
   import Languages from 'lucide-svelte/icons/languages';
-  const browser = typeof window !== 'undefined';
-  let v = browser ? localStorage.getItem('rf_lang') || 'en' : 'en';
+  import { setLocale, locale } from '$lib/i18n';
+  import { onMount } from 'svelte';
+  
+  let v = 'en';
   const langs=[{id:'en',label:'EN'},{id:'ru',label:'RU'},{id:'lv',label:'LV'}];
+  
+  onMount(() => {
+    // Subscribe to locale to keep v in sync
+    const unsubscribe = locale.subscribe(val => {
+      if (val) v = val;
+    });
+    return unsubscribe;
+  });
+  
   function set(id){
-    v=id;
-    if (!browser) return;
-    document.documentElement.lang=id;
-    localStorage.setItem('rf_lang',id);
+    setLocale(id);
   }
-  $: if (browser && !document.documentElement.lang) set(v);
 </script>
 <div class="menu">
   <button class="icon" aria-haspopup="menu" aria-expanded="false" aria-label="Language"><Languages aria-hidden="true"/><span class="badge">{v.toUpperCase()}</span></button>
