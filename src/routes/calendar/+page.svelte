@@ -239,12 +239,12 @@
 
 .cal-card{ 
   container-type:inline-size;
-  padding: 0 !important;
+  padding: 0;
 }
 
 .cal-header-sticky {
   position: sticky;
-  top: calc(var(--topbar-h, 56px) + 8px);
+  top: calc(var(--topbar-h, 56px) + var(--space-sm));
   z-index: 10;
   background: var(--bg-1);
   border-bottom: 1px solid var(--border);
@@ -256,7 +256,7 @@
 .cal-header-content {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-md);
 }
 
 .cal-header-title {

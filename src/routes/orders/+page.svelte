@@ -351,8 +351,15 @@
   }
 
   .badge-text {
-    display: inline;
+    display: none;
     font-size: 0.75rem;
+  }
+  
+  /* Show badge text on wider screens */
+  @media (min-width: 1024px) {
+    .badge-text {
+      display: inline;
+    }
   }
   
   /* Scale down table font sizes for better fit */
