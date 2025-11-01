@@ -34,5 +34,11 @@ export async function setupI18n(defaultLocale: LocaleCode = 'en') {
 export function setLocale(code: LocaleCode | string) {
   const normalized = normalizeLocale(code, 'en');
   locale.set(normalized);
-  if (typeof window !== 'undefined') localStorage.setItem(KEY, normalized);
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(KEY, normalized);
+    document.documentElement.lang = normalized;
+  }
 }
+
+// Re-export locale for compatibility
+export { locale };

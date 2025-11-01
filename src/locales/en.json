@@ -709,7 +709,16 @@
     "download_cdr": "Download CDR"
   },
   "ui": {
-    "density": { "compact": "Compact", "cozy": "Cozy", "comfortable": "Comfortable" },
+    "density": { 
+      "title": "Density",
+      "compact": "Compact", 
+      "cozy": "Cozy", 
+      "comfortable": "Comfortable" 
+    },
+    "quickCreate": "Quick create",
+    "notifications": "Notifications",
+    "chat": "Team chat",
+    "textsize": "Text size",
     "new_loading": "New loading",
     "new_meeting": "New meeting",
     "new_note": "New note",

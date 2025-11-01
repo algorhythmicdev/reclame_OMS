@@ -708,7 +708,16 @@
     "download_cdr": "Скачать CDR"
   },
   "ui": {
-    "density": { "compact": "Компактно", "cozy": "Уютно", "comfortable": "Комфортно" },
+    "density": { 
+      "title": "Плотность",
+      "compact": "Компактно", 
+      "cozy": "Уютно", 
+      "comfortable": "Комфортно" 
+    },
+    "quickCreate": "Быстрое создание",
+    "notifications": "Уведомления",
+    "chat": "Чат команды",
+    "textsize": "Размер текста",
     "new_loading": "Новая загрузка",
     "new_meeting": "Новая встреча",
     "new_note": "Новая заметка",
