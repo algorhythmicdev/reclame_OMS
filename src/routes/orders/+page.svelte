@@ -15,6 +15,7 @@
   import Badge from '$lib/ui/Badge.svelte';
   import { currentUser } from '$lib/users/user-store';
   import { dragging } from '$lib/dnd';
+  import { Plus, FilePlus } from 'lucide-svelte';
 
   type OrderRow = {
     id: string;
@@ -149,11 +150,13 @@
     <div class="row" style="gap:8px; align-items:center">
       {#if isSuperAdmin}
         <button class="tag" on:click={() => (draftFormOpen = true)}>
+          <FilePlus size={14} aria-hidden="true" />
           {$t('draft.add')}
         </button>
       {/if}
       {#if isAdmin}
         <button class="tag" on:click={() => (formOpen = true)}>
+          <Plus size={14} aria-hidden="true" />
           {$t('orderLists.new')}
         </button>
       {/if}
