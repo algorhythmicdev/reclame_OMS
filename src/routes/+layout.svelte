@@ -127,12 +127,12 @@
     <a href="{base}/settings">{$t('nav.settings') || 'Настройки'}</a>
   </nav>
   <div class="actions">
-    <LangSwitch />
-    <TextSizeSwitch />
-    <DensitySwitch />
-    <ThemeSwitch />
-    <NotificationsBell />
-    <ChatPopover />
+    <div title={$t('topbar.language', 'Language')}><LangSwitch /></div>
+    <div title={$t('ui.textsize', 'Text size')}><TextSizeSwitch /></div>
+    <div title={$t('ui.density.title', 'Density')}><DensitySwitch /></div>
+    <div title={$t('topbar.theme', 'Theme')}><ThemeSwitch /></div>
+    <div title={$t('ui.notifications', 'Notifications')}><NotificationsBell /></div>
+    <div title={$t('ui.chat', 'Team chat')}><ChatPopover /></div>
     <UserSwitch />
   </div>
 </header>
