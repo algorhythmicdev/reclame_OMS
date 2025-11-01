@@ -31,5 +31,6 @@
     <a class="tag" href="#logs">{$t('terms.stationLogs')}</a>
     <a class="tag" href="#workstreams">{$t('terms.workstreams')}</a>
     <a class="tag" href="#revisions">{$t('terms.currentRevision')}</a>
+    <a class="tag ghost" href="/reclame_OMS/orders/{id}/print" target="_blank" rel="noopener">Print pack</a>
   </div>
 </div>
