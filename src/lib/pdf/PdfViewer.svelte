@@ -5,7 +5,7 @@
 
   export let src = '';
   export let maxScale = 3.0; // Allow higher zoom
-  export let defaultScale = +(localStorage.getItem('rf_pdf_zoom') || '1.0'); // Load saved zoom
+  export let defaultScale = 1.0;
   export let po = ''; // For annotations
   export let revision = 'current'; // For annotations
   
@@ -112,7 +112,9 @@
 
   function setZoom(z) {
     scale = Math.min(maxScale, Math.max(0.5, +z.toFixed(2)));
-    localStorage.setItem('rf_pdf_zoom', String(scale));
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('rf_pdf_zoom', String(scale));
+    }
     render();
   }
 
@@ -130,6 +132,14 @@
 
   onMount(() => {
     mounted = true;
+    
+    // Load saved zoom preference
+    if (typeof window !== 'undefined') {
+      const savedZoom = localStorage.getItem('rf_pdf_zoom');
+      if (savedZoom) {
+        scale = +savedZoom || 1.0;
+      }
+    }
     
     // ResizeObserver to fit PDF to width on container resize
     ro = new ResizeObserver(() => {
