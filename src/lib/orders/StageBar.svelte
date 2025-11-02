@@ -11,5 +11,9 @@
 </div>
 
 <style>
-.wrap{ display:flex; flex-wrap:wrap; gap:6px }
+.wrap{
+  display:flex;
+  flex-wrap:wrap;
+  gap:var(--space-tight);
+}
 </style>

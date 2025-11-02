@@ -7,7 +7,7 @@
 
 <style>
 .badge{
-  padding:6px 10px;
+  padding:calc(var(--space-xs) + var(--space-xxs)) calc(var(--space-sm) + var(--space-xs));
   border-radius:999px;
   font-size:.82rem;
   border:1px solid var(--border);
@@ -15,8 +15,13 @@
   color:var(--text);
   display:inline-flex;
   align-items:center;
-  gap:6px;
+  gap:var(--space-xs);
   line-height:1;
+}
+
+.badge :global(svg){
+  width:var(--icon-size);
+  height:var(--icon-size);
 }
 .badge[data-tone="primary"]{
   background:color-mix(in oklab, var(--accent-1) 18%, transparent);

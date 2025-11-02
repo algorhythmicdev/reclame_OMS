@@ -9,8 +9,18 @@
 </span>
 
 <style>
-.pill{ display:inline-flex; align-items:center; gap:6px; padding:4px 8px; border:1px solid var(--border); border-radius:999px; }
+.pill{
+  display:inline-flex;
+  align-items:center;
+  gap:var(--space-tight);
+  padding:var(--space-xs) var(--space-sm);
+  border:1px solid var(--border);
+  border-radius:var(--radius-full);
+}
 .pill[data-done="true"]{ background: var(--ok); color:white; border-color: color-mix(in oklab,var(--ok) 80%, black); }
-.pill[data-redo="true"]{ outline:2px dashed var(--warn); outline-offset:2px; }
+.pill[data-redo="true"]{
+  outline:calc(2px * var(--font-scale, 1)) dashed var(--warn);
+  outline-offset:var(--space-xxs);
+}
 .pill small{ font-size:.8em; opacity:.9 }
 </style>

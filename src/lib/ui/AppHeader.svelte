@@ -118,8 +118,8 @@
     display: grid;
     grid-template-columns: auto 1fr auto;
     align-items: center;
-    gap: 24px;
-    padding: 12px clamp(16px, 3vw, 28px);
+    gap: var(--space-xl);
+    padding: var(--space-md) clamp(var(--space-lg), 3vw, calc(var(--space-xl) + var(--space-xs)));
     background: var(--bg-1);
     border-bottom: 1px solid var(--border);
   }
@@ -131,20 +131,20 @@
   .brand-link {
     display: inline-flex;
     align-items: center;
-    gap: 10px;
+    gap: var(--space-snug);
     text-decoration: none;
   }
 
   .brand-logo {
-    height: 36px;
+    height: var(--avatar-lg);
     width: auto;
     object-fit: contain;
   }
 
   .notif {
     position: relative;
-    width: 28px;
-    height: 28px;
+    width: var(--control-xs);
+    height: var(--control-xs);
     display: grid;
     place-items: center;
     border: 1px solid var(--border);
@@ -154,18 +154,18 @@
   }
 
   .notif :global(svg) {
-    width: 18px;
-    height: 18px;
+    width: var(--icon-size);
+    height: var(--icon-size);
   }
 
   .notif .dot {
-    width: 8px;
-    height: 8px;
+    width: var(--space-sm);
+    height: var(--space-sm);
     border-radius: 999px;
     background: var(--accent-1);
     position: absolute;
-    top: 2px;
-    right: 2px;
+    top: var(--space-xxs);
+    right: var(--space-xxs);
   }
 
   .user {
@@ -175,17 +175,17 @@
   .user-btn {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: var(--space-sm);
     background: transparent;
     border: 1px solid var(--border);
     border-radius: 999px;
-    padding: 4px 8px;
+    padding: var(--space-xs) var(--space-sm);
     color: var(--text);
   }
 
   .avatar {
-    width: 22px;
-    height: 22px;
+    width: var(--avatar-xs);
+    height: var(--avatar-xs);
     border-radius: 999px;
     background: var(--bg-2);
   }
@@ -193,17 +193,17 @@
   .menu {
     position: absolute;
     right: 0;
-    margin-top: 6px;
-    min-width: 240px;
+    margin-top: var(--space-tight);
+    min-width: calc(240px * var(--font-scale, 1));
     background: var(--bg-1);
     border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 8px;
+    border-radius: calc(var(--radius-md) - var(--space-xxs));
+    padding: var(--space-sm);
     z-index: 50;
   }
 
   .menu-row {
-    margin: 6px 0;
+    margin: var(--space-tight) 0;
   }
 
   .app-header__nav {

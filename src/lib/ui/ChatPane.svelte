@@ -190,33 +190,33 @@
 </div>
 
 <style>
-  .chat-panel{ gap:16px; padding:16px }
-  .chat-header{ display:grid; gap:16px }
-  .chat-header__intro{ display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap }
+  .chat-panel{ gap:var(--space-lg); padding:var(--space-lg) }
+  .chat-header{ display:grid; gap:var(--space-lg) }
+  .chat-header__intro{ display:flex; justify-content:space-between; align-items:center; gap:var(--space-md); flex-wrap:wrap }
   .chat-title{ font-weight:800; font-size:1.05rem }
-  .chat-current{ display:flex; align-items:center; gap:10px; background:color-mix(in oklab,var(--bg-2) 75%, transparent); padding:8px 12px; border-radius:14px; border:1px solid color-mix(in oklab,var(--border) 85%, transparent) }
-  .chat-avatar{ width:32px; height:32px; border-radius:12px; display:grid; place-items:center; background:linear-gradient(135deg,var(--accent-2),color-mix(in oklab,var(--accent-2) 60%, var(--bg-2))); color:#fff; font-weight:700 }
-  .chat-current__info{ display:flex; flex-direction:column; gap:4px; font-size:.85rem }
-  .rooms{ display:flex; flex-wrap:wrap; gap:8px }
-  .rooms .tag{ border-radius:12px; font-size:.8rem }
+  .chat-current{ display:flex; align-items:center; gap:var(--space-snug); background:color-mix(in oklab,var(--bg-2) 75%, transparent); padding:var(--space-sm) var(--space-md); border-radius:var(--radius-lg); border:1px solid color-mix(in oklab,var(--border) 85%, transparent) }
+  .chat-avatar{ width:var(--avatar-md); height:var(--avatar-md); border-radius:var(--radius-md); display:grid; place-items:center; background:linear-gradient(135deg,var(--accent-2),color-mix(in oklab,var(--accent-2) 60%, var(--bg-2))); color:#fff; font-weight:700 }
+  .chat-current__info{ display:flex; flex-direction:column; gap:var(--space-xs); font-size:.85rem }
+  .rooms{ display:flex; flex-wrap:wrap; gap:var(--space-sm) }
+  .rooms .tag{ border-radius:var(--radius-lg); font-size:.8rem }
 
-  .messages{ display:grid; gap:12px; min-height:0 }
-  .message{ display:flex; flex-direction:column; gap:10px; background:var(--bg-1); border:1px solid color-mix(in oklab,var(--border) 80%, transparent); padding:16px; box-shadow:0 12px 28px rgba(var(--shadow-rgb)/.12) }
+  .messages{ display:grid; gap:var(--space-md); min-height:0 }
+  .message{ display:flex; flex-direction:column; gap:var(--space-snug); background:var(--bg-1); border:1px solid color-mix(in oklab,var(--border) 80%, transparent); padding:var(--space-lg); box-shadow:0 12px 28px rgba(var(--shadow-rgb)/.12) }
   .message[data-mention="true"]{ border-color:color-mix(in oklab,var(--info) 40%, transparent); box-shadow:0 16px 34px rgba(var(--shadow-rgb)/.16) }
   .message--system{ border-left:4px solid var(--accent-1); background:color-mix(in oklab,var(--bg-1) 70%, var(--accent-2) 30%) }
-  .message-head{ display:flex; flex-direction:column; gap:8px }
-  .message-meta{ display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap }
-  .message-persona{ display:flex; align-items:flex-start; gap:10px }
-  .message-avatar{ width:28px; height:28px; border-radius:10px; display:grid; place-items:center; background:color-mix(in oklab,var(--bg-2) 80%, transparent); font-size:.8rem; font-weight:700; color:var(--text) }
-  .message-author{ display:grid; gap:4px; font-size:.85rem }
+  .message-head{ display:flex; flex-direction:column; gap:var(--space-sm) }
+  .message-meta{ display:flex; justify-content:space-between; align-items:flex-start; gap:var(--space-md); flex-wrap:wrap }
+  .message-persona{ display:flex; align-items:flex-start; gap:var(--space-snug) }
+  .message-avatar{ width:var(--avatar-sm); height:var(--avatar-sm); border-radius:var(--radius-md); display:grid; place-items:center; background:color-mix(in oklab,var(--bg-2) 80%, transparent); font-size:.8rem; font-weight:700; color:var(--text) }
+  .message-author{ display:grid; gap:var(--space-xs); font-size:.85rem }
   .message-time{ font-size:.75rem }
-  .message-recipients{ display:flex; flex-wrap:wrap; gap:6px; align-items:center }
-  .message-body{ margin:0; background:color-mix(in oklab,var(--bg-2) 80%, transparent); padding:12px; border-radius:12px; line-height:1.45 }
-  .system-event{ display:grid; gap:8px; background:color-mix(in oklab,var(--bg-2) 80%, transparent); padding:12px; border-radius:12px }
-  .system-headline{ display:flex; flex-wrap:wrap; gap:6px; align-items:center }
-  .system-tags{ display:flex; flex-wrap:wrap; gap:6px }
+  .message-recipients{ display:flex; flex-wrap:wrap; gap:var(--space-tight); align-items:center }
+  .message-body{ margin:0; background:color-mix(in oklab,var(--bg-2) 80%, transparent); padding:var(--space-md); border-radius:var(--radius-md); line-height:1.45 }
+  .system-event{ display:grid; gap:var(--space-sm); background:color-mix(in oklab,var(--bg-2) 80%, transparent); padding:var(--space-md); border-radius:var(--radius-md) }
+  .system-headline{ display:flex; flex-wrap:wrap; gap:var(--space-tight); align-items:center }
+  .system-tags{ display:flex; flex-wrap:wrap; gap:var(--space-tight) }
   .system-body{ margin:0; line-height:1.5 }
-  .system-note{ margin:0; display:flex; gap:6px; font-size:.85rem; align-items:flex-start }
+  .system-note{ margin:0; display:flex; gap:var(--space-tight); font-size:.85rem; align-items:flex-start }
 
   @media (max-width: 720px){
     .chat-header__intro{ align-items:flex-start }
