@@ -21,9 +21,11 @@
   import { startPreferenceUrlSync } from '$lib/settings/url-sync';
   import { ui } from '$lib/state/ui';
   import { setLocale } from '$lib/i18n';
+  import { Menu, X } from 'lucide-svelte';
 
   let searchOpen = false;
   let showKb = false;
+  let mobileMenuOpen = false;
 
   const openSearch = () => {
     searchOpen = true;
@@ -117,11 +119,18 @@
 
 <header class="rf-topbar">
   <a href="{base}/" class="brand"><Logo /></a>
-  <nav class="main">
-    <a href="{base}/orders">{$t('nav.orders') || 'Заказы'}</a>
-    <a href="{base}/calendar">{$t('nav.calendar') || 'Календарь'}</a>
-    <a href="{base}/inventory">{$t('nav.inventory') || 'Склад'}</a>
-    <a href="{base}/settings">{$t('nav.settings') || 'Настройки'}</a>
+  <button class="mobile-menu-btn" on:click={() => mobileMenuOpen = !mobileMenuOpen} aria-label="Toggle menu" aria-expanded={mobileMenuOpen}>
+    {#if mobileMenuOpen}
+      <X size={24} />
+    {:else}
+      <Menu size={24} />
+    {/if}
+  </button>
+  <nav class="main" class:mobile-open={mobileMenuOpen}>
+    <a href="{base}/orders" on:click={() => mobileMenuOpen = false}>{$t('nav.orders') || 'Заказы'}</a>
+    <a href="{base}/calendar" on:click={() => mobileMenuOpen = false}>{$t('nav.calendar') || 'Календарь'}</a>
+    <a href="{base}/inventory" on:click={() => mobileMenuOpen = false}>{$t('nav.inventory') || 'Склад'}</a>
+    <a href="{base}/settings" on:click={() => mobileMenuOpen = false}>{$t('nav.settings') || 'Настройки'}</a>
   </nav>
   <div class="actions">
     <div title={$t('topbar.language', 'Language')}><LangSwitch /></div>
@@ -198,6 +207,21 @@
   gap:8px;
 }
 
+.rf-topbar .mobile-menu-btn{
+  display:none;
+  background:transparent;
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:6px;
+  cursor:pointer;
+  color:var(--text);
+  transition:background 0.2s ease;
+}
+
+.rf-topbar .mobile-menu-btn:hover{
+  background:color-mix(in oklab,var(--bg-2) 70%,var(--bg-1) 30%);
+}
+
 @media (max-width: 1280px){
   .rf-topbar{
     gap:16px;
@@ -209,19 +233,61 @@
 
 @media (max-width: 720px){
   .rf-topbar{
-    flex-wrap:wrap;
+    flex-wrap:nowrap;
     padding:10px 16px;
     gap:12px;
+    position:relative;
   }
+  
   .rf-topbar .brand{
-    order:1;
+    flex:1;
   }
-  .rf-topbar nav.main{
+  
+  .rf-topbar .mobile-menu-btn{
+    display:flex;
+    align-items:center;
+    justify-content:center;
     order:3;
-    width:100%;
   }
+  
+  .rf-topbar nav.main{
+    position:absolute;
+    top:100%;
+    left:0;
+    right:0;
+    background:var(--bg-1);
+    border-bottom:1px solid var(--border);
+    flex-direction:column;
+    gap:0;
+    padding:0;
+    display:none;
+    box-shadow:0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+    z-index:100;
+  }
+  
+  .rf-topbar nav.main.mobile-open{
+    display:flex;
+  }
+  
+  .rf-topbar nav.main a{
+    padding:16px 20px;
+    border-radius:0;
+    border-bottom:1px solid var(--border);
+    width:100%;
+    text-align:left;
+  }
+  
+  .rf-topbar nav.main a:last-child{
+    border-bottom:none;
+  }
+  
   .rf-topbar .actions{
     order:2;
+    gap:4px;
+  }
+  
+  .rf-topbar .actions > div:not(:has(.user-switch)){
+    display:none;
   }
 }
 </style>

@@ -12,6 +12,11 @@
   import Plus from 'lucide-svelte/icons/plus';
   import Edit from 'lucide-svelte/icons/pencil';
   import Trash from 'lucide-svelte/icons/trash-2';
+  import Upload from 'lucide-svelte/icons/upload';
+  import ScanBarcodeIcon from 'lucide-svelte/icons/scan-barcode';
+  import Download from 'lucide-svelte/icons/download';
+  import PackagePlus from 'lucide-svelte/icons/package-plus';
+  import ArrowRightLeft from 'lucide-svelte/icons/arrow-right-left';
 
   let q = '';
   let list: Item[] = [];
@@ -102,11 +107,26 @@
       />
     </div>
     <div class="row">
-      <button class="tag" on:click={()=>showImport=!showImport}>{$t('inv.import') || 'Bulk import'}</button>
-      <button class="tag" on:click={()=>showScan=!showScan}>{$t('inv.scan') || 'Scan barcode'}</button>
-      <button class="tag" on:click={exportCSV}>Export CSV</button>
-      <a class="tag" href={`${base}/inventory/new`}>{$t('inventory.add_item')}</a>
-      <a class="tag" href={`${base}/inventory/movements`}>{$t('inventory.movements')}</a>
+      <button class="tag" on:click={()=>showImport=!showImport}>
+        <Upload size={14} aria-hidden="true" />
+        {$t('inv.import') || 'Bulk import'}
+      </button>
+      <button class="tag" on:click={()=>showScan=!showScan}>
+        <ScanBarcodeIcon size={14} aria-hidden="true" />
+        {$t('inv.scan') || 'Scan barcode'}
+      </button>
+      <button class="tag" on:click={exportCSV}>
+        <Download size={14} aria-hidden="true" />
+        Export CSV
+      </button>
+      <a class="tag" href={`${base}/inventory/new`}>
+        <PackagePlus size={14} aria-hidden="true" />
+        {$t('inventory.add_item')}
+      </a>
+      <a class="tag" href={`${base}/inventory/movements`}>
+        <ArrowRightLeft size={14} aria-hidden="true" />
+        {$t('inventory.movements')}
+      </a>
     </div>
   </div>
 </section>
