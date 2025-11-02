@@ -142,30 +142,30 @@
 </script>
 
 <section class="card">
-  <div class="row" style="justify-content:space-between; align-items:center;">
-    <div style="display: flex; align-items: center; gap: 8px;">
-      <h2 style="margin:0">{$t('orderLists.title')}</h2>
+  <div class="row header-row">
+    <div class="row title-row">
+      <h2 class="card-title">{$t('orderLists.title')}</h2>
       <Tooltip text="Click column headers to sort. Click the arrow button to expand order details." />
     </div>
-    <div class="row" style="gap:8px; align-items:center">
+    <div class="row actions-row">
       {#if isSuperAdmin}
         <button class="tag" on:click={() => (draftFormOpen = true)}>
-          <FilePlus size={14} aria-hidden="true" />
+          <FilePlus aria-hidden="true" />
           {$t('draft.add')}
         </button>
       {/if}
       {#if isAdmin}
         <button class="tag" on:click={() => (formOpen = true)}>
-          <Plus size={14} aria-hidden="true" />
+          <Plus aria-hidden="true" />
           {$t('orderLists.new')}
         </button>
       {/if}
-      <div style="width:280px">
+      <div class="filter-field">
         <Input bind:value={q} placeholder={$t('orderLists.filter_placeholder')} ariaLabel={$t('orderLists.filter_label')} />
       </div>
     </div>
   </div>
-  <div style="margin-top:12px">
+  <div class="table-wrapper">
     <div class="rf-scroll" style="max-height:60vh">
       <table class="rf-table orders-table">
         <thead>
@@ -236,7 +236,7 @@
                     {#each row.badges as badge}
                       {@const label = badgeLabel(badge)}
                       <Badge tone={badgeTone(badge)} label={label}>
-                        <svelte:component this={BADGE_ICONS[badge]} size={14} aria-hidden="true" />
+                        <svelte:component this={BADGE_ICONS[badge]} aria-hidden="true" />
                         <span class="badge-text">{label}</span>
                       </Badge>
                     {/each}
@@ -271,7 +271,7 @@
                           {#each row.badges as badge}
                             {@const label = badgeLabel(badge)}
                             <Badge tone={badgeTone(badge)} label={label}>
-                              <svelte:component this={BADGE_ICONS[badge]} size={14} aria-hidden="true" />
+                              <svelte:component this={BADGE_ICONS[badge]} aria-hidden="true" />
                               <span>{label}</span>
                             </Badge>
                           {/each}
@@ -299,6 +299,34 @@
 <DraftOrderForm bind:open={draftFormOpen} onClose={() => { draftFormOpen = false; refresh(); }} />
 
 <style>
+  .header-row {
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-md);
+  }
+
+  .title-row {
+    align-items: center;
+    gap: var(--space-sm);
+  }
+
+  .card-title {
+    margin: 0;
+  }
+
+  .actions-row {
+    align-items: center;
+    gap: var(--space-sm);
+  }
+
+  .filter-field {
+    width: min(18rem, 100%);
+  }
+
+  .table-wrapper {
+    margin-top: var(--space-md);
+  }
+
   .orders-table :global(th.sortable) {
     cursor: pointer;
     user-select: none;
@@ -325,15 +353,15 @@
     background: transparent;
     border: none;
     cursor: pointer;
-    font-size: 0.8rem;
-    padding: 4px 8px;
+    font-size: 0.85rem;
+    padding: var(--space-xs) var(--space-sm);
     color: var(--text);
     transition: transform 0.2s ease;
   }
 
   .expand-btn:hover {
     background-color: color-mix(in oklab, var(--bg-1) 85%, var(--text));
-    border-radius: 4px;
+    border-radius: var(--radius-sm);
   }
 
   .order-link {
@@ -349,7 +377,7 @@
   .badges-cell {
     display: flex;
     flex-wrap: wrap;
-    gap: 4px;
+    gap: var(--space-xs);
     align-items: center;
   }
 
@@ -357,22 +385,22 @@
     display: none;
     font-size: 0.75rem;
   }
-  
+
   /* Show badge text on wider screens */
-  @media (min-width: 1024px) {
+  @media (min-width: 64rem) {
     .badge-text {
       display: inline;
     }
   }
-  
+
   /* Scale down table font sizes for better fit */
   .orders-table {
-    font-size: 0.9rem;
+    font-size: 0.95rem;
   }
-  
+
   .orders-table td,
   .orders-table th {
-    padding: 8px;
+    padding: var(--space-sm);
   }
 
   .expanded-row {
@@ -380,14 +408,14 @@
   }
 
   .expanded-content {
-    padding: 16px;
+    padding: var(--space-lg);
     display: grid;
-    gap: 16px;
+    gap: var(--space-lg);
   }
 
   .expanded-section {
     display: grid;
-    gap: 8px;
+    gap: var(--space-sm);
   }
 
   .expanded-section h4 {
@@ -400,8 +428,8 @@
 
   .stages-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 8px;
+    grid-template-columns: repeat(auto-fill, minmax(12.5rem, 1fr));
+    gap: var(--space-sm);
   }
 
   .stage-item {
@@ -415,27 +443,27 @@
   .badges-expanded {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: var(--space-sm);
   }
 
   .expanded-actions {
     display: flex;
     justify-content: flex-end;
-    padding-top: 8px;
+    padding-top: var(--space-sm);
     border-top: 1px solid var(--border);
   }
 
   /* Mobile responsive improvements */
-  @media (max-width: 768px) {
+  @media (max-width: 48rem) {
     .orders-table {
-      font-size: 0.85rem;
+      font-size: 0.9rem;
     }
-    
+
     .orders-table td,
     .orders-table th {
-      padding: 6px 4px;
+      padding: calc(var(--space-xs) + var(--space-xxs)) var(--space-xs);
     }
-    
+
     /* Hide less important columns on mobile */
     .orders-table th:nth-child(4), /* Title */
     .orders-table td:nth-child(4),
@@ -443,27 +471,27 @@
     .orders-table td:nth-child(5) {
       display: none;
     }
-    
+
     .badges-cell {
       flex-direction: column;
       align-items: flex-start;
-      gap: 2px;
+      gap: var(--space-xxs);
     }
-    
+
     .stages-grid {
       grid-template-columns: 1fr;
     }
-    
+
     .expanded-content {
-      padding: 12px;
+      padding: var(--space-md);
     }
   }
-  
-  @media (max-width: 480px) {
+
+  @media (max-width: 30rem) {
     .orders-table {
-      font-size: 0.8rem;
+      font-size: 0.85rem;
     }
-    
+
     /* Show only essential columns on very small screens */
     .orders-table th:nth-child(3), /* Client */
     .orders-table td:nth-child(3),
@@ -471,7 +499,7 @@
     .orders-table td:nth-child(6) {
       display: none;
     }
-    
+
     .badges-cell :global(.badge) {
       font-size: 0.7rem;
     }

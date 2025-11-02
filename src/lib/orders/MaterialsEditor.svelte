@@ -63,7 +63,7 @@
   }
 </script>
 
-<div class="row" style="justify-content:space-between;align-items:center">
+<div class="row materials-head">
   <h3>Materials</h3>
   <button class="tag" on:click={add}>Add material</button>
 </div>
@@ -127,23 +127,21 @@
             on:change={(e) => handleQtyChange(r.id, e)}
           />
         </td>
-        <td class="row">
-          <input 
-            type="number" 
-            min="0" 
-            step="1" 
-            style="width:90px" 
-            placeholder="W" 
-            value={r.dims?.w} 
+        <td class="row dims">
+          <input
+            type="number"
+            min="0"
+            step="1"
+            placeholder="W"
+            value={r.dims?.w}
             on:change={(e) => handleWidthChange(r.id, e, r.dims)}
           />
-          <input 
-            type="number" 
-            min="0" 
-            step="1" 
-            style="width:90px" 
-            placeholder="H" 
-            value={r.dims?.h} 
+          <input
+            type="number"
+            min="0"
+            step="1"
+            placeholder="H"
+            value={r.dims?.h}
             on:change={(e) => handleHeightChange(r.id, e, r.dims)}
           />
         </td>
@@ -163,7 +161,7 @@
 
 <!-- Color swatch preview (non-text contrast ≥3:1 handled by border token) -->
 {#if rows.some(r => r.colorSystem === 'HEX' && r.colorCode?.match(/^#?[0-9a-fA-F]{6}$/))}
-  <div class="row" style="flex-wrap:wrap;gap:8px;margin-top:8px">
+  <div class="row swatch-row">
     {#each rows.filter(r => r.colorSystem === 'HEX' && r.colorCode?.match(/^#?[0-9a-fA-F]{6}$/)) as r}
       <div class="chip" style={`--chip:${r.colorCode?.startsWith('#') ? r.colorCode : '#' + r.colorCode}`}>
         <span class="dot" aria-hidden="true"></span><span>{r.colorCode}</span>
@@ -173,24 +171,52 @@
 {/if}
 
 <style>
-select, input {
+.materials-head {
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-sm);
+}
+
+select,
+input {
   background: var(--bg-0);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 6px;
+  border-radius: var(--radius-sm);
+  font: inherit;
+  min-height: var(--control-sm);
+  padding: 0 var(--space-sm);
   color: var(--text);
+  inline-size: 100%;
 }
+
+.dims {
+  gap: var(--space-xs);
+}
+
+.dims input {
+  inline-size: calc(90px * var(--font-scale, 1));
+  min-inline-size: calc(7ch + var(--space-sm));
+}
+
 .chip {
   display: flex;
-  gap: 8px;
+  gap: var(--space-xs);
   align-items: center;
   border: 1px solid var(--border);
-  border-radius: 999px;
-  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  padding: var(--space-xs) var(--space-snug);
 }
+
+.swatch-row {
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  margin-top: var(--space-sm);
+}
+
 .dot {
-  width: 14px;
-  height: 14px;
+  width: calc(14px * var(--font-scale, 1));
+  height: calc(14px * var(--font-scale, 1));
   border-radius: 50%;
   background: var(--chip);
   outline: 1px solid var(--border);
@@ -199,8 +225,10 @@ select, input {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 4px;
-  border-radius: 6px;
+  min-inline-size: var(--control-xs);
+  min-block-size: var(--control-xs);
+  padding: var(--space-xs);
+  border-radius: calc(var(--radius-sm) - var(--space-xxs));
   border: 1px solid var(--border);
   background: var(--bg-0);
   color: var(--text);

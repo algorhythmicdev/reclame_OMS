@@ -176,13 +176,13 @@
     align-items: center;
     background: var(--bg-0);
     border: 1px solid color-mix(in oklab, var(--border) 85%, transparent);
-    border-radius: 10px;
+    border-radius: calc(var(--radius-md) - var(--space-xxs));
     color: var(--text);
     cursor: pointer;
     display: inline-flex;
-    gap: 6px;
-    height: 36px;
-    padding: 0 12px;
+    gap: var(--space-tight);
+    height: var(--control-sm);
+    padding: 0 var(--space-md);
     transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
   }
 
@@ -193,8 +193,8 @@
   }
 
   .chip :global(svg) {
-    width: 18px;
-    height: 18px;
+    width: var(--icon-size);
+    height: var(--icon-size);
     stroke-width: 2;
   }
 
@@ -208,15 +208,15 @@
   .menu {
     background: var(--bg-1);
     border: 1px solid color-mix(in oklab, var(--border) 85%, transparent);
-    border-radius: 12px;
+    border-radius: var(--radius-md);
     box-shadow: 0 12px 24px rgba(var(--shadow-rgb) / 0.15);
     display: grid;
-    gap: 4px;
-    min-width: 200px;
-    padding: 8px;
+    gap: var(--space-xs);
+    min-width: calc(200px * var(--font-scale, 1));
+    padding: var(--space-sm);
     position: absolute;
     right: 0;
-    top: 42px;
+    top: calc(var(--control-sm) + var(--space-tight));
     z-index: 20;
   }
 
@@ -224,12 +224,12 @@
     align-items: center;
     background: transparent;
     border: none;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     color: var(--text);
     cursor: pointer;
     display: flex;
     justify-content: space-between;
-    padding: 8px 10px;
+    padding: var(--space-sm) var(--space-snug);
     text-align: left;
     transition: background 0.2s ease, color 0.2s ease;
   }
@@ -246,10 +246,10 @@
 
   .sr-only {
     position: absolute;
-    width: 1px;
-    height: 1px;
+    width: calc(1px * var(--font-scale, 1));
+    height: calc(1px * var(--font-scale, 1));
     padding: 0;
-    margin: -1px;
+    margin: calc(var(--space-xs) * -1);
     overflow: hidden;
     clip: rect(0, 0, 0, 0);
     border: 0;

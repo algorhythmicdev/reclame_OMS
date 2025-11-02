@@ -45,20 +45,20 @@
 <style>
   .quick-group {
     display: flex;
-    gap: 6px;
+    gap: var(--space-tight);
   }
 
   .chip {
     align-items: center;
     background: var(--bg-0);
     border: 1px solid color-mix(in oklab, var(--border) 85%, transparent);
-    border-radius: 10px;
+    border-radius: calc(var(--radius-md) - var(--space-xxs));
     color: var(--text);
     cursor: pointer;
     display: inline-grid;
-    height: 36px;
+    height: var(--control-sm);
     justify-items: center;
-    width: 36px;
+    width: var(--control-sm);
     transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
   }
 
@@ -75,17 +75,17 @@
   }
 
   .chip :global(svg) {
-    width: 18px;
-    height: 18px;
+    width: var(--icon-size);
+    height: var(--icon-size);
     stroke-width: 2;
   }
 
   .sr-only {
     position: absolute;
-    width: 1px;
-    height: 1px;
+    width: calc(1px * var(--font-scale, 1));
+    height: calc(1px * var(--font-scale, 1));
     padding: 0;
-    margin: -1px;
+    margin: calc(var(--space-xs) * -1);
     overflow: hidden;
     clip: rect(0, 0, 0, 0);
     border: 0;

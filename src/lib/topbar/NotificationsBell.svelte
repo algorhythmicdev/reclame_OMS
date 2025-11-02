@@ -32,7 +32,7 @@
   </button>
 
   {#if open}
-  <div class="dropdown mobile-sheet" role="menu" style="min-width:320px;max-width:92vw" on:keydown={onKey}>
+  <div class="dropdown mobile-sheet" role="menu" style="max-width:92vw" on:keydown={onKey}>
     {#if noticesList.length===0}<div class="muted">No notifications.</div>{/if}
     {#each noticesList as n}
       <button role="menuitem" class="row">
@@ -46,14 +46,14 @@
 
 <style>
 .menu{position:relative}
-.icon{position:relative;border:1px solid var(--border);border-radius:999px;padding:8px;background:var(--bg-0)}
-.nbadge{ position:absolute; top:-6px; right:-6px; min-width:18px;height:18px;
-        border-radius:999px; background:var(--error, var(--danger)); color:white; font-size:11px;
-        display:grid; place-items:center; padding:0 5px; }
-.dropdown{position:absolute;right:0;top:calc(100% + 8px);min-width:280px;background:var(--bg-0);
-         border:1px solid var(--border);border-radius:12px;box-shadow:0 10px 24px color-mix(in oklab,var(--shadow-rgb) 35%,transparent);
-         padding:8px;z-index:50}
-.dropdown [role="menuitem"]{display:flex;justify-content:space-between;gap:8px;padding:6px;border-radius:8px}
+.icon{position:relative;border:1px solid var(--border);border-radius:999px;background:var(--bg-0);width:var(--control-xs);height:var(--control-xs);display:grid;place-items:center}
+.nbadge{ position:absolute; top:calc(var(--space-tight) * -1); right:calc(var(--space-tight) * -1); min-width:var(--icon-size);height:var(--icon-size);
+        border-radius:var(--radius-full); background:var(--error, var(--danger)); color:white; font-size:calc(0.7rem * var(--font-scale, 1));
+        display:grid; place-items:center; padding:0 calc(var(--space-xs) + (var(--space-xxs) / 2)); }
+.dropdown{position:absolute;right:0;top:calc(100% + var(--space-sm));min-width:calc(320px * var(--font-scale, 1));background:var(--bg-0);
+         border:1px solid var(--border);border-radius:var(--radius-md);box-shadow:0 10px 24px color-mix(in oklab,var(--shadow-rgb) 35%,transparent);
+         padding:var(--space-sm);z-index:50}
+.dropdown [role="menuitem"]{display:flex;justify-content:space-between;gap:var(--space-sm);padding:var(--space-tight);border-radius:var(--radius-sm)}
 .dropdown [role="menuitem"]:focus{outline:3px solid var(--focus)}
 
 @media (max-width: 820px){

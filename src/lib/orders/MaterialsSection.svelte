@@ -7,7 +7,7 @@
 </script>
 
 <section class="card">
-  <div class="row" style="justify-content:space-between;align-items:center">
+  <div class="row materials-head">
     <h3>Materials</h3><button class="tag" on:click={add}>Add</button>
   </div>
   <div class="rf-table">
@@ -45,9 +45,26 @@
 </section>
 
 <style>
-.rf-table{ display:grid; gap:6px }
-.thead, .rowi{ display:grid; grid-template-columns: 1.2fr .8fr .9fr 1.2fr .6fr .6fr 1.2fr auto; gap:6px; align-items:center }
-.sw{ width:28px; height:28px; border-radius:6px; border:1px solid var(--border); background:var(--c) }
+.materials-head{
+  justify-content:space-between;
+  align-items:center;
+  gap:var(--space-sm);
+  margin-bottom:var(--space-sm);
+}
+.rf-table{ display:grid; gap:var(--space-tight) }
+.thead, .rowi{
+  display:grid;
+  grid-template-columns: 1.2fr .8fr .9fr 1.2fr .6fr .6fr 1.2fr auto;
+  gap:var(--space-tight);
+  align-items:center;
+}
+.sw{
+  inline-size:var(--control-xs);
+  block-size:var(--control-xs);
+  border-radius:calc(var(--radius-sm) - var(--space-xxs));
+  border:1px solid var(--border);
+  background:var(--c);
+}
 @media (max-width:920px){
   .thead{ display:none }
   .rowi{ grid-template-columns: 1fr 1fr; }

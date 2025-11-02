@@ -19,13 +19,25 @@
   on:input={handleInput} />
 
 <style>
-.rf-input{
-  width:100%;
-  padding:.6rem .8rem;
-  border-radius:10px;
-  border:1px solid var(--border);
-  background:var(--bg-0);
-  color:var(--text);
-}
-.rf-input::placeholder{ color:var(--muted) }
+  .rf-input {
+    width: 100%;
+    padding: calc(var(--space-xs) + var(--space-xxs)) var(--space-md);
+    min-height: calc(var(--control-size) * 0.9);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    background: var(--bg-0);
+    color: var(--text);
+    font: inherit;
+    line-height: 1.4;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .rf-input:focus-visible {
+    border-color: var(--focus);
+    box-shadow: 0 0 0 2px color-mix(in oklab, var(--focus) 28%, transparent);
+  }
+
+  .rf-input::placeholder {
+    color: var(--muted);
+  }
 </style>

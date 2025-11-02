@@ -11,11 +11,11 @@ const colors = {
 </script>
 
 <style>
-.wrap{position:fixed;right:16px;bottom:16px;display:grid;gap:10px;z-index:9999}
-.box{min-width:280px;max-width:420px;border-radius:12px;padding:12px 14px;background:var(--bg-1);border:1px solid var(--border);box-shadow:0 6px 18px rgba(var(--shadow-rgb)/0.18)}
+.wrap{position:fixed;right:var(--space-lg);bottom:var(--space-lg);display:grid;gap:var(--space-snug);z-index:9999}
+.box{min-width:calc(280px * var(--font-scale, 1));max-width:calc(420px * var(--font-scale, 1));border-radius:var(--radius-md);padding:var(--space-md) calc(var(--space-md) + var(--space-xxs));background:var(--bg-1);border:1px solid var(--border);box-shadow:0 6px 18px rgba(var(--shadow-rgb)/0.18)}
 .title{font-weight:800}
-.msg{opacity:.9;margin-top:4px}
-.bar{height:4px;border-radius:999px;margin-top:8px;overflow:hidden}
+.msg{opacity:.9;margin-top:var(--space-xs)}
+.bar{height:calc(4px * var(--font-scale, 1));border-radius:var(--radius-full);margin-top:var(--space-sm);overflow:hidden}
 </style>
 
 <div id="rf-toasts" class="wrap" role="status" aria-live="polite" aria-atomic="true">
