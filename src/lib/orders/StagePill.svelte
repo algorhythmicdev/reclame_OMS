@@ -17,7 +17,11 @@
   border:1px solid var(--border);
   border-radius:var(--radius-full);
 }
-.pill[data-done="true"]{ background: var(--ok); color:white; border-color: color-mix(in oklab,var(--ok) 80%, black); }
+.pill[data-done="true"]{
+  background: var(--ok);
+  color: var(--ink-0, var(--text));
+  border-color: color-mix(in oklab,var(--ok) 80%, var(--ink-0, var(--text)));
+}
 .pill[data-redo="true"]{
   outline:calc(2px * var(--font-scale, 1)) dashed var(--warn);
   outline-offset:var(--space-xxs);

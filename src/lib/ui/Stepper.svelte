@@ -16,7 +16,7 @@
 .stepper{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .node{display:flex;align-items:center;gap:8px;position:relative}
 .dot{width:26px;height:26px;border-radius:999px;display:grid;place-items:center;background:var(--bg-2);border:1px solid var(--border)}
-.node[data-done="true"] .dot{background:linear-gradient(90deg,var(--accent-1),var(--accent-2));color:#fff;font-weight:900;border:none}
+.node[data-done="true"] .dot{background:linear-gradient(90deg,var(--accent-1),var(--accent-2));color:var(--ink-0, var(--text));font-weight:900;border:none}
 .label{font-weight:700}
 .line{width:36px;height:2px;background:var(--border)}
 </style>

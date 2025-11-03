@@ -195,7 +195,7 @@
   .chat-header__intro{ display:flex; justify-content:space-between; align-items:center; gap:var(--space-md); flex-wrap:wrap }
   .chat-title{ font-weight:800; font-size:1.05rem }
   .chat-current{ display:flex; align-items:center; gap:var(--space-snug); background:color-mix(in oklab,var(--bg-2) 75%, transparent); padding:var(--space-sm) var(--space-md); border-radius:var(--radius-lg); border:1px solid color-mix(in oklab,var(--border) 85%, transparent) }
-  .chat-avatar{ width:var(--avatar-md); height:var(--avatar-md); border-radius:var(--radius-md); display:grid; place-items:center; background:linear-gradient(135deg,var(--accent-2),color-mix(in oklab,var(--accent-2) 60%, var(--bg-2))); color:#fff; font-weight:700 }
+  .chat-avatar{ width:var(--avatar-md); height:var(--avatar-md); border-radius:var(--radius-md); display:grid; place-items:center; background:linear-gradient(135deg,var(--accent-2),color-mix(in oklab,var(--accent-2) 60%, var(--bg-2))); color:var(--ink-0, var(--text)); font-weight:700 }
   .chat-current__info{ display:flex; flex-direction:column; gap:var(--space-xs); font-size:.85rem }
   .rooms{ display:flex; flex-wrap:wrap; gap:var(--space-sm) }
   .rooms .tag{ border-radius:var(--radius-lg); font-size:.8rem }

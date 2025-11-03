@@ -574,7 +574,7 @@
   .order-detail--rd p{ margin:0; white-space:pre-wrap }
 
   .chip{ display:inline-flex; align-items:center; gap:4px; padding:6px 12px; border-radius:999px; border:1px solid color-mix(in oklab,var(--border) 85%, transparent); background:color-mix(in oklab,var(--bg-1) 60%, var(--bg-2) 40%); font-size:0.8rem; text-transform:uppercase; letter-spacing:0.04em; }
-  .chip[data-active='true']{ background:linear-gradient(135deg,var(--accent-1),color-mix(in oklab,var(--accent-1) 70%, var(--accent-2))); color:#fff; border-color:color-mix(in oklab,var(--accent-1) 60%, transparent); }
+  .chip[data-active='true']{ background:linear-gradient(135deg,var(--accent-1),color-mix(in oklab,var(--accent-1) 70%, var(--accent-2))); color:var(--ink-0, var(--text)); border-color:color-mix(in oklab,var(--accent-1) 60%, transparent); }
   select{ min-width:160px; }
   @media (max-width: 960px){
     .order-overview__modules{ grid-template-columns:1fr }
