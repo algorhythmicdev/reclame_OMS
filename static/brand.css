@@ -176,7 +176,11 @@ a{ color:var(--link); }
 .cal-day .badge{ background:var(--elev, var(--bg-1)); color:var(--ink-0, var(--text)); border:1px solid var(--border); }
 
 /* Buttons: readable in light theme */
-.tag.primary{ background:var(--brand, var(--accent-1)); color:white; border-color:color-mix(in oklab,var(--brand, var(--accent-1)) 80%, black); }
+.tag.primary{
+  background:var(--brand, var(--accent-1));
+  color:var(--ink-0, var(--text));
+  border-color:color-mix(in oklab,var(--brand, var(--accent-1)) 80%, var(--ink-0, var(--text)));
+}
 .tag.ghost{ background:transparent; color:var(--ink-0, var(--text)); border-color:var(--border); }
 
 /* Calendar-specific styling for Light mode */
@@ -227,13 +231,13 @@ a:visited{ color:var(--link-visited) }
 }
 .tag.is-active{
   background:linear-gradient(135deg,var(--accent-1),color-mix(in oklab,var(--accent-1) 70%, var(--accent-2)));
-  color:#fff;
+  color:var(--ink-0, var(--text));
   border-color:color-mix(in oklab,var(--accent-1) 60%, transparent)
 }
 
 .rf-btn, button:not(.tag){
   background:linear-gradient(135deg,var(--accent-1),color-mix(in oklab,var(--accent-1) 70%, var(--accent-2)));
-  color:#fff;
+  color:var(--ink-0, var(--text));
   border:none;
   border-radius:var(--radius-md);
   padding:var(--space-sm) var(--space-lg);
@@ -294,7 +298,7 @@ button.icon{
 
 .badge{
   background:var(--accent);
-  color:#fff;
+  color:var(--ink-0, var(--text));
   border-radius:var(--radius-full);
   padding:var(--space-xxs) calc(var(--space-sm) - var(--space-xxs));
   margin-left:calc(var(--space-sm) - var(--space-xxs));

@@ -23,7 +23,7 @@
 }
 .btn-root[data-variant="primary"]{
   background:linear-gradient(90deg,var(--accent-1),var(--accent-2));
-  color:#fff;
+  color:var(--ink-0, var(--text));
   border:none;
 }
 .btn-root[data-variant="ghost"]{
@@ -33,7 +33,7 @@
 }
 .btn-root[data-variant="danger"]{
   background:var(--danger);
-  color:#fff;
+  color:var(--ink-0, var(--text));
   border:none;
 }
 .btn-root:disabled{ opacity:.6; cursor:not-allowed; }
