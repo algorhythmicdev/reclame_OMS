@@ -1,4 +1,5 @@
 import type { StageMap, StageCycle, StageState, StationTag } from './stages';
+import type { ProfileData } from './profiles/index';
 
 // --- Core types for "order as a repo"
 export type Station = StationTag;
@@ -75,6 +76,8 @@ export type Order = {
   redoReasons?: Partial<Record<StationTag, string>>;
   isDraft?: boolean;          // Draft orders visible only to admin/superadmin
   cdrFile?: FileRef | null;   // CDR file for draft orders
+  pdfFile?: FileRef | null;   // PDF file for draft orders
+  profiles?: ProfileData[];   // Profile configurations for draft orders
   badges: Badge[];
   // Working snapshot (applies default branch head + default revision)
   fields: Field[];
