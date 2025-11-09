@@ -114,40 +114,40 @@
       <div class="cal-header-title">
         <Calendar size={20} aria-hidden="true" />
         <h2 class="cal-month-title">{$t('calendar.title')}</h2>
-        <Tooltip text="Toggle admin mode to mark loading days. Click days to view or assign orders." />
+        <Tooltip text={$t('calendar_page.tooltip')} />
       </div>
       
       <div class="cal-header-actions">
         <div class="cal-actions-group">
           <button class="tag" on:click={()=>openQuick('loading')}>
             <TruckIcon size={14} aria-hidden="true" />
-            <span>New loading</span>
+            <span>{$t('calendar_page.new_loading')}</span>
           </button>
           <button class="tag ghost" on:click={()=>openQuick('meeting')}>
             <Users size={14} aria-hidden="true" />
-            <span>New meeting</span>
+            <span>{$t('calendar_page.new_meeting')}</span>
           </button>
           <button class="tag ghost" on:click={()=>openQuick('note')}>
             <StickyNote size={14} aria-hidden="true" />
-            <span>New note</span>
+            <span>{$t('calendar_page.new_note')}</span>
           </button>
         </div>
         
-        <div class="cal-actions-group" role="tablist" aria-label="View mode">
+        <div class="cal-actions-group" role="tablist" aria-label={$t('calendar_page.view_mode_label')}>
           <button class="tag" class:is-active={mode==='grid'} role="tab" aria-selected={mode==='grid'} on:click={()=>mode='grid'}>
             <Grid3x3 size={14} aria-hidden="true" />
-            <span>Grid</span>
+            <span>{$t('calendar_page.grid_view')}</span>
           </button>
           <button class="tag" class:is-active={mode==='list'} role="tab" aria-selected={mode==='list'} on:click={()=>mode='list'}>
             <List size={14} aria-hidden="true" />
-            <span>List</span>
+            <span>{$t('calendar_page.list_view')}</span>
           </button>
         </div>
         
         <div class="cal-actions-group cal-nav-group">
-          <button class="tag" on:click={prev} aria-label="Previous month">◀</button>
+          <button class="tag" on:click={prev} aria-label={$t('calendar_page.prev_month_label')}>◀</button>
           <div class="cal-month-display">{y} · {m + 1}</div>
-          <button class="tag" on:click={next} aria-label="Next month">▶</button>
+          <button class="tag" on:click={next} aria-label={$t('calendar_page.next_month_label')}>▶</button>
         </div>
         
         <div class="cal-actions-group">
@@ -157,7 +157,7 @@
           </button>
           <button class="tag ghost" on:click={toICS}>
             <Download size={14} aria-hidden="true" />
-            <span>Export ICS</span>
+            <span>{$t('calendar_page.export_ics')}</span>
           </button>
         </div>
       </div>
@@ -182,10 +182,10 @@
         {#if selectedMeta}
           <div class="muted" style="font-size:.85rem">
             {#if selectedMeta.carrier}
-              Carrier: {selectedMeta.carrier}
-              {#if selectedMeta.note} · Note: {selectedMeta.note}{/if}
+              {$t('calendar_page.carrier_label')}: {selectedMeta.carrier}
+              {#if selectedMeta.note} · {$t('calendar_page.note_label')}: {selectedMeta.note}{/if}
             {:else if selectedMeta.note}
-              Note: {selectedMeta.note}
+              {$t('calendar_page.note_label')}: {selectedMeta.note}
             {:else}
               {$t('calendar.note_empty')}
             {/if}

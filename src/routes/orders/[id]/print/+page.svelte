@@ -17,17 +17,17 @@
     <img src="{base}/static/brand/logo.png" alt="Reclame Fabriek" height="42" />
     <div>
       <h1>{o?.id} — {o?.title}</h1>
-      <p>{o?.client} • Due: {o?.due || '—'} • Loading: {o?.loadingDate || '—'} ({o?.carrier || '—'})</p>
+      <p>{o?.client} • {$t('print.due_label')}: {o?.due || '—'} • {$t('print.loading_label')}: {o?.loadingDate || '—'} ({o?.carrier || '—'})</p>
     </div>
   </header>
 
   <section>
-    <h2>Materials</h2>
+    <h2>{$t('print.materials_title')}</h2>
     <table>
       <thead>
         <tr>
-          <th>Label</th>
-          <th>Value</th>
+          <th>{$t('print.label_header')}</th>
+          <th>{$t('print.value_header')}</th>
         </tr>
       </thead>
       <tbody>
@@ -42,7 +42,7 @@
   </section>
 
   <section>
-    <h2>Stages checklist</h2>
+    <h2>{$t('print.stages_checklist_title')}</h2>
     <ul class="checklist">
       {#each stages as s}
         <li>

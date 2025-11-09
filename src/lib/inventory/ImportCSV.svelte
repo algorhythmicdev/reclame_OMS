@@ -1,6 +1,7 @@
 <script lang="ts">
   import { createItem } from './store';
   import type { Section } from './types';
+  import { t } from 'svelte-i18n';
   
   let text=''; 
   
@@ -32,10 +33,10 @@
 </script>
 
 <section class="card">
-  <h3>Bulk import (CSV)</h3>
-  <textarea rows="6" bind:value={text} placeholder="section,group,subgroup,sku,name,unit,stock,min,location"></textarea>
+  <h3>{$t('inventory.import.title')}</h3>
+  <textarea rows="6" bind:value={text} placeholder={$t('inventory.import.placeholder')}></textarea>
   <div class="row" style="justify-content:flex-end">
-    <button class="tag" on:click={parse}>Import</button>
+    <button class="tag" on:click={parse}>{$t('inventory.import.import_button')}</button>
   </div>
 </section>
 

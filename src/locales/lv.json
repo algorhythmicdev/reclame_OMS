@@ -67,7 +67,8 @@
     "user": {
       "label": "Lietotājs",
       "switch": "Mainīt lietotāju"
-    }
+    },
+    "toggle_menu": "Pārslēgt izvēlni"
   },
   "topbar": {
     "theme": "Tēma",
@@ -89,6 +90,14 @@
       "repaint": "Pārkrāsošana"
     },
     "compare": "Salīdzināt"
+  },
+  "print": {
+    "due_label": "Termiņš",
+    "loading_label": "Iekraušana",
+    "materials_title": "Materiāli",
+    "label_header": "Etiķete",
+    "value_header": "Vērtība",
+    "stages_checklist_title": "Posmu kontrolsaraksts"
   },
   "roles": {
     "label": "Loma",
@@ -303,6 +312,13 @@
       "stages": "Pasūtījumu posmi",
       "materials": "Materiālu krājumi (galvenie)"
     },
+    "materials": {
+      "aluminum": "Alumīnijs",
+      "acrylic": "Akrils",
+      "acp": "AKP",
+      "paint": "Krāsa",
+      "vinyl": "Vinils"
+    },
     "topRework": {
       "label": "Vairāk pārstrāžu stacija",
       "none": "Nav"
@@ -410,6 +426,20 @@
     "attendees": "Dalībnieki",
     "location": "Vieta",
     "notes": "Piezīmes"
+  },
+  "calendar_page": {
+    "tooltip": "Pārslēdziet administratora režīmu, lai atzīmētu iekraušanas dienas. Noklikšķiniet uz dienām, lai apskatītu vai piešķirtu pasūtījumus.",
+    "new_loading": "Jauna iekraušana",
+    "new_meeting": "Jauna sanāksme",
+    "new_note": "Jauna piezīme",
+    "view_mode_label": "Skatīšanas režīms",
+    "grid_view": "Režģis",
+    "list_view": "Saraksts",
+    "prev_month_label": "Iepriekšējais mēnesis",
+    "next_month_label": "Nākamais mēnesis",
+    "export_ics": "Eksportēt ICS",
+    "carrier_label": "Pārvadātājs",
+    "note_label": "Piezīme"
   },
   "orderform": {
     "title": "Jauns pasūtījums",
@@ -562,6 +592,45 @@
     "section": "Sadaļa",
     "group": "Grupa",
     "subgroup": "Apakšgrupa",
+    "filters": {
+      "sections_label": "Sadaļas",
+      "search_placeholder": "Meklēt pēc nosaukuma/artikula…",
+      "group_placeholder": "Grupa…",
+      "subgroup_placeholder": "Apakšgrupa…"
+    },
+    "filter_sections": {
+      "all": "visi",
+      "materials": "materiāli",
+      "leftovers": "atlikumi",
+      "paints": "krāsas",
+      "tools": "instrumenti",
+      "cons": "patērējamie"
+    },
+    "import": {
+      "title": "Masu imports (CSV)",
+      "placeholder": "sadaļa,grupa,apakšgrupa,artikuls,nosaukums,vienība,atlikums,minimums,atrašanās vieta",
+      "import_button": "Importēt"
+    },
+    "modal": {
+      "group_placeholder": "piemēram, Akrils / Alumīnijs",
+      "subgroup_label": "Apakšgrupa",
+      "subgroup_placeholder": "piemēram, Loksnes / Profili",
+      "sku_label": "Artikuls",
+      "unit_placeholder": "gab / m / kg",
+      "location_placeholder": "Plaukts A2",
+      "supplier_label": "Piegādātājs",
+      "price_label": "Cena (EUR)",
+      "barcode_label": "Svītrkods",
+      "barcode_placeholder": "EAN/QR id"
+    },
+    "movements_page": {
+      "title": "Krājumu kustības",
+      "description": "Kustību žurnāls šeit parādīsies nākamajā atjauninājumā."
+    },
+    "new_page": {
+      "title": "Pievienot krājumu vienību",
+      "description": "Veidlapas vietturis jaunas krājumu vienības izveidei."
+    },
     "materials": "Materiāli",
     "leftovers": "Atlikumi",
     "paints": "Krāsas",
