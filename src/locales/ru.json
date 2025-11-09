@@ -67,7 +67,8 @@
     "user": {
       "label": "Пользователь",
       "switch": "Сменить пользователя"
-    }
+    },
+    "toggle_menu": "Переключить меню"
   },
   "topbar": {
     "theme": "Тема",
@@ -89,6 +90,14 @@
       "repaint": "Перекраска"
     },
     "compare": "Сравнить"
+  },
+  "print": {
+    "due_label": "Срок",
+    "loading_label": "Погрузка",
+    "materials_title": "Материалы",
+    "label_header": "Метка",
+    "value_header": "Значение",
+    "stages_checklist_title": "Чек-лист этапов"
   },
   "roles": {
     "label": "Роль",
@@ -303,6 +312,13 @@
       "stages": "Этапы заказов",
       "materials": "Запасы материалов (основные)"
     },
+    "materials": {
+      "aluminum": "Алюминий",
+      "acrylic": "Акрил",
+      "acp": "АКП",
+      "paint": "Краска",
+      "vinyl": "Винил"
+    },
     "topRework": {
       "label": "Станция с наибольшими доработками",
       "none": "Нет"
@@ -410,6 +426,20 @@
     "attendees": "Участники",
     "location": "Место",
     "notes": "Примечания"
+  },
+  "calendar_page": {
+    "tooltip": "Переключите режим администратора, чтобы отметить дни погрузки. Нажмите на дни, чтобы просмотреть или назначить заказы.",
+    "new_loading": "Новая погрузка",
+    "new_meeting": "Новая встреча",
+    "new_note": "Новая заметка",
+    "view_mode_label": "Режим просмотра",
+    "grid_view": "Сетка",
+    "list_view": "Список",
+    "prev_month_label": "Предыдущий месяц",
+    "next_month_label": "Следующий месяц",
+    "export_ics": "Экспорт ICS",
+    "carrier_label": "Перевозчик",
+    "note_label": "Заметка"
   },
   "orderform": {
     "title": "Новый заказ",
@@ -562,6 +592,45 @@
     "section": "Раздел",
     "group": "Группа",
     "subgroup": "Подгруппа",
+    "filters": {
+      "sections_label": "Разделы",
+      "search_placeholder": "Поиск по названию/артикулу…",
+      "group_placeholder": "Группа…",
+      "subgroup_placeholder": "Подгруппа…"
+    },
+    "filter_sections": {
+      "all": "все",
+      "materials": "материалы",
+      "leftovers": "остатки",
+      "paints": "краски",
+      "tools": "инструменты",
+      "cons": "расходники"
+    },
+    "import": {
+      "title": "Массовый импорт (CSV)",
+      "placeholder": "раздел,группа,подгруппа,артикул,название,единица,остаток,минимум,место",
+      "import_button": "Импорт"
+    },
+    "modal": {
+      "group_placeholder": "например, Акрил / Алюминий",
+      "subgroup_label": "Подгруппа",
+      "subgroup_placeholder": "например, Листы / Профили",
+      "sku_label": "Артикул",
+      "unit_placeholder": "шт / м / кг",
+      "location_placeholder": "Стеллаж A2",
+      "supplier_label": "Поставщик",
+      "price_label": "Цена (EUR)",
+      "barcode_label": "Штрих-код",
+      "barcode_placeholder": "EAN/QR id"
+    },
+    "movements_page": {
+      "title": "Движения по складу",
+      "description": "Журнал движений появится здесь в будущем обновлении."
+    },
+    "new_page": {
+      "title": "Добавить позицию на склад",
+      "description": "Заполнитель формы для создания новой складской позиции."
+    },
     "materials": "Материалы",
     "leftovers": "Остатки",
     "paints": "Краски",

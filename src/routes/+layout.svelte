@@ -119,7 +119,7 @@
 
 <header class="rf-topbar">
   <a href="{base}/" class="brand"><Logo /></a>
-  <button class="mobile-menu-btn" on:click={() => mobileMenuOpen = !mobileMenuOpen} aria-label="Toggle menu" aria-expanded={mobileMenuOpen}>
+  <button class="mobile-menu-btn" on:click={() => mobileMenuOpen = !mobileMenuOpen} aria-label={$t('header.toggle_menu')} aria-expanded={mobileMenuOpen}>
     {#if mobileMenuOpen}
       <X size={24} />
     {:else}

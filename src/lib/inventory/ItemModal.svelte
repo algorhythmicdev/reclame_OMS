@@ -57,14 +57,14 @@
       </label>
       <label>
         {$t('inventory.group')}
-        <input bind:value={item.group} placeholder="e.g., Acrylic / Aluminium" />
+        <input bind:value={item.group} placeholder={$t('inventory.modal.group_placeholder')} />
       </label>
       <label>
-        Subgroup
-        <input bind:value={item.subgroup} placeholder="e.g., Sheets / Profiles" />
+        {$t('inventory.modal.subgroup_label')}
+        <input bind:value={item.subgroup} placeholder={$t('inventory.modal.subgroup_placeholder')} />
       </label>
       <label>
-        SKU
+        {$t('inventory.modal.sku_label')}
         <input bind:value={item.sku} />
       </label>
       <label>
@@ -73,7 +73,7 @@
       </label>
       <label>
         {$t('inventory.headers.unit')}
-        <input bind:value={item.unit} placeholder="pcs / m / kg" />
+        <input bind:value={item.unit} placeholder={$t('inventory.modal.unit_placeholder')} />
       </label>
       <label>
         {$t('inventory.headers.stock')}
@@ -85,19 +85,19 @@
       </label>
       <label>
         {$t('inventory.headers.location')}
-        <input bind:value={item.location} placeholder="Rack A2" />
+        <input bind:value={item.location} placeholder={$t('inventory.modal.location_placeholder')} />
       </label>
       <label>
-        Supplier
+        {$t('inventory.modal.supplier_label')}
         <input bind:value={item.supplier} />
       </label>
       <label>
-        Price (EUR)
+        {$t('inventory.modal.price_label')}
         <input type="number" step="0.01" bind:value={item.price} />
       </label>
       <label>
-        Barcode
-        <input bind:value={item.barcode} placeholder="EAN/QR id" />
+        {$t('inventory.modal.barcode_label')}
+        <input bind:value={item.barcode} placeholder={$t('inventory.modal.barcode_placeholder')} />
       </label>
     </div>
   </form>

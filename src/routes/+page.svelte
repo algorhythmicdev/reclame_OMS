@@ -56,7 +56,7 @@
   const baseBarOptions = {
     chart: { type: 'bar', toolbar: { show: false } },
     plotOptions: { bar: { borderRadius: 6 } },
-    xaxis: { categories: ['Aluminum', 'Acrylic', 'ACP', 'Paint', 'Vinyl'] }
+    xaxis: { categories: [$t('dashboard.materials.aluminum'), $t('dashboard.materials.acrylic'), $t('dashboard.materials.acp'), $t('dashboard.materials.paint'), $t('dashboard.materials.vinyl')] }
   };
   $: barOptions = withTheme(baseBarOptions, $themeStore);
   $: barSeries = [{ name: $t('dashboard.series.qty'), data: [22, 12, 58, 16, 40] }];

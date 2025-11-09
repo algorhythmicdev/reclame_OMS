@@ -67,7 +67,8 @@
     "user": {
       "label": "User",
       "switch": "Switch user"
-    }
+    },
+    "toggle_menu": "Toggle menu"
   },
   "topbar": {
     "theme": "Theme",
@@ -89,6 +90,14 @@
       "repaint": "Re-paint"
     },
     "compare": "Compare"
+  },
+  "print": {
+    "due_label": "Due",
+    "loading_label": "Loading",
+    "materials_title": "Materials",
+    "label_header": "Label",
+    "value_header": "Value",
+    "stages_checklist_title": "Stages checklist"
   },
   "roles": {
     "label": "Role",
@@ -303,6 +312,13 @@
       "stages": "Order Stages",
       "materials": "Material Stock (key items)"
     },
+    "materials": {
+      "aluminum": "Aluminum",
+      "acrylic": "Acrylic",
+      "acp": "ACP",
+      "paint": "Paint",
+      "vinyl": "Vinyl"
+    },
     "topRework": {
       "label": "Top rework station",
       "none": "None"
@@ -410,6 +426,20 @@
     "attendees": "Attendees",
     "location": "Location",
     "notes": "Notes"
+  },
+  "calendar_page": {
+    "tooltip": "Toggle admin mode to mark loading days. Click days to view or assign orders.",
+    "new_loading": "New loading",
+    "new_meeting": "New meeting",
+    "new_note": "New note",
+    "view_mode_label": "View mode",
+    "grid_view": "Grid",
+    "list_view": "List",
+    "prev_month_label": "Previous month",
+    "next_month_label": "Next month",
+    "export_ics": "Export ICS",
+    "carrier_label": "Carrier",
+    "note_label": "Note"
   },
   "orderform": {
     "title": "New Order",
@@ -562,6 +592,45 @@
     "section": "Section",
     "group": "Group",
     "subgroup": "Subgroup",
+    "filters": {
+      "sections_label": "Sections",
+      "search_placeholder": "Search by name/SKU…",
+      "group_placeholder": "Group…",
+      "subgroup_placeholder": "Subgroup…"
+    },
+    "filter_sections": {
+      "all": "all",
+      "materials": "materials",
+      "leftovers": "leftovers",
+      "paints": "paints",
+      "tools": "tools",
+      "cons": "cons"
+    },
+    "import": {
+      "title": "Bulk import (CSV)",
+      "placeholder": "section,group,subgroup,sku,name,unit,stock,min,location",
+      "import_button": "Import"
+    },
+    "modal": {
+      "group_placeholder": "e.g., Acrylic / Aluminium",
+      "subgroup_label": "Subgroup",
+      "subgroup_placeholder": "e.g., Sheets / Profiles",
+      "sku_label": "SKU",
+      "unit_placeholder": "pcs / m / kg",
+      "location_placeholder": "Rack A2",
+      "supplier_label": "Supplier",
+      "price_label": "Price (EUR)",
+      "barcode_label": "Barcode",
+      "barcode_placeholder": "EAN/QR id"
+    },
+    "movements_page": {
+      "title": "Inventory Movements",
+      "description": "Movement log will appear here in a future update."
+    },
+    "new_page": {
+      "title": "Add Inventory Item",
+      "description": "Form placeholder for creating a new inventory item."
+    },
     "empty_filter": "No items match this filter.",
     "materials": "Materials",
     "leftovers": "Leftovers",
