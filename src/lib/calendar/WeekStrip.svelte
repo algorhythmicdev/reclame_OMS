@@ -1,10 +1,15 @@
 <script lang="ts">
   import dayjs from 'dayjs';
+  import DayCell from './DayCell.svelte';
+  import { capacityConfig, type CapacityConfig } from './capacity-config';
   
   export let year: number;
   export let month: number;
   
   let weekStart = dayjs().startOf('week');
+  let capacities: CapacityConfig;
+  
+  const unsubCapacity = capacityConfig.subscribe(v => capacities = v);
   
   $: days = Array.from({length: 7}, (_, i) => weekStart.add(i, 'day'));
   
@@ -14,6 +19,10 @@
   
   function next() {
     weekStart = weekStart.add(7, 'day');
+  }
+  
+  function getDayCapacity(iso: string): number {
+    return capacities?.customCapacities[iso] ?? capacities?.defaultCapacity ?? 10;
   }
 </script>
 
@@ -25,10 +34,14 @@
   </div>
   <div class="week-grid">
     {#each days as d}
-      <div class="day-cell">
-        <div class="day-name">{d.format('ddd')}</div>
-        <div class="day-num">{d.date()}</div>
-      </div>
+      {#if capacities}
+        <DayCell 
+          iso={d.format('YYYY-MM-DD')} 
+          dayNum={d.date()} 
+          canEdit={true}
+          capacity={getDayCapacity(d.format('YYYY-MM-DD'))}
+        />
+      {/if}
     {/each}
   </div>
 </div>
@@ -36,27 +49,11 @@
 <style>
 .cal-weekstrip{
   display:none;
+  padding: 12px;
 }
 .week-grid{
   display:grid;
   grid-template-columns:repeat(7, 1fr);
-  gap:4px;
-}
-.day-cell{
-  padding:8px;
-  text-align:center;
-  border:1px solid var(--border);
-  border-radius:8px;
-  background:var(--bg-1);
-}
-.day-name{
-  font-size:0.75rem;
-  color:var(--muted);
-  text-transform:uppercase;
-}
-.day-num{
-  font-weight:700;
-  margin-top:4px;
-  color:var(--text);
+  gap:8px;
 }
 </style>

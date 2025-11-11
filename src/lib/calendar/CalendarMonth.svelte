@@ -25,10 +25,14 @@
   } from '$lib/order/stages';
   import type { Badge as OrderBadge } from '$lib/order/types';
   import { BADGE_ICONS, badgeTone as resolveBadgeTone } from '$lib/order/badges';
+  import { capacityConfig, type CapacityConfig } from './capacity-config';
 
   export let year: number;
   export let month: number;
   export let adminMode = false;
+
+  let capacities: CapacityConfig;
+  const unsubCapacity = capacityConfig.subscribe(v => capacities = v);
 
   type DayCell = { d: Date; iso: string; inMonth: boolean };
 
@@ -96,7 +100,10 @@
     }
   }
 
-  onDestroy(() => unsubscribeLocale?.());
+  onDestroy(() => {
+    unsubscribeLocale?.();
+    unsubCapacity?.();
+  });
 
   function clickDay(iso: string) {
     if (!adminMode) {

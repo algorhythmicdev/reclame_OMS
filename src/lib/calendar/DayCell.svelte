@@ -20,14 +20,14 @@
 
   let open=false; let pressTimer:any;
   let items = byDate(iso);
-  let $loads: any[] = [];
+  let loadsList: any[] = [];
   let over = false;
   let hoverOrder: Order | null = null;
   let hoverX = 0;
   let hoverY = 0;
   let hoverTimeout: any;
   
-  const unsub = loads.subscribe(v => $loads = v);
+  const unsub = loads.subscribe(v => loadsList = v);
   
   // Get orders for this day
   $: dayOrders = listOrders().filter(o => o.loadingDate === iso);
@@ -57,15 +57,15 @@
     const po = e.dataTransfer?.getData('text/plain');
     if (!po) return;
     
-    let L = $loads.find(l => l.id === iso);
+    let L = loadsList.find(l => l.id === iso);
     if (!L) {
       L = { id: iso, dateISO: iso, pos: [], carrier: '', notes: '', createdAt: new Date().toISOString() };
-      $loads.push(L);
+      loadsList.push(L);
     }
     if (!L.pos.includes(po)) {
       L.pos.push(po);
     }
-    loads.set([...$loads]);
+    loads.set([...loadsList]);
     announce(`Assigned ${po} to ${iso}`);
   }
   
@@ -123,19 +123,20 @@
 
   <div class="events-stack">
     {#each items as e (e.id)}
+      {@const eventData = e}
       <button
         class="event-chip"
         data-kind={e.kind}
-        title={e.kind==='loading' ? `Carrier: ${(e as any).carrier||'-'}` : (e as any).title || e.kind}
+        title={e.kind==='loading' ? `Carrier: ${eventData.carrier||'-'}` : eventData.title || e.kind}
         on:click={() => { open = true; }}
       >
         {#if e.kind==='loading'}<Truck size={14} aria-hidden="true"/>{/if}
         {#if e.kind==='meeting'}<Calendar size={14} aria-hidden="true"/>{/if}
         {#if e.kind==='note'}<Sticky size={14} aria-hidden="true"/>{/if}
         <span class="event-text">
-          {e.kind==='loading' ? `POs: ${(e as any).poList?.length||0}` :
-           e.kind==='meeting' ? (e as any).title :
-           (e as any).title || 'Note'}
+          {e.kind==='loading' ? `POs: ${eventData.poList?.length||0}` :
+           e.kind==='meeting' ? eventData.title :
+           eventData.title || 'Note'}
         </span>
       </button>
     {/each}
