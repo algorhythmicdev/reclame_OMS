@@ -15,8 +15,7 @@
   import Badge from '$lib/ui/Badge.svelte';
   import { currentUser } from '$lib/users/user-store';
   import { dragging } from '$lib/dnd';
-  import { Plus, FilePlus, Settings, Package, Warehouse, Users, FileText, Download, X } from 'lucide-svelte';
-  import KpiCard from '$lib/ui/KpiCard.svelte';
+  import { Plus, FilePlus } from 'lucide-svelte';
 
   type OrderRow = {
     id: string;
@@ -81,7 +80,6 @@
   let qLower = '';
   let sortKey: 'id' | 'client' | 'title' | 'due' | 'loadingDate' = 'due';
   let sortAsc = true;
-  let adminMenuOpen = false;
 
   $: qLower = q.trim().toLowerCase();
   $: {
@@ -102,17 +100,6 @@
 
   $: isAdmin = $currentUser?.role === 'Admin' || $currentUser?.role === 'SuperAdmin';
   $: isSuperAdmin = $currentUser?.role === 'SuperAdmin';
-  
-  // KPI Stats
-  $: totalOrders = rows.length;
-  $: draftOrders = rows.filter(r => r.isDraft).length;
-  $: urgentOrders = rows.filter(r => {
-    const dueDate = new Date(r.due);
-    const today = new Date();
-    const diffDays = Math.ceil((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-    return diffDays <= 3 && diffDays >= 0;
-  }).length;
-  $: activeOrders = totalOrders - draftOrders;
 
   function refresh() {
     const allOrders = listOrders();
@@ -141,56 +128,6 @@
 
   const stationLabel = (code: Station) => $t(TERMS.stations[code]);
   const badgeLabel = (badge: BadgeCode) => $t(TERMS.badges[badge]);
-  
-  // Admin menu functions
-  function toggleAdminMenu() {
-    adminMenuOpen = !adminMenuOpen;
-  }
-  
-  function openProfileBuilder() {
-    adminMenuOpen = false;
-    // Navigate to profile template builder (will be implemented)
-    window.location.href = `${base}/admin/profiles`;
-  }
-  
-  function openMaterialsManager() {
-    adminMenuOpen = false;
-    // Navigate to materials catalog
-    window.location.href = `${base}/admin/materials`;
-  }
-  
-  function openInventoryManager() {
-    adminMenuOpen = false;
-    // Navigate to inventory manager
-    window.location.href = `${base}/inventory`;
-  }
-  
-  function openSystemSettings() {
-    adminMenuOpen = false;
-    // Navigate to system settings
-    window.location.href = `${base}/settings`;
-  }
-  
-  function openUserManagement() {
-    adminMenuOpen = false;
-    // Navigate to user management
-    window.location.href = `${base}/admin/users`;
-  }
-  
-  // Export functions
-  function exportToPDF() {
-    // Simple CSV-like export for now
-    const csvContent = visible.map(row => 
-      `${row.id},${row.client},${row.title},${row.due},${row.loadingDate || 'N/A'}`
-    ).join('\n');
-    const blob = new Blob([`PO,Client,Title,Due Date,Loading Date\n${csvContent}`], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `orders-export-${new Date().toISOString().split('T')[0]}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-  }
 
   refresh();
 
@@ -203,36 +140,6 @@
     return () => window.removeEventListener('storage', handleStorage);
   });
 </script>
-
-<!-- KPI Stats Cards -->
-<div class="kpi-section">
-  <KpiCard 
-    label="Total Orders" 
-    value={totalOrders.toString()} 
-    trend="neutral"
-    icon="package"
-  />
-  <KpiCard 
-    label="Active Orders" 
-    value={activeOrders.toString()} 
-    trend="up"
-    icon="activity"
-  />
-  {#if isAdmin}
-    <KpiCard 
-      label="Draft Orders" 
-      value={draftOrders.toString()} 
-      trend="neutral"
-      icon="file-edit"
-    />
-  {/if}
-  <KpiCard 
-    label="Urgent (≤3 days)" 
-    value={urgentOrders.toString()} 
-    trend={urgentOrders > 5 ? 'down' : 'neutral'}
-    icon="alert-circle"
-  />
-</div>
 
 <section class="card">
   <div class="row header-row">
@@ -253,10 +160,6 @@
           {$t('orderLists.new')}
         </button>
       {/if}
-      <button class="tag ghost" on:click={exportToPDF} title="Export to CSV">
-        <Download size={18} aria-hidden="true" />
-        Export
-      </button>
       <div class="filter-field">
         <Input bind:value={q} placeholder={$t('orderLists.filter_placeholder')} ariaLabel={$t('orderLists.filter_label')} />
       </div>
@@ -392,173 +295,10 @@
   </div>
 </section>
 
-<!-- Admin Floating Action Menu -->
-{#if isAdmin}
-  <div class="admin-fab-container">
-    <!-- Backdrop for closing menu -->
-    {#if adminMenuOpen}
-      <div class="admin-fab-backdrop" on:click={toggleAdminMenu}></div>
-    {/if}
-    
-    <!-- Menu Items -->
-    {#if adminMenuOpen}
-      <div class="admin-fab-menu">
-        <button class="admin-fab-item" on:click={openProfileBuilder} title="Profile Template Builder">
-          <Settings size={20} />
-          <span>Profile Builder</span>
-        </button>
-        <button class="admin-fab-item" on:click={openMaterialsManager} title="Materials Catalog">
-          <Package size={20} />
-          <span>Materials Catalog</span>
-        </button>
-        <button class="admin-fab-item" on:click={openInventoryManager} title="Inventory Manager">
-          <Warehouse size={20} />
-          <span>Inventory</span>
-        </button>
-        <button class="admin-fab-item" on:click={openUserManagement} title="User Management">
-          <Users size={20} />
-          <span>User Management</span>
-        </button>
-        <button class="admin-fab-item" on:click={openSystemSettings} title="System Settings">
-          <FileText size={20} />
-          <span>Settings</span>
-        </button>
-      </div>
-    {/if}
-    
-    <!-- Main FAB Button -->
-    <button 
-      class="admin-fab-button" 
-      class:active={adminMenuOpen}
-      on:click={toggleAdminMenu}
-      title="Admin Controls"
-      aria-label="Admin Controls Menu"
-      aria-expanded={adminMenuOpen}
-    >
-      {#if adminMenuOpen}
-        <X size={24} />
-      {:else}
-        <Settings size={24} />
-      {/if}
-    </button>
-  </div>
-{/if}
-
 <OrderForm bind:open={formOpen} onClose={() => { formOpen = false; refresh(); }} />
 <DraftOrderForm bind:open={draftFormOpen} onClose={() => { draftFormOpen = false; refresh(); }} />
 
 <style>
-  /* KPI Section */
-  .kpi-section {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: var(--space-md);
-    margin-bottom: var(--space-lg);
-  }
-
-  /* Admin Floating Action Button */
-  .admin-fab-container {
-    position: fixed;
-    bottom: 2rem;
-    right: 2rem;
-    z-index: 1000;
-  }
-
-  .admin-fab-backdrop {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.2);
-    z-index: -1;
-    animation: fadeIn 0.2s ease;
-  }
-
-  .admin-fab-button {
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    background: var(--primary, #3b82f6);
-    color: white;
-    border: none;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .admin-fab-button:hover {
-    background: color-mix(in oklab, var(--primary, #3b82f6) 90%, black);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2), 0 3px 6px rgba(0, 0, 0, 0.15);
-    transform: scale(1.05);
-  }
-
-  .admin-fab-button.active {
-    background: var(--danger, #dc2626);
-    transform: rotate(90deg);
-  }
-
-  .admin-fab-menu {
-    position: absolute;
-    bottom: 70px;
-    right: 0;
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-sm);
-    animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .admin-fab-item {
-    display: flex;
-    align-items: center;
-    gap: var(--space-sm);
-    padding: var(--space-sm) var(--space-md);
-    background: white;
-    color: var(--text-primary, #1a1a1a);
-    border: 1px solid var(--border, #e5e7eb);
-    border-radius: var(--radius-lg, 8px);
-    cursor: pointer;
-    white-space: nowrap;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    transition: all 0.2s ease;
-    font-size: var(--text-sm, 0.875rem);
-    font-weight: 600;
-  }
-
-  .admin-fab-item:hover {
-    background: var(--bg-2, #f9fafb);
-    border-color: var(--primary, #3b82f6);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    transform: translateX(-4px);
-  }
-
-  .admin-fab-item:active {
-    transform: translateX(-4px) scale(0.98);
-  }
-
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
-
-  @keyframes slideUp {
-    from {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
   .header-row {
     justify-content: space-between;
     align-items: center;
