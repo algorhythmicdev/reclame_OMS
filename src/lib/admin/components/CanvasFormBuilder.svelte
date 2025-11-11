@@ -8,7 +8,6 @@
   import HorizontalPalette from './builder/HorizontalPalette.svelte';
   import CanvasSection from './builder/CanvasSection.svelte';
   import PropertiesPanel from './builder/PropertiesPanel.svelte';
-  import ProfileFormVisual from '$lib/profiles/components/ProfileFormVisual.svelte';
 
   export let isOpen: boolean = false;
   export let templateId: number | null = null;
@@ -498,10 +497,15 @@
       {#if showPreview}
         <!-- Preview Mode -->
         <div class="preview-wrapper">
-          <ProfileFormVisual
-            profileCode={template.code}
-            configuration={{}}
-          />
+          <div class="preview-placeholder">
+            <Eye size={64} />
+            <h3>Preview Mode</h3>
+            <p>Preview functionality requires the template to be saved to the backend first.</p>
+            <p>Save your template, then you can preview it in the main application.</p>
+            <button class="btn-secondary" on:click={() => showPreview = false}>
+              Back to Editor
+            </button>
+          </div>
         </div>
       {:else}
         <!-- Edit Mode -->
@@ -831,6 +835,43 @@
     padding: 32px;
     background: white;
     min-height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .preview-placeholder {
+    text-align: center;
+    max-width: 500px;
+    padding: 64px 32px;
+  }
+
+  .preview-placeholder h3 {
+    margin: 16px 0 8px 0;
+    font-size: 24px;
+    font-weight: 700;
+    color: #1a1a1a;
+  }
+
+  .preview-placeholder p {
+    margin: 8px 0;
+    color: #6b7280;
+    line-height: 1.6;
+  }
+
+  .btn-secondary {
+    margin-top: 24px;
+    padding: 12px 24px;
+    background: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .btn-secondary:hover {
+    background: #e5e7eb;
   }
 
   /* Responsive */
