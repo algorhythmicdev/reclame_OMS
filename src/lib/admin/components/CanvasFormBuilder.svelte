@@ -3,9 +3,9 @@
   import { onMount, createEventDispatcher } from 'svelte';
   import { 
     Plus, Save, Eye, Undo, Redo, Download, Upload,
-    X
+    X, ChevronDown, ChevronUp, Settings
   } from 'lucide-svelte';
-  import ComponentPalette from './builder/ComponentPalette.svelte';
+  import HorizontalPalette from './builder/HorizontalPalette.svelte';
   import CanvasSection from './builder/CanvasSection.svelte';
   import PropertiesPanel from './builder/PropertiesPanel.svelte';
   import ProfileFormVisual from '$lib/profiles/components/ProfileFormVisual.svelte';
@@ -62,6 +62,7 @@
 
   let selectedElement: any = null;
   let selectedType: 'template' | 'section' | 'field' | null = null;
+  let propertiesPanelOpen = false;
   let showPreview = false;
   let historyStack: Template[] = [];
   let historyIndex = -1;
@@ -151,6 +152,7 @@
     pushHistory();
     if (selectedElement?.id === sectionId) {
       selectedElement = null;
+      propertiesPanelOpen = false;
     }
   }
 
@@ -248,6 +250,7 @@
     pushHistory();
     if (selectedElement?.id === fieldId) {
       selectedElement = null;
+      propertiesPanelOpen = false;
     }
   }
 
@@ -268,6 +271,7 @@
   function selectElement(element: any, type: 'template' | 'section' | 'field') {
     selectedElement = element;
     selectedType = type;
+    propertiesPanelOpen = true;
   }
 
   function updateProperties(updates: any) {
@@ -390,22 +394,24 @@
 </script>
 
 {#if isOpen}
-  <div class="builder-overlay">
-    <div class="builder-container">
-      <!-- Top Toolbar -->
-      <div class="builder-toolbar">
-        <div class="toolbar-left">
-          <button class="tool-btn" on:click={undo} disabled={historyIndex <= 0} title="Undo">
-            <Undo size={20} />
-          </button>
-          <button class="tool-btn" on:click={redo} disabled={historyIndex >= historyStack.length - 1} title="Redo">
-            <Redo size={20} />
-          </button>
-          <div class="toolbar-divider"></div>
+  <div class="builder-fullscreen">
+    <!-- Top Toolbar -->
+    <div class="builder-toolbar">
+      <div class="toolbar-left">
+        <button class="tool-btn" on:click={undo} disabled={historyIndex <= 0} title="Undo (Ctrl+Z)">
+          <Undo size={20} />
+        </button>
+        <button class="tool-btn" on:click={redo} disabled={historyIndex >= historyStack.length - 1} title="Redo (Ctrl+Y)">
+          <Redo size={20} />
+        </button>
+        
+        <div class="toolbar-divider"></div>
+        
+        <div class="template-inputs">
           <input
             type="text"
             bind:value={template.code}
-            placeholder="Profile Code (e.g., P9)"
+            placeholder="Code (P9)"
             class="code-input"
             maxlength="10"
           />
@@ -416,102 +422,67 @@
             class="name-input"
           />
         </div>
-
-        <div class="toolbar-right">
-          <button class="tool-btn" on:click={() => showPreview = !showPreview} title="Preview">
-            <Eye size={20} />
-          </button>
-          <button class="tool-btn" on:click={exportTemplate} title="Export JSON">
-            <Download size={20} />
-          </button>
-          <label class="tool-btn" title="Import JSON">
-            <Upload size={20} />
-            <input type="file" accept=".json" on:change={importTemplate} style="display: none;" />
-          </label>
-          <button class="btn-primary" on:click={saveTemplate}>
-            <Save size={18} />
-            Save Template
-          </button>
-          <button class="tool-btn close-btn" on:click={closeBuilder}>
-            <X size={20} />
-          </button>
-        </div>
       </div>
 
-      <div class="builder-main">
-        <!-- Left: Component Palette -->
-        <div class="palette-sidebar">
-          <ComponentPalette
-            on:dragstart={(e) => handleDragStart(e.detail.event, e.detail.component)}
-          />
-        </div>
+      <div class="toolbar-right">
+        <span class="history-indicator">
+          {historyIndex + 1}/{historyStack.length}
+        </span>
+        
+        <button 
+          class="tool-btn" 
+          class:active={showPreview}
+          on:click={() => showPreview = !showPreview} 
+          title="Toggle Preview"
+        >
+          <Eye size={20} />
+        </button>
+        
+        <button class="tool-btn" on:click={exportTemplate} title="Export JSON">
+          <Download size={20} />
+        </button>
+        
+        <label class="tool-btn" title="Import JSON">
+          <Upload size={20} />
+          <input type="file" accept=".json" on:change={importTemplate} style="display: none;" />
+        </label>
+        
+        <button class="btn-save" on:click={saveTemplate}>
+          <Save size={18} />
+          Save Template
+        </button>
+        
+        <button class="tool-btn close-btn" on:click={closeBuilder}>
+          <X size={20} />
+        </button>
+      </div>
+    </div>
 
-        <!-- Center: Canvas -->
-        <div class="canvas-area">
-          {#if showPreview}
-            <!-- Preview Mode -->
-            <div class="preview-mode">
-              <div class="preview-header">
-                <h3>Live Preview</h3>
-                <button class="btn-secondary" on:click={() => showPreview = false}>
-                  Exit Preview
-                </button>
-              </div>
-              <div class="preview-content">
-                <ProfileFormVisual
-                  profileCode={template.code}
-                  configuration={{}}
-                />
-              </div>
-            </div>
+    <!-- Horizontal Components Palette -->
+    <div class="palette-horizontal">
+      <HorizontalPalette
+        on:componentdrag={(e) => draggedComponent = e.detail}
+      />
+    </div>
+
+    <!-- Properties Panel (Collapsible) -->
+    {#if selectedElement}
+      <div class="properties-panel-horizontal" class:open={propertiesPanelOpen}>
+        <button 
+          class="properties-toggle"
+          on:click={() => propertiesPanelOpen = !propertiesPanelOpen}
+        >
+          {#if propertiesPanelOpen}
+            <ChevronUp size={20} />
           {:else}
-            <!-- Edit Mode -->
-            <div class="canvas-edit-mode">
-              <div class="canvas-header">
-                <h3>Form Canvas</h3>
-                <button class="btn-secondary-small" on:click={() => addSection()}>
-                  <Plus size={16} />
-                  Add Section
-                </button>
-              </div>
-
-              <!-- Sections -->
-              <div 
-                class="canvas-sections"
-                on:dragover={(e) => handleDragOver(e)}
-              >
-                {#if template.sections.length === 0}
-                  <div class="empty-canvas">
-                    <Plus size={48} />
-                    <p>Drag sections from the palette or click "Add Section"</p>
-                  </div>
-                {:else}
-                  {#each template.sections as section (section.id)}
-                    <CanvasSection
-                      {section}
-                      selected={selectedElement?.id === section.id}
-                      dropTarget={dropTargetSection === section.id}
-                      selectedFieldId={selectedType === 'field' ? selectedElement?.id : null}
-                      on:select={() => selectElement(section, 'section')}
-                      on:delete={() => deleteSection(section.id)}
-                      on:duplicate={() => duplicateSection(section)}
-                      on:addField={(e) => addFieldToSection(section.id, e.detail.fieldType)}
-                      on:selectField={(e) => selectElement(e.detail.field, 'field')}
-                      on:deleteField={(e) => deleteField(section.id, e.detail.fieldId)}
-                      on:duplicateField={(e) => duplicateField(section.id, e.detail.field)}
-                      on:drop={(e) => handleDrop(e.detail.event, section.id)}
-                      on:dragover={(e) => handleDragOver(e.detail.event, section.id)}
-                    />
-                  {/each}
-                {/if}
-              </div>
-            </div>
+            <ChevronDown size={20} />
           {/if}
-        </div>
+          <span>Properties: {selectedElement.label_en || selectedElement.display_name_en || selectedElement.name}</span>
+          <span class="element-type-badge">{selectedType}</span>
+        </button>
 
-        <!-- Right: Properties Panel -->
-        {#if selectedElement && !showPreview}
-          <div class="properties-sidebar">
+        {#if propertiesPanelOpen}
+          <div class="properties-content">
             <PropertiesPanel
               element={selectedElement}
               elementType={selectedType}
@@ -520,36 +491,84 @@
           </div>
         {/if}
       </div>
+    {/if}
+
+    <!-- Main Canvas Area -->
+    <div class="canvas-container">
+      {#if showPreview}
+        <!-- Preview Mode -->
+        <div class="preview-wrapper">
+          <ProfileFormVisual
+            profileCode={template.code}
+            configuration={{}}
+          />
+        </div>
+      {:else}
+        <!-- Edit Mode -->
+        <div class="canvas-editor">
+          {#if template.sections.length === 0}
+            <div class="empty-canvas">
+              <Settings size={64} />
+              <h3>Start Building Your Profile</h3>
+              <p>Drag sections from the palette above to get started</p>
+              <button class="btn-add-section" on:click={() => addSection()}>
+                <Plus size={20} />
+                Add First Section
+              </button>
+            </div>
+          {:else}
+            <div class="sections-grid">
+              {#each template.sections as section (section.id)}
+                <CanvasSection
+                  {section}
+                  selected={selectedElement?.id === section.id}
+                  dropTarget={dropTargetSection === section.id}
+                  selectedFieldId={selectedType === 'field' ? selectedElement?.id : null}
+                  on:select={() => selectElement(section, 'section')}
+                  on:delete={() => deleteSection(section.id)}
+                  on:duplicate={() => duplicateSection(section)}
+                  on:addField={(e) => addFieldToSection(section.id, e.detail.fieldType)}
+                  on:selectField={(e) => selectElement(e.detail.field, 'field')}
+                  on:deleteField={(e) => deleteField(section.id, e.detail.fieldId)}
+                  on:duplicateField={(e) => duplicateField(section.id, e.detail.field)}
+                  on:drop={(e) => handleDrop(e.detail.event, section.id)}
+                  on:dragover={(e) => handleDragOver(e.detail.event, section.id)}
+                />
+              {/each}
+              
+              <!-- Add Section Button -->
+              <button class="add-section-card" on:click={() => addSection()}>
+                <Plus size={32} />
+                <span>Add Section</span>
+              </button>
+            </div>
+          {/if}
+        </div>
+      {/if}
     </div>
   </div>
 {/if}
 
 <style>
-  .builder-overlay {
+  .builder-fullscreen {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.8);
-    backdrop-filter: blur(4px);
     z-index: 9999;
-    display: flex;
-  }
-
-  .builder-container {
-    width: 100vw;
-    height: 100vh;
+    background: #f9fafb;
     display: flex;
     flex-direction: column;
-    background: #f9fafb;
+    overflow: hidden;
   }
 
+  /* Toolbar (Top) */
   .builder-toolbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 16px;
+    padding: 16px 24px;
     background: linear-gradient(135deg, #667EEA 0%, #764BA2 100%);
     border-bottom: 2px solid rgba(0, 0, 0, 0.1);
-    gap: 16px;
+    flex-shrink: 0;
   }
 
   .toolbar-left,
@@ -565,7 +584,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.15);
     border: none;
     border-radius: 8px;
     color: white;
@@ -574,12 +593,24 @@
   }
 
   .tool-btn:hover:not(:disabled) {
-    background: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.25);
   }
 
   .tool-btn:disabled {
-    opacity: 0.5;
+    opacity: 0.4;
     cursor: not-allowed;
+  }
+
+  .tool-btn.active {
+    background: rgba(255, 255, 255, 0.35);
+  }
+
+  .close-btn {
+    background: rgba(239, 68, 68, 0.3);
+  }
+
+  .close-btn:hover {
+    background: rgba(239, 68, 68, 0.5);
   }
 
   .toolbar-divider {
@@ -589,26 +620,42 @@
     margin: 0 4px;
   }
 
+  .template-inputs {
+    display: flex;
+    gap: 8px;
+  }
+
   .code-input,
   .name-input {
     padding: 8px 16px;
-    background: rgba(255, 255, 255, 0.9);
+    background: rgba(255, 255, 255, 0.95);
     border: none;
     border-radius: 8px;
     font-weight: 600;
     color: #1a1a1a;
+    font-size: 14px;
   }
 
   .code-input {
-    width: 120px;
+    width: 100px;
     font-family: 'Courier New', monospace;
+    text-transform: uppercase;
   }
 
   .name-input {
-    width: 250px;
+    width: 280px;
   }
 
-  .btn-primary {
+  .history-indicator {
+    padding: 4px 8px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    color: white;
+    font-size: 11px;
+    font-family: 'Courier New', monospace;
+  }
+
+  .btn-save {
     display: flex;
     align-items: center;
     gap: 6px;
@@ -622,127 +669,182 @@
     transition: all 0.15s ease;
   }
 
-  .btn-primary:hover {
+  .btn-save:hover {
+    background: #f0f0ff;
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   }
 
-  .close-btn {
-    background: rgba(239, 68, 68, 0.2);
-  }
-
-  .close-btn:hover:not(:disabled) {
-    background: rgba(239, 68, 68, 0.4);
-  }
-
-  .builder-main {
-    display: grid;
-    grid-template-columns: 280px 1fr 350px;
-    gap: 0;
-    flex: 1;
-    overflow: hidden;
-  }
-
-  .palette-sidebar {
+  /* Horizontal Palette */
+  .palette-horizontal {
+    flex-shrink: 0;
     background: #f3f4f6;
-    border-right: 1px solid #e5e7eb;
-    overflow-y: auto;
+    border-bottom: 1px solid #e5e7eb;
+    overflow-x: auto;
+    overflow-y: hidden;
   }
 
-  .canvas-area {
-    background: white;
-    overflow: auto;
+  /* Properties Panel (Horizontal, Collapsible) */
+  .properties-panel-horizontal {
+    flex-shrink: 0;
+    background: #f3f4f6;
+    border-bottom: 1px solid #e5e7eb;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
   }
 
-  .canvas-edit-mode {
-    padding: 32px;
+  .properties-panel-horizontal.open {
+    max-height: 300px;
   }
 
-  .canvas-header {
+  .properties-toggle {
+    width: 100%;
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    margin-bottom: 32px;
+    gap: 8px;
+    padding: 8px 24px;
+    background: #e5e7eb;
+    border: none;
+    border-bottom: 1px solid #d1d5db;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-weight: 600;
+    color: #1a1a1a;
   }
 
-  .canvas-header h3 {
-    margin: 0;
-    font-size: 24px;
+  .properties-toggle:hover {
+    background: #d1d5db;
+  }
+
+  .element-type-badge {
+    padding: 2px 8px;
+    background: #EEF2FF;
+    color: #667EEA;
+    border-radius: 12px;
+    font-size: 10px;
+    text-transform: uppercase;
     font-weight: 700;
   }
 
-  .btn-secondary-small {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 16px;
-    background: #f3f4f6;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
+  .properties-content {
+    padding: 24px;
+    overflow-y: auto;
+    max-height: 250px;
   }
 
-  .canvas-sections {
-    display: flex;
-    gap: 16px;
-    padding: 16px;
-    background: #f9fafb;
-    border: 2px dashed #e5e7eb;
-    border-radius: 12px;
-    min-height: 400px;
-    overflow-x: auto;
+  /* Canvas Container */
+  .canvas-container {
+    flex: 1;
+    overflow: auto;
+    background: #f8f9fa;
+  }
+
+  .canvas-editor {
+    padding: 32px;
+    min-height: 100%;
   }
 
   .empty-canvas {
-    flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     gap: 16px;
-    color: #9ca3af;
     padding: 64px;
-  }
-
-  .properties-sidebar {
     background: white;
-    border-left: 1px solid #e5e7eb;
-    overflow-y: auto;
+    border: 3px dashed #e5e7eb;
+    border-radius: 12px;
+    color: #9ca3af;
+    min-height: 400px;
   }
 
-  .preview-mode {
-    padding: 32px;
-    background: white;
-  }
-
-  .preview-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 32px;
-  }
-
-  .preview-header h3 {
+  .empty-canvas h3 {
     margin: 0;
     font-size: 24px;
-    font-weight: 700;
+    color: #1a1a1a;
   }
 
-  .btn-secondary {
-    padding: 8px 24px;
-    background: #f3f4f6;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
+  .empty-canvas p {
+    margin: 0;
+    font-size: 16px;
   }
 
-  .preview-content {
-    background: white;
-    border: 1px solid #e5e7eb;
+  .btn-add-section {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 32px;
+    background: #667EEA;
+    color: white;
+    border: none;
     border-radius: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-top: 16px;
+  }
+
+  .btn-add-section:hover {
+    background: #5568D3;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+  }
+
+  /* Sections Grid (Horizontal) */
+  .sections-grid {
+    display: flex;
+    gap: 24px;
+    padding: 16px;
+    background: white;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    min-height: 400px;
+    overflow-x: auto;
+  }
+
+  .add-section-card {
+    min-width: 180px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
     padding: 32px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    background: #f9fafb;
+    border: 3px dashed #e5e7eb;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #9ca3af;
+    font-weight: 600;
+  }
+
+  .add-section-card:hover {
+    border-color: #667EEA;
+    color: #667EEA;
+    background: #EEF2FF;
+    transform: scale(1.02);
+  }
+
+  /* Preview */
+  .preview-wrapper {
+    padding: 32px;
+    background: white;
+    min-height: 100%;
+  }
+
+  /* Responsive */
+  @media (max-width: 1024px) {
+    .template-inputs {
+      flex-direction: column;
+    }
+
+    .sections-grid {
+      flex-direction: column;
+    }
+
+    .add-section-card {
+      min-width: 100%;
+    }
   }
 </style>

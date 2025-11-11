@@ -291,7 +291,6 @@
   .properties-panel {
     display: flex;
     flex-direction: column;
-    height: 100%;
     background: white;
   }
 
@@ -299,26 +298,24 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 20px;
+    padding: 16px 24px;
     border-bottom: 1px solid #e5e7eb;
     background: #f9fafb;
   }
 
   .panel-header h3 {
     margin: 0;
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 700;
   }
 
   .panel-content {
-    flex: 1;
     overflow-y: auto;
-    padding: 20px;
   }
 
   .property-group {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 16px;
   }
 
