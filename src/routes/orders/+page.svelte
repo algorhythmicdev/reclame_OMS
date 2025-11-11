@@ -15,7 +15,7 @@
   import Badge from '$lib/ui/Badge.svelte';
   import { currentUser } from '$lib/users/user-store';
   import { dragging } from '$lib/dnd';
-  import { Plus, FilePlus, Settings, Package, Warehouse, Users, FileText, Download, X } from 'lucide-svelte';
+  import { Plus, FilePlus, Settings, Package, Warehouse, Users, FileText, Download, X, Activity, AlertCircle } from 'lucide-svelte';
   import KpiCard from '$lib/ui/KpiCard.svelte';
 
   type OrderRow = {
@@ -207,30 +207,26 @@
 <!-- KPI Stats Cards -->
 <div class="kpi-section">
   <KpiCard 
-    label="Total Orders" 
+    title="Total Orders" 
     value={totalOrders.toString()} 
-    trend="neutral"
-    icon="package"
+    icon={Package}
   />
   <KpiCard 
-    label="Active Orders" 
+    title="Active Orders" 
     value={activeOrders.toString()} 
-    trend="up"
-    icon="activity"
+    icon={Activity}
   />
   {#if isAdmin}
     <KpiCard 
-      label="Draft Orders" 
+      title="Draft Orders" 
       value={draftOrders.toString()} 
-      trend="neutral"
-      icon="file-edit"
+      icon={FilePlus}
     />
   {/if}
   <KpiCard 
-    label="Urgent (≤3 days)" 
+    title="Urgent (≤3 days)" 
     value={urgentOrders.toString()} 
-    trend={urgentOrders > 5 ? 'down' : 'neutral'}
-    icon="alert-circle"
+    icon={AlertCircle}
   />
 </div>
 
