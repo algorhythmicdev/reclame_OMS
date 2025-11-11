@@ -6,6 +6,7 @@
   import OracalSelector from './fields/OracalSelector.svelte';
   import ButtonGroup from './fields/ButtonGroup.svelte';
   import InfoBox from './fields/InfoBox.svelte';
+  import SignTrimSelector from './fields/SignTrimSelector.svelte';
   import type { ProfileTemplate } from '$lib/profiles/types';
 
   export let profileCode: string;
@@ -197,6 +198,14 @@
                     type={field.config?.type || 'info'}
                     icon={field.config?.icon || 'alert-circle'}
                     fullWidth={field.metadata?.fullWidth || false}
+                  />
+                {:else if field.fieldType === 'signtrim_selector' || field.field_type === 'signtrim_selector'}
+                  <SignTrimSelector
+                    bind:value={configuration[section.name][field.fieldKey || field.field_key]}
+                    label={field.label?.en || field.label_en || field.fieldKey}
+                    required={field.isRequired || field.is_required}
+                    disabled={readonly}
+                    colors={field.config?.colors || {}}
                   />
                 {:else if field.fieldType === 'dropdown' || field.field_type === 'dropdown'}
                   <div class="field">
