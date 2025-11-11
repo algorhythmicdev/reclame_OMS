@@ -1,7 +1,7 @@
 // src/lib/faq/types.ts
 
 export interface FAQCategory {
-  id: string;
+  id: number;
   nameEn: string;
   nameRu?: string;
   nameLv?: string;
@@ -17,8 +17,8 @@ export interface FAQCategory {
 }
 
 export interface FAQItem {
-  id: string;
-  categoryId: string;
+  id: number;
+  categoryId: number;
   questionEn: string;
   questionRu?: string;
   questionLv?: string;
@@ -30,7 +30,7 @@ export interface FAQItem {
   viewCount: number;
   isFeatured: boolean;
   isActive: boolean;
-  tags?: string[];
+  tags?: FAQTag[];
   attachments?: FAQAttachment[];
   relatedFaqs?: FAQItem[];
   createdAt: string;
@@ -39,8 +39,8 @@ export interface FAQItem {
 }
 
 export interface FAQAttachment {
-  id: string;
-  faqItemId: string;
+  id: number;
+  faqItemId: number;
   fileName: string;
   filePath: string;
   fileType?: string;
@@ -52,7 +52,7 @@ export interface FAQAttachment {
 }
 
 export interface FAQTag {
-  id: string;
+  id: number;
   name: string;
   slug: string;
   usageCount: number;
@@ -60,10 +60,37 @@ export interface FAQTag {
 }
 
 export interface FAQView {
-  id: string;
-  faqItemId: string;
+  id: number;
+  faqItemId: number;
   userId?: string;
   ipAddress?: string;
   userAgent?: string;
   viewedAt: string;
+}
+
+// Request/Response types for API
+export interface FAQListParams {
+  categoryId?: number;
+  tag?: string;
+  featured?: boolean;
+  search?: string;
+  limit?: number;
+  offset?: number;
+  lang?: 'en' | 'ru' | 'lv';
+}
+
+export interface FAQListResponse {
+  items: FAQItem[];
+  total: number;
+  categories: FAQCategory[];
+  tags: FAQTag[];
+}
+
+export interface FAQSearchResult {
+  item: FAQItem;
+  score: number;
+  highlights: {
+    question?: string;
+    answer?: string;
+  };
 }
