@@ -89,7 +89,13 @@
       "reweld": "Re-weld",
       "repaint": "Re-paint"
     },
-    "compare": "Compare"
+    "compare": "Compare",
+    "active_stages": "Active Stages",
+    "rd_project": "R&D Project",
+    "client": "Client",
+    "title": "Title",
+    "due": "Due",
+    "materials": "Materials"
   },
   "print": {
     "due_label": "Due",
@@ -378,6 +384,10 @@
       "note": "Notes: {note}",
       "no_note": "No notes yet"
     },
+    "over_capacity": "Over Capacity",
+    "near_capacity": "Near Capacity",
+    "capacity_label": "Capacity",
+    "orders_assigned": "orders assigned",
     "legend": {
       "title": "Calendar legend",
       "idle": "Loading off",
