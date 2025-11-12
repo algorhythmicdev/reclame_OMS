@@ -237,8 +237,8 @@
       <Tooltip text="Click column headers to sort. Click the arrow button to expand order details." />
     </div>
     <div class="row actions-row">
-      {#if isSuperAdmin}
-        <button class="tag" on:click={() => (draftFormOpen = true)}>
+      {#if isAdmin}
+        <button class="tag primary" on:click={() => (draftFormOpen = true)}>
           <FilePlus aria-hidden="true" />
           {$t('draft.add')}
         </button>
@@ -759,5 +759,17 @@
     .badges-cell :global(.badge) {
       font-size: 0.7rem;
     }
+  }
+
+  /* Primary button styling */
+  .tag.primary {
+    background: var(--primary, #3b82f6);
+    color: white;
+    border-color: var(--primary, #3b82f6);
+    font-weight: 700;
+  }
+
+  .tag.primary:hover {
+    background: color-mix(in oklab, var(--primary, #3b82f6) 90%, black);
   }
 </style>
