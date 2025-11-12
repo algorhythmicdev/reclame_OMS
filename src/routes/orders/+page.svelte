@@ -6,7 +6,7 @@
   import type { Order, Station, Badge as BadgeCode } from '$lib/order/types';
   import { listOrders, createOrder } from '$lib/order/signage-store';
   import OrderForm from '$lib/order/OrderForm.svelte';
-  import DraftOrderForm from '$lib/order/DraftOrderForm.svelte';
+  import DraftOrderModal from '$lib/orders/components/DraftOrderModal.svelte';
   import { blankStages, STATE_LABEL, type StageState } from '$lib/order/stages';
   import { TERMS } from '$lib/order/names';
   import { t } from 'svelte-i18n';
@@ -441,7 +441,7 @@
 {/if}
 
 <OrderForm bind:open={formOpen} onClose={() => { formOpen = false; refresh(); }} />
-<DraftOrderForm bind:open={draftFormOpen} onClose={() => { draftFormOpen = false; refresh(); }} />
+<DraftOrderModal bind:isOpen={draftFormOpen} on:saved={refresh} on:close={() => { draftFormOpen = false; refresh(); }} />
 
 <style>
   /* KPI Section */
