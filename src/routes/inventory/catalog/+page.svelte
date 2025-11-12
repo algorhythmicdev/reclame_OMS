@@ -1,5 +1,7 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import { inventory } from '$lib/inventory/inventory-store';
+  import { seedSampleMaterials } from '$lib/inventory/material-seeds';
   import { Package, Plus, Search, AlertCircle } from 'lucide-svelte';
   import { t } from 'svelte-i18n';
   import type { MaterialCategory } from '$lib/inventory/material-types';
@@ -8,14 +10,21 @@
   let categoryFilter: MaterialCategory | 'ALL' = 'ALL';
   let showLowStockOnly = false;
   
-  $: materials = $inventory.materials;
-  $: lowStockAlerts = $inventory.lowStockAlerts;
+  // Subscribe to the stores from inventory object
+  const { materials, lowStockAlerts } = inventory;
   
-  $: filteredMaterials = materials.filter(mat => {
+  // Seed sample materials on first load
+  onMount(() => {
+    if ($materials.length === 0) {
+      seedSampleMaterials(inventory);
+    }
+  });
+  
+  $: filteredMaterials = $materials.filter(mat => {
     const matchesSearch = mat.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          mat.brand?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = categoryFilter === 'ALL' || mat.category === categoryFilter;
-    const matchesLowStock = !showLowStockOnly || lowStockAlerts.some(l => l.id === mat.id);
+    const matchesLowStock = !showLowStockOnly || $lowStockAlerts.some(l => l.id === mat.id);
     
     return matchesSearch && matchesCategory && matchesLowStock;
   });
@@ -37,10 +46,10 @@
     </button>
   </div>
   
-  {#if lowStockAlerts.length > 0}
+  {#if $lowStockAlerts.length > 0}
     <div class="alert-banner">
       <AlertCircle size={20} />
-      <span>{lowStockAlerts.length} {$t('inventory.low_stock_items') || 'materials low in stock'}</span>
+      <span>{$lowStockAlerts.length} {$t('inventory.low_stock_items') || 'materials low in stock'}</span>
       <button class="btn sm" on:click={() => showLowStockOnly = !showLowStockOnly}>
         {showLowStockOnly ? ($t('inventory.show_all') || 'Show All') : ($t('inventory.show_alerts') || 'Show Alerts Only')}
       </button>
@@ -100,7 +109,7 @@
             </span>
           </div>
           
-          {#if lowStockAlerts.some(l => l.id === material.id)}
+          {#if $lowStockAlerts.some(l => l.id === material.id)}
             <div class="low-stock-badge">
               <AlertCircle size={14} />
               {$t('inventory.low_stock') || 'Low Stock'}
