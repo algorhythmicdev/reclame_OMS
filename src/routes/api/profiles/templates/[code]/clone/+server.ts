@@ -19,10 +19,10 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
   const { code } = params;
 
   try {
-    const { newCode, newName } = await request.json();
+    const { newCode, notes } = await request.json();
 
     if (!newCode) {
-      throw error(400, 'New template code is required');
+      throw error(400, 'New code is required');
     }
 
     // Validate new code format
@@ -52,6 +52,50 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
 
     const sourceTemplate = templateResult.rows[0];
 
+    // Load complete template with sections and fields
+    const fullTemplateResult = await query(
+      `SELECT 
+        pt.*,
+        json_agg(
+          json_build_object(
+            'name', ps.name,
+            'display_name_en', ps.display_name_en,
+            'display_name_ru', ps.display_name_ru,
+            'display_name_lv', ps.display_name_lv,
+            'order_index', ps.order_index,
+            'is_required', ps.is_required,
+            'metadata', ps.metadata,
+            'fields', (
+              SELECT json_agg(
+                json_build_object(
+                  'field_key', pf.field_key,
+                  'field_type', pf.field_type,
+                  'label_en', pf.label_en,
+                  'label_ru', pf.label_ru,
+                  'label_lv', pf.label_lv,
+                  'order_index', pf.order_index,
+                  'is_required', pf.is_required,
+                  'options', pf.options,
+                  'config', pf.config,
+                  'validation_rules', pf.validation_rules,
+                  'conditional_logic', pf.conditional_logic,
+                  'metadata', pf.metadata
+                ) ORDER BY pf.order_index
+              )
+              FROM profile_fields pf
+              WHERE pf.section_id = ps.id
+            )
+          ) ORDER BY ps.order_index
+        ) FILTER (WHERE ps.id IS NOT NULL) as sections
+       FROM profile_templates pt
+       LEFT JOIN profile_sections ps ON ps.template_id = pt.id
+       WHERE pt.code = $1
+       GROUP BY pt.id`,
+      [code]
+    );
+
+    const fullTemplate = fullTemplateResult.rows[0];
+
     await query('BEGIN');
 
     try {
@@ -65,11 +109,16 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
         RETURNING *`,
         [
           newCode,
-          newName || `${sourceTemplate.name} (Clone)`,
+          `${sourceTemplate.name} (Copy)`,
           sourceTemplate.description,
-          '1.0',
-          true,
-          JSON.stringify(sourceTemplate.metadata),
+          '1.0', // Reset to version 1.0
+          false, // Clones start as inactive
+          JSON.stringify({
+            ...(sourceTemplate.metadata || {}),
+            clonedFrom: code,
+            clonedAt: new Date().toISOString(),
+            clonedBy: user.name || 'system'
+          }),
           user.name || 'system',
           user.name || 'system'
         ]
@@ -77,64 +126,59 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
 
       const clonedTemplate = clonedResult.rows[0];
 
-      // 2. Get and clone sections
-      const sectionsResult = await query(
-        'SELECT * FROM profile_sections WHERE template_id = $1 ORDER BY order_index',
-        [sourceTemplate.id]
-      );
-
-      for (const section of sectionsResult.rows) {
-        const clonedSectionResult = await query(
-          `INSERT INTO profile_sections (
-            template_id, name, display_name_en, display_name_ru, display_name_lv,
-            order_index, is_required, metadata
-          )
-          VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-          RETURNING *`,
-          [
-            clonedTemplate.id,
-            section.name,
-            section.display_name_en,
-            section.display_name_ru,
-            section.display_name_lv,
-            section.order_index,
-            section.is_required,
-            JSON.stringify(section.metadata)
-          ]
-        );
-
-        const clonedSection = clonedSectionResult.rows[0];
-
-        // 3. Clone fields
-        const fieldsResult = await query(
-          'SELECT * FROM profile_fields WHERE section_id = $1 ORDER BY order_index',
-          [section.id]
-        );
-
-        for (const field of fieldsResult.rows) {
-          await query(
-            `INSERT INTO profile_fields (
-              section_id, field_key, field_type, label_en, label_ru, label_lv,
-              order_index, is_required, options, config,
-              validation_rules, conditional_logic, metadata
+      // 2. Clone sections and fields
+      if (fullTemplate.sections && Array.isArray(fullTemplate.sections)) {
+        for (const section of fullTemplate.sections) {
+          if (!section.name) continue; // Skip null sections
+          const sectionResult = await query(
+            `INSERT INTO profile_sections (
+              template_id, name, display_name_en, display_name_ru, display_name_lv,
+              order_index, is_required, metadata
             )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            RETURNING id`,
             [
-              clonedSection.id,
-              field.field_key,
-              field.field_type,
-              field.label_en,
-              field.label_ru,
-              field.label_lv,
-              field.order_index,
-              field.is_required,
-              JSON.stringify(field.options),
-              JSON.stringify(field.config),
-              JSON.stringify(field.validation_rules),
-              JSON.stringify(field.conditional_logic),
-              JSON.stringify(field.metadata)
+              clonedTemplate.id,
+              section.name,
+              section.display_name_en,
+              section.display_name_ru,
+              section.display_name_lv,
+              section.order_index,
+              section.is_required,
+              JSON.stringify(section.metadata)
             ]
           );
+
+          const newSectionId = sectionResult.rows[0].id;
+
+          // 3. Clone fields
+          if (section.fields && Array.isArray(section.fields)) {
+            for (const field of section.fields) {
+              await query(
+                `INSERT INTO profile_fields (
+                  section_id, field_key, field_type, label_en, label_ru, label_lv,
+                  order_index, is_required, options, config,
+                  validation_rules, conditional_logic, metadata
+                )
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
+                [
+                  newSectionId,
+                  field.field_key,
+                  field.field_type,
+                  field.label_en,
+                  field.label_ru,
+                  field.label_lv,
+                  field.order_index,
+                  field.is_required,
+                  JSON.stringify(field.options || []),
+                  JSON.stringify(field.config || {}),
+                  JSON.stringify(field.validation_rules || []),
+                  JSON.stringify(field.conditional_logic || []),
+                  JSON.stringify(field.metadata || {})
+                ]
+              );
+            }
+          }
         }
       }
 
@@ -172,22 +216,23 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
           clonedTemplate.id,
           '1.0',
           JSON.stringify(snapshot),
-          `Cloned from ${code}`,
+          notes || `Cloned from ${code}`,
           user.name || 'system'
         ]
       );
 
-      // 5. Log clone action for source template
+      // 5. Log the cloning action
       await query(
         `INSERT INTO template_changes (
-          template_id, change_type, entity_type, description, created_by
+          template_id, change_type, entity_type, new_value, description, created_by
         )
-        VALUES ($1, $2, $3, $4, $5)`,
+        VALUES ($1, $2, $3, $4, $5, $6)`,
         [
-          sourceTemplate.id,
+          clonedTemplate.id,
           'CLONED',
           'TEMPLATE',
-          `Template cloned to ${newCode}`,
+          JSON.stringify({ clonedFrom: code }),
+          `Cloned from template ${code}`,
           user.name || 'system'
         ]
       );
