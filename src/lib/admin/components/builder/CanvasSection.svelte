@@ -7,7 +7,7 @@
   export let section: any;
   export let selected: boolean = false;
   export let dropTarget: boolean = false;
-  export let selectedFieldId: string | null = null;
+  export let selectedFieldId: number | null = null;
 
   const dispatch = createEventDispatcher();
 
@@ -21,13 +21,16 @@
   }
 
   function handleDrop(event: DragEvent) {
+    event.preventDefault();
     dispatch('drop', { event });
   }
 
   function handleDragOver(event: DragEvent) {
     event.preventDefault();
-    dispatch('dragover', { event });
   }
+
+  $: sectionDisplayName = section.displayName?.en || section.display_name_en || section.name;
+  $: headerColor = section.metadata?.color || section.icon ? '#1a1a1a' : '#1a1a1a';
 </script>
 
 <div 
@@ -43,11 +46,11 @@
   <!-- Section Header -->
   <div 
     class="section-header"
-    style="background-color: {section.metadata?.color || '#1a1a1a'};"
+    style="background-color: {headerColor};"
     draggable="true"
   >
     <GripVertical size={16} class="drag-handle" />
-    <span class="section-name">{section.display_name_en}</span>
+    <span class="section-name">{sectionDisplayName}</span>
     
     <div class="section-header-actions">
       <button 

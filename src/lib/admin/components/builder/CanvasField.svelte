@@ -9,17 +9,23 @@
   const dispatch = createEventDispatcher();
 
   const fieldTypeIcons: Record<string, string> = {
+    'material_selector': '🔲',
     'material_field': '🔲',
+    'thickness_selector': '📏',
     'color_ral': '🎨',
+    'color_pantone': '🌈',
+    'color_oracal': '📋',
     'dropdown': '▼',
     'button_group': '🔘',
     'toggle': '⚡',
+    'numeric_input': '🔢',
     'number': '🔢',
+    'text_input': '📝',
     'text': '📝',
     'textarea': '📄',
+    'date_input': '📅',
     'date': '📅',
-    'oracal_selector': '📋',
-    'signtrim_selector': '✨',
+    'multi_select_chips': '🏷️',
     'info_box': 'ℹ️'
   };
 
@@ -27,12 +33,15 @@
     event.stopPropagation();
     dispatch('select');
   }
+
+  $: fieldLabel = field.label?.en || field.label_en || 'Field';
+  $: fieldType = field.fieldType || field.field_type || 'unknown';
+  $: isRequired = field.isRequired || field.is_required || false;
 </script>
 
 <div 
   class="canvas-field"
   class:selected
-  class:visual-box={field.metadata?.visualBox}
   draggable="true"
   on:click={handleClick}
   role="button"
@@ -41,12 +50,12 @@
   <GripVertical size={12} class="drag-handle" />
   
   <span class="field-icon">
-    {fieldTypeIcons[field.field_type] || '❓'}
+    {fieldTypeIcons[fieldType] || '❓'}
   </span>
 
   <div class="field-info">
-    <span class="field-label">{field.label_en}</span>
-    <span class="field-type">{field.field_type}</span>
+    <span class="field-label">{fieldLabel}</span>
+    <span class="field-type">{fieldType}</span>
   </div>
 
   <div class="field-actions">
@@ -66,12 +75,8 @@
     </button>
   </div>
 
-  {#if field.is_required}
+  {#if isRequired}
     <span class="required-badge">*</span>
-  {/if}
-
-  {#if field.metadata?.visualBox}
-    <span class="visual-badge" title="Shows as visual box">📦</span>
   {/if}
 </div>
 
@@ -98,10 +103,6 @@
     border-color: #667EEA;
     background: #EEF2FF;
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
-  }
-
-  .canvas-field.visual-box {
-    border-left: 4px solid #10b981;
   }
 
   .drag-handle {
@@ -192,20 +193,5 @@
     border-radius: 50%;
     font-size: 12px;
     font-weight: 700;
-  }
-
-  .visual-badge {
-    position: absolute;
-    bottom: -6px;
-    right: -6px;
-    width: 20px;
-    height: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #10b981;
-    border-radius: 50%;
-    font-size: 12px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   }
 </style>
