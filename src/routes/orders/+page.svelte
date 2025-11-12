@@ -5,7 +5,6 @@
   import Tooltip from '$lib/ui/Tooltip.svelte';
   import type { Order, Station, Badge as BadgeCode } from '$lib/order/types';
   import { listOrders, createOrder } from '$lib/order/signage-store';
-  import OrderForm from '$lib/order/OrderForm.svelte';
   import DraftOrderModal from '$lib/orders/components/DraftOrderModal.svelte';
   import { blankStages, STATE_LABEL, type StageState } from '$lib/order/stages';
   import { TERMS } from '$lib/order/names';
@@ -75,7 +74,6 @@
 
   let rows: OrderRow[] = [];
   let q = '';
-  let formOpen = false;
   let draftFormOpen = false;
   let visible: OrderRow[] = [];
   let qLower = '';
@@ -239,12 +237,6 @@
     <div class="row actions-row">
       {#if isAdmin}
         <button class="tag primary" on:click={() => (draftFormOpen = true)}>
-          <FilePlus aria-hidden="true" />
-          {$t('draft.add')}
-        </button>
-      {/if}
-      {#if isAdmin}
-        <button class="tag" on:click={() => (formOpen = true)}>
           <Plus aria-hidden="true" />
           {$t('orderLists.new')}
         </button>
@@ -440,7 +432,6 @@
   </div>
 {/if}
 
-<OrderForm bind:open={formOpen} onClose={() => { formOpen = false; refresh(); }} />
 <DraftOrderModal bind:isOpen={draftFormOpen} on:saved={refresh} on:close={() => { draftFormOpen = false; refresh(); }} />
 
 <style>
