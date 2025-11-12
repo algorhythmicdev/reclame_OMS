@@ -92,42 +92,43 @@
           <label>Display Name (EN)</label>
           <input
             type="text"
-            value={localElement.display_name_en || ''}
-            on:input={(e) => updateProperty('display_name_en', e.currentTarget.value)}
+            value={localElement.displayName?.en || localElement.display_name_en || ''}
+            on:input={(e) => updateNestedProperty(['displayName', 'en'], e.currentTarget.value)}
           />
         </div>
         <div class="form-field">
           <label>Display Name (RU)</label>
           <input
             type="text"
-            value={localElement.display_name_ru || ''}
-            on:input={(e) => updateProperty('display_name_ru', e.currentTarget.value)}
+            value={localElement.displayName?.ru || localElement.display_name_ru || ''}
+            on:input={(e) => updateNestedProperty(['displayName', 'ru'], e.currentTarget.value)}
           />
         </div>
         <div class="form-field">
           <label>Display Name (LV)</label>
           <input
             type="text"
-            value={localElement.display_name_lv || ''}
-            on:input={(e) => updateProperty('display_name_lv', e.currentTarget.value)}
+            value={localElement.displayName?.lv || localElement.display_name_lv || ''}
+            on:input={(e) => updateNestedProperty(['displayName', 'lv'], e.currentTarget.value)}
           />
         </div>
         <div class="form-field">
           <label>
             <input
               type="checkbox"
-              checked={localElement.is_required || false}
-              on:change={(e) => updateProperty('is_required', e.currentTarget.checked)}
+              checked={localElement.isRequired || localElement.is_required || false}
+              on:change={(e) => updateProperty('isRequired', e.currentTarget.checked)}
             />
             Required Section
           </label>
         </div>
         <div class="form-field">
-          <label>Header Color</label>
+          <label>Icon</label>
           <input
-            type="color"
-            value={localElement.metadata?.color || '#1a1a1a'}
-            on:input={(e) => updateNestedProperty(['metadata', 'color'], e.currentTarget.value)}
+            type="text"
+            value={localElement.icon || ''}
+            on:input={(e) => updateProperty('icon', e.currentTarget.value)}
+            placeholder="⚙️"
           />
         </div>
       </div>
@@ -140,29 +141,29 @@
           <label>Field Key</label>
           <input
             type="text"
-            value={localElement.field_key || ''}
-            on:input={(e) => updateProperty('field_key', e.currentTarget.value)}
+            value={localElement.fieldKey || localElement.field_key || ''}
+            on:input={(e) => updateProperty('fieldKey', e.currentTarget.value)}
             placeholder="field_name"
           />
         </div>
         <div class="form-field">
           <label>Field Type</label>
           <select
-            value={localElement.field_type || 'text'}
-            on:change={(e) => updateProperty('field_type', e.currentTarget.value)}
+            value={localElement.fieldType || localElement.field_type || 'text_input'}
+            on:change={(e) => updateProperty('fieldType', e.currentTarget.value)}
           >
-            <option value="material_field">Material Field</option>
+            <option value="material_selector">Material Selector</option>
+            <option value="thickness_selector">Thickness Selector</option>
             <option value="color_ral">RAL Color</option>
             <option value="color_pantone">PANTONE Color</option>
-            <option value="oracal_selector">ORACAL Film</option>
-            <option value="signtrim_selector">SignTrim</option>
+            <option value="color_oracal">ORACAL Film</option>
             <option value="dropdown">Dropdown</option>
             <option value="button_group">Button Group</option>
             <option value="toggle">Toggle</option>
-            <option value="number">Number</option>
-            <option value="text">Text</option>
+            <option value="numeric_input">Number</option>
+            <option value="text_input">Text</option>
             <option value="textarea">Text Area</option>
-            <option value="date">Date</option>
+            <option value="date_input">Date</option>
             <option value="multi_select_chips">Multi-Select</option>
             <option value="info_box">Info Box</option>
           </select>
@@ -171,49 +172,39 @@
           <label>Label (EN)</label>
           <input
             type="text"
-            value={localElement.label_en || ''}
-            on:input={(e) => updateProperty('label_en', e.currentTarget.value)}
+            value={localElement.label?.en || localElement.label_en || ''}
+            on:input={(e) => updateNestedProperty(['label', 'en'], e.currentTarget.value)}
           />
         </div>
         <div class="form-field">
           <label>Label (RU)</label>
           <input
             type="text"
-            value={localElement.label_ru || ''}
-            on:input={(e) => updateProperty('label_ru', e.currentTarget.value)}
+            value={localElement.label?.ru || localElement.label_ru || ''}
+            on:input={(e) => updateNestedProperty(['label', 'ru'], e.currentTarget.value)}
           />
         </div>
         <div class="form-field">
           <label>Label (LV)</label>
           <input
             type="text"
-            value={localElement.label_lv || ''}
-            on:input={(e) => updateProperty('label_lv', e.currentTarget.value)}
+            value={localElement.label?.lv || localElement.label_lv || ''}
+            on:input={(e) => updateNestedProperty(['label', 'lv'], e.currentTarget.value)}
           />
         </div>
         <div class="form-field">
           <label>
             <input
               type="checkbox"
-              checked={localElement.is_required || false}
-              on:change={(e) => updateProperty('is_required', e.currentTarget.checked)}
+              checked={localElement.isRequired || localElement.is_required || false}
+              on:change={(e) => updateProperty('isRequired', e.currentTarget.checked)}
             />
             Required Field
           </label>
         </div>
-        <div class="form-field">
-          <label>
-            <input
-              type="checkbox"
-              checked={localElement.metadata?.visualBox || false}
-              on:change={(e) => updateNestedProperty(['metadata', 'visualBox'], e.currentTarget.checked)}
-            />
-            Show as Visual Box
-          </label>
-        </div>
 
         <!-- Type-specific configs -->
-        {#if localElement.field_type === 'dropdown' || localElement.field_type === 'button_group' || localElement.field_type === 'multi_select_chips'}
+        {#if ['dropdown', 'button_group', 'multi_select_chips', 'thickness_selector'].includes(localElement.fieldType || localElement.field_type)}
           <div class="form-field">
             <label>Options (one per line)</label>
             <textarea
@@ -225,7 +216,7 @@
           </div>
         {/if}
 
-        {#if localElement.field_type === 'number'}
+        {#if ['numeric_input', 'number', 'dimension_input', 'thickness_selector'].includes(localElement.fieldType || localElement.field_type)}
           <div class="form-field">
             <label>Min Value</label>
             <input
@@ -260,7 +251,7 @@
           </div>
         {/if}
 
-        {#if localElement.field_type === 'info_box'}
+        {#if localElement.fieldType === 'info_box' || localElement.field_type === 'info_box'}
           <div class="form-field">
             <label>Info Content</label>
             <textarea
@@ -268,18 +259,6 @@
               on:input={(e) => updateNestedProperty(['config', 'content'], e.currentTarget.value)}
               rows="4"
             ></textarea>
-          </div>
-          <div class="form-field">
-            <label>Type</label>
-            <select
-              value={localElement.config?.type || 'info'}
-              on:change={(e) => updateNestedProperty(['config', 'type'], e.currentTarget.value)}
-            >
-              <option value="info">Info</option>
-              <option value="warning">Warning</option>
-              <option value="error">Error</option>
-              <option value="success">Success</option>
-            </select>
           </div>
         {/if}
       </div>
