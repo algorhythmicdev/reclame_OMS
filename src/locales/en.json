@@ -105,11 +105,30 @@
     "value_header": "Value",
     "stages_checklist_title": "Stages checklist"
   },
+  "sections": {
+    "admin": "Admin",
+    "production": "Production",
+    "logistics": "Logistics"
+  },
   "roles": {
     "label": "Role",
-    "superadmin": "SuperAdmin",
+    "superadmin": "Super Admin",
+    "stationlead": "Station Lead",
+    "operator": "Operator",
+    "viewer": "Viewer",
     "admin": "Admin",
     "station": "Station"
+  },
+  "permissions": {
+    "create_order": "Create Order",
+    "edit_inventory": "Edit Inventory",
+    "approve_change": "Approve Change",
+    "assign_loading": "Assign Loading",
+    "view_orders": "View Orders",
+    "update_order": "Update Order",
+    "view_calendar": "View Calendar",
+    "update_calendar": "Update Calendar",
+    "export_manifest": "Export Manifest"
   },
   "order": {
     "overview": "Overview",
