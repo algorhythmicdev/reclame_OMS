@@ -22,6 +22,9 @@
   import { ui } from '$lib/state/ui';
   import { setLocale } from '$lib/i18n';
   import { Menu, X } from 'lucide-svelte';
+  import SectionIndicator from '$lib/components/SectionIndicator.svelte';
+  import { currentUser } from '$lib/auth/user-store';
+  import { loadStoredUser } from '$lib/auth/auth-utils';
 
   let searchOpen = false;
   let showKb = false;
@@ -37,6 +40,12 @@
 
   onMount(() => {
     seed(base);
+    
+    // Load stored user if available
+    const storedUser = loadStoredUser();
+    if (storedUser) {
+      currentUser.set(storedUser);
+    }
     
     // Apply query params for deep-linking preferences
     const q = new URLSearchParams(location.search);
@@ -139,6 +148,7 @@
     <div title={$t('topbar.theme', 'Theme')}><ThemeSwitch /></div>
     <div title={$t('ui.notifications', 'Notifications')}><NotificationsBell /></div>
     <div title={$t('ui.chat', 'Team chat')}><ChatPopover /></div>
+    <SectionIndicator />
     <UserSwitch />
   </div>
 </header>

@@ -1,18 +1,10 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
   import { base } from '$app/paths';
   import { currentUser } from '$lib/auth/user-store';
   import { can } from '$lib/auth/permission-utils';
   import { t } from 'svelte-i18n';
   
   $: user = $currentUser;
-  
-  onMount(() => {
-    // Redirect to login if not authenticated
-    if (!user) {
-      window.location.href = `${base}/login`;
-    }
-  });
 </script>
 
 <svelte:head>

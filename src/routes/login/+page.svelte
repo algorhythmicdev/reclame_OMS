@@ -11,13 +11,13 @@
   let isLoading = false;
   
   onMount(() => {
-    // If already logged in, redirect to section home
-    const unsubscribe = currentUser.subscribe(user => {
-      if (user) {
+    // Check once if already logged in on page load
+    currentUser.subscribe(user => {
+      // Only redirect if user is already set (not during login process)
+      if (user && !isLoading) {
         window.location.href = `${base}/${user.primarySection.toLowerCase()}/dashboard`;
       }
     });
-    return unsubscribe;
   });
   
   async function handleLogin() {
