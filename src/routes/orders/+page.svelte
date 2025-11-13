@@ -1,21 +1,19 @@
 <script lang="ts">
-  import { assets, base } from '$app/paths';
+  import { base } from '$app/paths';
   import { onMount } from 'svelte';
   import Input from '$lib/ui/Input.svelte';
   import Tooltip from '$lib/ui/Tooltip.svelte';
   import type { Order, Station, Badge as BadgeCode } from '$lib/order/types';
   import { listOrders, createOrder } from '$lib/order/signage-store';
-  import OrderForm from '$lib/order/OrderForm.svelte';
-  import DraftOrderForm from '$lib/order/DraftOrderForm.svelte';
+  import DraftOrderModal from '$lib/orders/components/DraftOrderModal.svelte';
   import { blankStages, STATE_LABEL, type StageState } from '$lib/order/stages';
   import { TERMS } from '$lib/order/names';
   import { t } from 'svelte-i18n';
-  import { ORDER_SEEDS } from '$lib/order/order-seeds';
   import { BADGE_ICONS, badgeTone } from '$lib/order/badges';
   import Badge from '$lib/ui/Badge.svelte';
   import { currentUser } from '$lib/users/user-store';
   import { dragging } from '$lib/dnd';
-  import { Plus, FilePlus, Settings, Package, Warehouse, Users, FileText, Download, X, Activity, AlertCircle } from 'lucide-svelte';
+  import { Plus, Settings, Package, Warehouse, Users, FileText, Download, X, Activity, AlertCircle } from 'lucide-svelte';
   import KpiCard from '$lib/ui/KpiCard.svelte';
 
   type OrderRow = {
@@ -31,31 +29,8 @@
     expanded: boolean;
   };
 
-  const assetPath = (name: string) => (assets && assets !== '.' ? `${assets}/files/${name}` : `/files/${name}`);
-
-  for (const seed of ORDER_SEEDS) {
-    const stages = seed.stages ? { ...blankStages(), ...seed.stages } : blankStages();
-    createOrder({
-      id: seed.id,
-      title: seed.title,
-      client: seed.client,
-      due: seed.due,
-      badges: seed.badges,
-      fields: seed.fields,
-      materials: seed.materials,
-      stages,
-      isRD: seed.isRD,
-      rdNotes: seed.rdNotes,
-      cycles: [],
-      loadingDate: seed.loadingDate,
-      file: {
-        id: `${seed.id}-file`,
-        name: seed.fileName,
-        path: assetPath(seed.fileName),
-        kind: 'pdf'
-      }
-    });
-  }
+  // TODO: Orders should be loaded from API instead of localStorage
+  // Currently using vcs-store (localStorage) - needs migration to database + API
 
   function toRow(order: Order): OrderRow {
     const stagesMap = order.stages ?? blankStages();
@@ -75,7 +50,6 @@
 
   let rows: OrderRow[] = [];
   let q = '';
-  let formOpen = false;
   let draftFormOpen = false;
   let visible: OrderRow[] = [];
   let qLower = '';
@@ -239,12 +213,6 @@
     <div class="row actions-row">
       {#if isAdmin}
         <button class="tag primary" on:click={() => (draftFormOpen = true)}>
-          <FilePlus aria-hidden="true" />
-          {$t('draft.add')}
-        </button>
-      {/if}
-      {#if isAdmin}
-        <button class="tag" on:click={() => (formOpen = true)}>
           <Plus aria-hidden="true" />
           {$t('orderLists.new')}
         </button>
@@ -440,8 +408,7 @@
   </div>
 {/if}
 
-<OrderForm bind:open={formOpen} onClose={() => { formOpen = false; refresh(); }} />
-<DraftOrderForm bind:open={draftFormOpen} onClose={() => { draftFormOpen = false; refresh(); }} />
+<DraftOrderModal bind:isOpen={draftFormOpen} on:saved={refresh} on:close={() => { draftFormOpen = false; refresh(); }} />
 
 <style>
   /* KPI Section */
