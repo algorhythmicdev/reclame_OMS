@@ -26,6 +26,8 @@
     "BENDING": "Locīšana",
     "WELDING": "Metināšana",
     "PAINT": "Krāsošana",
+    "FILM_COATING": "Plēves pārklāšana",
+    "GLUEING": "Līmēšana",
     "ASSEMBLY": "Montāža",
     "QC": "QC",
     "LOGISTICS": "Loģistika"
@@ -38,6 +40,7 @@
     "stations": "Stacijas",
     "assets": "Resursi",
     "files": "Faili",
+    "faq": "Bieži uzdotie jautājumi",
     "settings": "Iestatījumi",
     "kanban": "Ražošana",
     "help": "Palīdzība"

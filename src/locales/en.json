@@ -26,6 +26,8 @@
     "BENDING": "Bending",
     "WELDING": "Welding",
     "PAINT": "Paint",
+    "FILM_COATING": "Film Coating",
+    "GLUEING": "Glueing",
     "ASSEMBLY": "Assembly",
     "QC": "QC",
     "LOGISTICS": "Logistics"
@@ -38,6 +40,7 @@
     "stations": "Stations",
     "assets": "Assets",
     "files": "Files",
+    "faq": "FAQ",
     "settings": "Settings",
     "kanban": "Production Board",
     "help": "Help"

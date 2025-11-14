@@ -13,7 +13,7 @@
   import Badge from '$lib/ui/Badge.svelte';
   import { currentUser } from '$lib/users/user-store';
   import { dragging } from '$lib/dnd';
-  import { Plus, Settings, Package, Warehouse, Users, FileText, Download, X, Activity, AlertCircle } from 'lucide-svelte';
+  import { Plus, Settings, Package, Warehouse, Users, FileText, Download, X, Activity, AlertCircle, FilePlus } from 'lucide-svelte';
   import KpiCard from '$lib/ui/KpiCard.svelte';
 
   type OrderRow = {
@@ -361,7 +361,14 @@
   <div class="admin-fab-container">
     <!-- Backdrop for closing menu -->
     {#if adminMenuOpen}
-      <div class="admin-fab-backdrop" on:click={toggleAdminMenu}></div>
+      <div 
+        class="admin-fab-backdrop" 
+        role="button" 
+        tabindex="0"
+        on:click={toggleAdminMenu}
+        on:keydown={(e) => e.key === 'Enter' || e.key === ' ' ? toggleAdminMenu() : null}
+        aria-label="Close admin menu"
+      ></div>
     {/if}
     
     <!-- Menu Items -->
