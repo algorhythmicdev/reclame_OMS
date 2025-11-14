@@ -5,6 +5,8 @@ export type StationTag =
   | 'BENDING'
   | 'WELDING'
   | 'PAINT'
+  | 'FILM_COATING'
+  | 'GLUEING'
   | 'ASSEMBLY'
   | 'QC'
   | 'LOGISTICS';
@@ -23,6 +25,8 @@ export type ReworkReason =
   | 'REBEND'
   | 'REWELD'
   | 'REPAINT'
+  | 'RECOAT'
+  | 'REGLUE'
   | 'REASSEMBLE'
   | 'RECHECK'
   | 'CUSTOM';
@@ -33,6 +37,8 @@ export const REWORK_LABEL: Record<ReworkReason, string> = {
   REBEND: 'rework.reasons.REBEND',
   REWELD: 'rework.reasons.REWELD',
   REPAINT: 'rework.reasons.REPAINT',
+  RECOAT: 'rework.reasons.RECOAT',
+  REGLUE: 'rework.reasons.REGLUE',
   REASSEMBLE: 'rework.reasons.REASSEMBLE',
   RECHECK: 'rework.reasons.RECHECK',
   CUSTOM: 'rework.reasons.CUSTOM'
@@ -56,6 +62,8 @@ export const STATIONS: StationTag[] = [
   'BENDING',
   'WELDING',
   'PAINT',
+  'FILM_COATING',
+  'GLUEING',
   'ASSEMBLY',
   'QC',
   'LOGISTICS'

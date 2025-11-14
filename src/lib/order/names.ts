@@ -6,6 +6,8 @@ export const TERMS = {
     BENDING: 'stations.BENDING',
     WELDING: 'stations.WELDING',
     PAINT: 'stations.PAINT',
+    FILM_COATING: 'stations.FILM_COATING',
+    GLUEING: 'stations.GLUEING',
     ASSEMBLY: 'stations.ASSEMBLY',
     QC: 'stations.QC',
     LOGISTICS: 'stations.LOGISTICS'

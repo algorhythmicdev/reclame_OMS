@@ -26,6 +26,8 @@
     "BENDING": "Locīšana",
     "WELDING": "Metināšana",
     "PAINT": "Krāsošana",
+    "FILM_COATING": "Plēves pārklāšana",
+    "GLUEING": "Līmēšana",
     "ASSEMBLY": "Montāža",
     "QC": "QC",
     "LOGISTICS": "Loģistika"

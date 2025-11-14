@@ -26,6 +26,8 @@
     "BENDING": "Bending",
     "WELDING": "Welding",
     "PAINT": "Paint",
+    "FILM_COATING": "Film Coating",
+    "GLUEING": "Glueing",
     "ASSEMBLY": "Assembly",
     "QC": "QC",
     "LOGISTICS": "Logistics"

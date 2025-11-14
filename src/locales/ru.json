@@ -26,6 +26,8 @@
     "BENDING": "Гибка",
     "WELDING": "Сварка",
     "PAINT": "Покраска",
+    "FILM_COATING": "Пленочное покрытие",
+    "GLUEING": "Склейка",
     "ASSEMBLY": "Сборка",
     "QC": "QC",
     "LOGISTICS": "Логистика"
