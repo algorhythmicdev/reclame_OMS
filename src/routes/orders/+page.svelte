@@ -13,7 +13,7 @@
   import Badge from '$lib/ui/Badge.svelte';
   import { currentUser } from '$lib/users/user-store';
   import { dragging } from '$lib/dnd';
-  import { Plus, Settings, Package, Warehouse, Users, FileText, Download, X, Activity, AlertCircle } from 'lucide-svelte';
+  import { Plus, Settings, Package, Warehouse, Users, FileText, Download, X, Activity, AlertCircle, FilePlus } from 'lucide-svelte';
   import KpiCard from '$lib/ui/KpiCard.svelte';
 
   type OrderRow = {
