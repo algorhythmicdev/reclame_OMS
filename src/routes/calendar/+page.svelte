@@ -1,57 +1,115 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import CalendarMonth from '$lib/calendar/CalendarMonth.svelte';
-  import WeekStrip from '$lib/calendar/WeekStrip.svelte';
-  import DayList from '$lib/calendar/DayList.svelte';
-  import Tooltip from '$lib/ui/Tooltip.svelte';
-  import { listOrders } from '$lib/order/signage-store';
-  import { downloadCSV, toCSV } from '$lib/export/csv';
-  import { listAll } from '$lib/loading/loading-store';
-  import { get } from 'svelte/store';
   import { t } from 'svelte-i18n';
-  import type { Order } from '$lib/order/types';
+  import { listOrders } from '$lib/order/signage-store';
   import { loads } from '$lib/state/loads';
-  import EventEditor from '$lib/calendar/EventEditor.svelte';
-  import { Calendar, TruckIcon, Users, StickyNote, Grid3x3, List, Download, Truck } from 'lucide-svelte';
-
+  import type { Order } from '$lib/order/types';
+  import { Calendar, ChevronLeft, ChevronRight, Plus, Truck, Download, Filter } from 'lucide-svelte';
+  import Badge from '$lib/ui/Badge.svelte';
+  import { badgeTone } from '$lib/order/badges';
+  import { downloadCSV, toCSV } from '$lib/export/csv';
+  import { get } from 'svelte/store';
+  
   let today = new Date();
   let y = today.getFullYear();
   let m = today.getMonth();
-  let adminMode = true;
-  let selectedISO: string | null = null;
+  let selectedDate: string | null = null;
   let orders = listOrders();
-  let mode:'grid'|'list'='grid';
-  let quick:{kind:'loading'|'meeting'|'note', dateISO?:string}|null=null;
+  let loadsList: any[] = [];
+  let filterStatus: 'all' | 'scheduled' | 'unscheduled' = 'all';
   
-  function openQuick(kind:'loading'|'meeting'|'note'){ 
-    quick={kind, dateISO:new Date().toISOString().slice(0,10)}; 
-  }
-
+  loads.subscribe(v => loadsList = v);
+  
   function refreshOrders() {
     orders = listOrders();
   }
-
+  
   function prev() {
     m -= 1;
-    if (m < 0) {
-      m = 11;
-      y -= 1;
-    }
+    if (m < 0) { m = 11; y -= 1; }
   }
-
+  
   function next() {
     m += 1;
-    if (m > 11) {
-      m = 0;
-      y += 1;
+    if (m > 11) { m = 0; y += 1; }
+  }
+  
+  function getDaysInMonth(year: number, month: number): Date[] {
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const daysInMonth = lastDay.getDate();
+    const startDayOfWeek = firstDay.getDay();
+    
+    const days: Date[] = [];
+    
+    // Add previous month days
+    const prevMonthLastDay = new Date(year, month, 0).getDate();
+    for (let i = startDayOfWeek - 1; i >= 0; i--) {
+      days.push(new Date(year, month - 1, prevMonthLastDay - i));
     }
+    
+    // Add current month days
+    for (let i = 1; i <= daysInMonth; i++) {
+      days.push(new Date(year, month, i));
+    }
+    
+    // Add next month days to fill the grid
+    const remaining = 42 - days.length;
+    for (let i = 1; i <= remaining; i++) {
+      days.push(new Date(year, month + 1, i));
+    }
+    
+    return days;
   }
-
-  function onPicked(event: CustomEvent<string>) {
-    selectedISO = event.detail;
-    refreshOrders();
+  
+  function formatDate(date: Date): string {
+    return date.toISOString().split('T')[0];
   }
-
+  
+  function getOrdersForDate(date: string): Order[] {
+    return orders.filter(o => o.loadingDate === date);
+  }
+  
+  function isLoadingDay(date: string): boolean {
+    return loadsList.some(l => l.dateISO === date);
+  }
+  
+  function isToday(date: Date): boolean {
+    const todayStr = formatDate(new Date());
+    return formatDate(date) === todayStr;
+  }
+  
+  function isSelectedMonth(date: Date): boolean {
+    return date.getMonth() === m && date.getFullYear() === y;
+  }
+  
+  function selectDate(date: Date) {
+    selectedDate = formatDate(date);
+  }
+  
+  function exportDayCSV() {
+    if (!selectedDate) return;
+    const dayOrders = getOrdersForDate(selectedDate);
+    const translate = get(t);
+    const columns = [
+      { label: translate('calendar.columns.po'), value: (order: Order) => order.id },
+      { label: translate('calendar.columns.client'), value: (order: Order) => order.client },
+      { label: translate('calendar.columns.title'), value: (order: Order) => order.title },
+      { label: translate('calendar.columns.due'), value: (order: Order) => order.due }
+    ];
+    const rows = dayOrders.map((order) =>
+      Object.fromEntries(columns.map((column) => [column.label, column.value(order)]))
+    );
+    downloadCSV(`loading-${selectedDate}.csv`, toCSV(rows, columns.map((column) => column.label)));
+  }
+  
+  $: days = getDaysInMonth(y, m);
+  $: selectedDayOrders = selectedDate ? getOrdersForDate(selectedDate) : [];
+  $: filteredOrders = filterStatus === 'all' ? orders :
+                      filterStatus === 'scheduled' ? orders.filter(o => o.loadingDate) :
+                      orders.filter(o => !o.loadingDate);
+  $: monthName = new Date(y, m, 1).toLocaleDateString('en-US', { month: 'long' });
+  
   onMount(() => {
     refreshOrders();
     const handler = (event: StorageEvent) => {
@@ -62,276 +120,597 @@
     window.addEventListener('storage', handler);
     return () => window.removeEventListener('storage', handler);
   });
-
-  let daySchedule: Order[] = [];
-  $: daySchedule = selectedISO
-    ? orders.filter((order) => order.loadingDate === selectedISO)
-    : [];
-
-  function exportCSV() {
-    if (!selectedISO) return;
-    const translate = get(t);
-    const columns = [
-      { label: translate('calendar.columns.po'), value: (order: Order) => order.id },
-      { label: translate('calendar.columns.client'), value: (order: Order) => order.client },
-      { label: translate('calendar.columns.title'), value: (order: Order) => order.title },
-      { label: translate('calendar.columns.due'), value: (order: Order) => order.due },
-      { label: translate('calendar.columns.loading'), value: (order: Order) => order.loadingDate ?? '' }
-    ];
-    const rows = daySchedule.map((order) =>
-      Object.fromEntries(columns.map((column) => [column.label, column.value(order)]))
-    );
-    downloadCSV(`loading-${selectedISO}.csv`, toCSV(rows, columns.map((column) => column.label)));
-  }
-
-  $: selectedMeta = selectedISO
-    ? listAll().find((day) => day.id === selectedISO) || null
-    : null;
-
-  let loadsList: any[] = [];
-  loads.subscribe(v => loadsList = v);
-
-  function toICS(){
-    const lines = ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//RF OMS//EN'];
-    for(const l of loadsList){
-      lines.push('BEGIN:VEVENT');
-      lines.push(`UID:${l.id}@reclame-oms`);
-      lines.push(`DTSTART;VALUE=DATE:${l.dateISO.replaceAll('-','')}`);
-      lines.push(`SUMMARY:Loading day (${l.carrier||'carrier n/a'})`);
-      if (l.notes) lines.push(`DESCRIPTION:${l.notes.replace(/\n/g,'\\n')}`);
-      lines.push('END:VEVENT');
-    }
-    lines.push('END:VCALENDAR');
-    const blob = new Blob([lines.join('\r\n')], {type:'text/calendar'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href=url; a.download='reclame-loading.ics'; a.click(); URL.revokeObjectURL(url);
-  }
 </script>
 
-<section class="card cal-card">
-  <div class="cal-header-sticky">
-    <div class="cal-header-content">
-      <div class="cal-header-title">
-        <Calendar size={20} aria-hidden="true" />
-        <h2 class="cal-month-title">{$t('calendar.title')}</h2>
-        <Tooltip text={$t('calendar_page.tooltip')} />
-      </div>
-      
-      <div class="cal-header-actions">
-        <div class="cal-actions-group">
-          <button class="tag" on:click={()=>openQuick('loading')}>
-            <TruckIcon size={14} aria-hidden="true" />
-            <span>{$t('calendar_page.new_loading')}</span>
-          </button>
-          <button class="tag ghost" on:click={()=>openQuick('meeting')}>
-            <Users size={14} aria-hidden="true" />
-            <span>{$t('calendar_page.new_meeting')}</span>
-          </button>
-          <button class="tag ghost" on:click={()=>openQuick('note')}>
-            <StickyNote size={14} aria-hidden="true" />
-            <span>{$t('calendar_page.new_note')}</span>
-          </button>
-        </div>
-        
-        <div class="cal-actions-group" role="tablist" aria-label={$t('calendar_page.view_mode_label')}>
-          <button class="tag" class:is-active={mode==='grid'} role="tab" aria-selected={mode==='grid'} on:click={()=>mode='grid'}>
-            <Grid3x3 size={14} aria-hidden="true" />
-            <span>{$t('calendar_page.grid_view')}</span>
-          </button>
-          <button class="tag" class:is-active={mode==='list'} role="tab" aria-selected={mode==='list'} on:click={()=>mode='list'}>
-            <List size={14} aria-hidden="true" />
-            <span>{$t('calendar_page.list_view')}</span>
-          </button>
-        </div>
-        
-        <div class="cal-actions-group cal-nav-group">
-          <button class="tag" on:click={prev} aria-label={$t('calendar_page.prev_month_label')}>◀</button>
-          <div class="cal-month-display">{y} · {m + 1}</div>
-          <button class="tag" on:click={next} aria-label={$t('calendar_page.next_month_label')}>▶</button>
-        </div>
-        
-        <div class="cal-actions-group">
-          <button class="tag" on:click={() => (adminMode = !adminMode)} aria-pressed={adminMode}>
-            <Truck size={14} aria-hidden="true" />
-            {$t('calendar.loading_mode')}: {$t(adminMode ? 'calendar.loading_on' : 'calendar.loading_off')}
-          </button>
-          <button class="tag ghost" on:click={toICS}>
-            <Download size={14} aria-hidden="true" />
-            <span>{$t('calendar_page.export_ics')}</span>
-          </button>
-        </div>
-      </div>
+<svelte:head>
+  <title>Calendar - Reclame OMS</title>
+</svelte:head>
+
+<div class="calendar-page">
+  <!-- Top Bar -->
+  <div class="calendar-topbar">
+    <div class="topbar-left">
+      <Calendar size={24} />
+      <h1>Loading Schedule</h1>
+    </div>
+    <div class="topbar-right">
+      <button class="btn-secondary">
+        <Plus size={18} />
+        New Loading Day
+      </button>
+      <button class="btn-ghost" on:click={exportDayCSV} disabled={!selectedDate}>
+        <Download size={18} />
+        Export CSV
+      </button>
     </div>
   </div>
-
-  {#if mode==='grid'}
-    <div class="cal-month">
-      <CalendarMonth year={y} month={m} {adminMode} on:selectDay={onPicked} />
+  
+  <!-- Main Content - Side by Side -->
+  <div class="calendar-grid">
+    <!-- Left: Calendar -->
+    <div class="calendar-section">
+      <div class="calendar-header">
+        <button class="nav-btn" on:click={prev}>
+          <ChevronLeft size={20} />
+        </button>
+        <h2 class="month-title">{monthName} {y}</h2>
+        <button class="nav-btn" on:click={next}>
+          <ChevronRight size={20} />
+        </button>
+      </div>
+      
+      <div class="calendar-body">
+        <div class="weekdays">
+          <div class="weekday">Sun</div>
+          <div class="weekday">Mon</div>
+          <div class="weekday">Tue</div>
+          <div class="weekday">Wed</div>
+          <div class="weekday">Thu</div>
+          <div class="weekday">Fri</div>
+          <div class="weekday">Sat</div>
+        </div>
+        
+        <div class="days-grid">
+          {#each days as day}
+            {@const dateStr = formatDate(day)}
+            {@const dayOrders = getOrdersForDate(dateStr)}
+            {@const isLoading = isLoadingDay(dateStr)}
+            <button
+              class="day-cell"
+              class:other-month={!isSelectedMonth(day)}
+              class:today={isToday(day)}
+              class:selected={selectedDate === dateStr}
+              class:has-loading={isLoading}
+              class:has-orders={dayOrders.length > 0}
+              on:click={() => selectDate(day)}
+            >
+              <span class="day-number">{day.getDate()}</span>
+              {#if dayOrders.length > 0}
+                <span class="order-count">{dayOrders.length}</span>
+              {/if}
+              {#if isLoading}
+                <div class="loading-indicator">
+                  <Truck size={12} />
+                </div>
+              {/if}
+            </button>
+          {/each}
+        </div>
+      </div>
     </div>
-    <WeekStrip year={y} month={m} />
-  {:else}
-    <DayList />
-  {/if}
-</section>
-
-{#if selectedISO}
-  <section class="card" style="margin-top:12px">
-    <div class="row" style="justify-content:space-between;align-items:center">
-      <div>
-        <h3 style="margin:0 0 4px 0">{$t('loading.schedule')}: {selectedISO}</h3>
-        {#if selectedMeta}
-          <div class="muted" style="font-size:.85rem">
-            {#if selectedMeta.carrier}
-              {$t('calendar_page.carrier_label')}: {selectedMeta.carrier}
-              {#if selectedMeta.note} · {$t('calendar_page.note_label')}: {selectedMeta.note}{/if}
-            {:else if selectedMeta.note}
-              {$t('calendar_page.note_label')}: {selectedMeta.note}
-            {:else}
-              {$t('calendar.note_empty')}
-            {/if}
+    
+    <!-- Right: Schedule List -->
+    <div class="schedule-section">
+      <div class="schedule-header">
+        <h3>{selectedDate ? `Schedule for ${selectedDate}` : 'Select a date'}</h3>
+        {#if selectedDate && selectedDayOrders.length > 0}
+          <span class="order-badge">{selectedDayOrders.length} {selectedDayOrders.length === 1 ? 'order' : 'orders'}</span>
+        {/if}
+      </div>
+      
+      <div class="schedule-body">
+        {#if selectedDate}
+          {#if selectedDayOrders.length === 0}
+            <div class="empty-state">
+              <Calendar size={48} />
+              <p>No orders scheduled for this date</p>
+              <button class="btn-secondary">
+                <Plus size={18} />
+                Add Order to Schedule
+              </button>
+            </div>
+          {:else}
+            <div class="orders-list">
+              {#each selectedDayOrders as order}
+                <div class="order-card">
+                  <div class="order-header">
+                    <span class="order-id">{order.id}</span>
+                    <div class="order-badges">
+                      {#each order.badges as badge}
+                        <Badge tone={badgeTone(badge)} label={badge}>
+                          <span class="badge-text">{badge}</span>
+                        </Badge>
+                      {/each}
+                    </div>
+                  </div>
+                  <h4 class="order-title">{order.title}</h4>
+                  <div class="order-meta">
+                    <span class="meta-item">Client: {order.client}</span>
+                    <span class="meta-item">Due: {order.due}</span>
+                  </div>
+                </div>
+              {/each}
+            </div>
+          {/if}
+        {:else}
+          <div class="empty-state">
+            <Calendar size={48} />
+            <p>Select a date to view scheduled orders</p>
           </div>
         {/if}
       </div>
-      <button class="tag" on:click={exportCSV}>
-        <Download size={14} aria-hidden="true" />
-        {$t('loading.export_csv')}
-      </button>
     </div>
-    <div class="rf-scroll" style="margin-top:8px;max-height:320px">
-      <table class="rf-table">
-        <thead>
-          <tr>
-            <th>{$t('calendar.columns.po')}</th>
-            <th>{$t('calendar.columns.client')}</th>
-            <th>{$t('calendar.columns.title')}</th>
-            <th>{$t('calendar.columns.due')}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {#each daySchedule as row}
-            <tr>
-              <td>{row.id}</td>
-              <td>{row.client}</td>
-              <td>{row.title}</td>
-              <td>{row.due}</td>
-            </tr>
-          {/each}
-          {#if daySchedule.length === 0}
-            <tr>
-              <td colspan="4" class="muted">{$t('calendar.empty')}</td>
-            </tr>
-          {/if}
-        </tbody>
-      </table>
+  </div>
+  
+  <!-- Bottom: All Orders -->
+  <div class="all-orders-section">
+    <div class="section-header">
+      <h3>All Orders</h3>
+      <div class="filter-group">
+        <button
+          class="filter-btn"
+          class:active={filterStatus === 'all'}
+          on:click={() => filterStatus = 'all'}
+        >
+          All ({orders.length})
+        </button>
+        <button
+          class="filter-btn"
+          class:active={filterStatus === 'scheduled'}
+          on:click={() => filterStatus = 'scheduled'}
+        >
+          Scheduled ({orders.filter(o => o.loadingDate).length})
+        </button>
+        <button
+          class="filter-btn"
+          class:active={filterStatus === 'unscheduled'}
+          on:click={() => filterStatus = 'unscheduled'}
+        >
+          Unscheduled ({orders.filter(o => !o.loadingDate).length})
+        </button>
+      </div>
     </div>
-  </section>
-{/if}
-
-{#if quick}<EventEditor dateISO={quick.dateISO} presetKind={quick.kind} onClose={()=>quick=null}/>{/if}
+    
+    <div class="orders-table">
+      {#each filteredOrders.slice(0, 10) as order}
+        <div class="table-row">
+          <span class="col-po">{order.id}</span>
+          <span class="col-client">{order.client}</span>
+          <span class="col-title">{order.title}</span>
+          <span class="col-due">{order.due}</span>
+          <span class="col-loading">{order.loadingDate || '—'}</span>
+        </div>
+      {/each}
+    </div>
+  </div>
+</div>
 
 <style>
-:global(.rf-table){
-  width:100%;
-  border-collapse:collapse;
-}
-:global(.rf-table th),
-:global(.rf-table td){
-  padding:10px;
-  border-bottom:1px solid var(--border);
-  text-align:left;
-}
-
-.cal-card{ 
-  container-type:inline-size;
-  padding: 0;
-}
-
-.cal-header-sticky {
-  position: sticky;
-  top: calc(var(--topbar-h, 56px) + var(--space-sm));
-  z-index: 10;
-  background: var(--bg-1);
-  border-bottom: 1px solid var(--border);
-  padding: var(--space-lg);
-  margin: 0 -1px;
-  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-}
-
-.cal-header-content {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-md);
-}
-
-.cal-header-title {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.cal-month-title {
-  margin: 0;
-  font-weight: 700;
-  font-size: 1.25rem;
-  letter-spacing: 0.2px;
-}
-
-.cal-header-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items: center;
-}
-
-.cal-actions-group {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-}
-
-.cal-nav-group {
-  border: 1px solid var(--border);
-  border-radius: var(--radius-full);
-  padding: 2px;
-}
-
-.cal-month-display {
-  min-width: 140px;
-  text-align: center;
-  font-weight: 700;
-  padding: 0 8px;
-}
-
-.cal-month{
-  display:block;
-  padding: var(--space-lg);
-}
-
-/* Container query breakpoint at 560px - applies when the card itself is narrow,
-   which can happen even on larger screens with sidebars or multi-column layouts.
-   This is different from the 820px media query which applies to viewport width. */
-@container (width <= 560px){ 
-  /* phones or narrow cards */
-  /* auto-switch to compact week strip when card is narrow */
-  .cal-month{ 
-    display:none 
-  }
-  :global(.cal-weekstrip){ 
-    display:block 
-  }
-  
-  .cal-header-content {
-    gap: 8px;
-  }
-  
-  .cal-header-actions {
+  .calendar-page {
+    display: flex;
     flex-direction: column;
-    align-items: stretch;
+    gap: var(--space-lg);
+    padding: var(--space-lg);
+    background: var(--bg-0);
+    min-height: 100vh;
   }
   
-  .cal-actions-group {
-    width: 100%;
-    justify-content: center;
+  /* Top Bar */
+  .calendar-topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-md) var(--space-lg);
+    background: var(--bg-1);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
   }
-}
+  
+  .topbar-left {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+  }
+  
+  .topbar-left h1 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+  
+  .topbar-right {
+    display: flex;
+    gap: var(--space-sm);
+  }
+  
+  .btn-secondary, .btn-ghost {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: var(--space-sm) var(--space-md);
+    border-radius: var(--radius-md);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid var(--border);
+    background: var(--bg-1);
+    color: var(--text);
+  }
+  
+  .btn-secondary {
+    background: var(--accent-1);
+    color: white;
+    border-color: var(--accent-1);
+  }
+  
+  .btn-secondary:hover {
+    background: color-mix(in oklab, var(--accent-1) 90%, black);
+  }
+  
+  .btn-ghost:hover {
+    background: var(--bg-2);
+  }
+  
+  .btn-ghost:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  /* Main Grid */
+  .calendar-grid {
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    gap: var(--space-lg);
+    align-items: start;
+  }
+  
+  .calendar-section, .schedule-section {
+    background: var(--bg-1);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
+  }
+  
+  /* Calendar */
+  .calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-lg);
+  }
+  
+  .month-title {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+  
+  .nav-btn {
+    padding: var(--space-xs);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--text);
+    cursor: pointer;
+    transition: background 0.2s ease;
+  }
+  
+  .nav-btn:hover {
+    background: var(--bg-2);
+  }
+  
+  .weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: var(--space-xs);
+    margin-bottom: var(--space-sm);
+  }
+  
+  .weekday {
+    text-align: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: var(--space-xs);
+  }
+  
+  .days-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: var(--space-xs);
+  }
+  
+  .day-cell {
+    aspect-ratio: 1;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg-0);
+    color: var(--text);
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-xs);
+  }
+  
+  .day-cell:hover {
+    background: var(--bg-2);
+    border-color: var(--accent-1);
+  }
+  
+  .day-cell.other-month {
+    opacity: 0.3;
+  }
+  
+  .day-cell.today {
+    border-color: var(--accent-1);
+    border-width: 2px;
+    font-weight: 600;
+  }
+  
+  .day-cell.selected {
+    background: var(--accent-1);
+    color: white;
+    border-color: var(--accent-1);
+  }
+  
+  .day-cell.has-loading {
+    background: color-mix(in oklab, var(--accent-1) 10%, var(--bg-0));
+  }
+  
+  .day-number {
+    font-size: 0.875rem;
+  }
+  
+  .order-count {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    background: var(--accent-1);
+    color: white;
+    font-size: 0.625rem;
+    padding: 2px 4px;
+    border-radius: 999px;
+    font-weight: 600;
+    min-width: 16px;
+    text-align: center;
+  }
+  
+  .day-cell.selected .order-count {
+    background: white;
+    color: var(--accent-1);
+  }
+  
+  .loading-indicator {
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    color: var(--accent-1);
+  }
+  
+  /* Schedule Section */
+  .schedule-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-lg);
+    padding-bottom: var(--space-md);
+    border-bottom: 1px solid var(--border);
+  }
+  
+  .schedule-header h3 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+  
+  .order-badge {
+    padding: var(--space-xs) var(--space-sm);
+    background: var(--bg-2);
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+  
+  .schedule-body {
+    min-height: 400px;
+  }
+  
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-2xl);
+    color: var(--muted);
+    gap: var(--space-md);
+  }
+  
+  .empty-state p {
+    margin: 0;
+    font-size: 0.875rem;
+  }
+  
+  .orders-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+  }
+  
+  .order-card {
+    padding: var(--space-md);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--bg-0);
+    transition: all 0.2s ease;
+  }
+  
+  .order-card:hover {
+    border-color: var(--accent-1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .order-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-sm);
+  }
+  
+  .order-id {
+    font-weight: 600;
+    color: var(--accent-1);
+  }
+  
+  .order-badges {
+    display: flex;
+    gap: var(--space-xs);
+  }
+  
+  .badge-text {
+    font-size: 0.65rem;
+  }
+  
+  .order-title {
+    margin: 0 0 var(--space-sm) 0;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text);
+  }
+  
+  .order-meta {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xxs);
+  }
+  
+  .meta-item {
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+  
+  /* All Orders Section */
+  .all-orders-section {
+    background: var(--bg-1);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
+  }
+  
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-lg);
+  }
+  
+  .section-header h3 {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+  
+  .filter-group {
+    display: flex;
+    gap: var(--space-xs);
+  }
+  
+  .filter-btn {
+    padding: var(--space-xs) var(--space-md);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: transparent;
+    color: var(--text);
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+  }
+  
+  .filter-btn:hover {
+    background: var(--bg-2);
+  }
+  
+  .filter-btn.active {
+    background: var(--accent-1);
+    color: white;
+    border-color: var(--accent-1);
+  }
+  
+  .orders-table {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    background: var(--border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+  }
+  
+  .table-row {
+    display: grid;
+    grid-template-columns: 120px 180px 1fr 120px 120px;
+    gap: var(--space-md);
+    padding: var(--space-md);
+    background: var(--bg-0);
+    font-size: 0.875rem;
+  }
+  
+  .col-po {
+    font-weight: 600;
+    color: var(--accent-1);
+  }
+  
+  .col-client, .col-title {
+    color: var(--text);
+  }
+  
+  .col-due, .col-loading {
+    color: var(--muted);
+  }
+  
+  @media (max-width: 1280px) {
+    .calendar-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .schedule-section {
+      order: -1;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .calendar-topbar {
+      flex-direction: column;
+      gap: var(--space-md);
+    }
+    
+    .topbar-left, .topbar-right {
+      width: 100%;
+      justify-content: space-between;
+    }
+    
+    .table-row {
+      grid-template-columns: 1fr;
+      gap: var(--space-xs);
+    }
+  }
 </style>
