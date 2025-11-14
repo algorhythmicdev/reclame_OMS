@@ -139,6 +139,7 @@
     <a href="{base}/orders" on:click={() => mobileMenuOpen = false}>{$t('nav.orders') || 'Заказы'}</a>
     <a href="{base}/calendar" on:click={() => mobileMenuOpen = false}>{$t('nav.calendar') || 'Календарь'}</a>
     <a href="{base}/inventory" on:click={() => mobileMenuOpen = false}>{$t('nav.inventory') || 'Склад'}</a>
+    <a href="{base}/faq" on:click={() => mobileMenuOpen = false}>{$t('nav.faq') || 'FAQ'}</a>
     <a href="{base}/settings" on:click={() => mobileMenuOpen = false}>{$t('nav.settings') || 'Настройки'}</a>
   </nav>
   <div class="actions">
