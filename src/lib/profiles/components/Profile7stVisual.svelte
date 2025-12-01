@@ -3,9 +3,18 @@
   import { createEventDispatcher } from 'svelte';
   import OracalCodeStack from './fields/OracalCodeStack.svelte';
   import DeliveryDateDisplay from './fields/DeliveryDateDisplay.svelte';
+  import CompactColorPicker from './fields/CompactColorPicker.svelte';
+  
+  // Color value interface
+  interface ColorValue {
+    system: string;
+    code: string;
+    hex: string;
+  }
   
   // Configuration interface
   interface Profile7stConfiguration {
+    signType: 'INTERIOR' | 'EXTERIOR';
     CNC_FREZER: {
       face: string;
       back: string;
@@ -17,49 +26,66 @@
     FRONT: {
       opal: boolean;
       oracalCodes: string[];
-      placement: 'INTERIOR' | 'EXTERIOR';
     };
     PAINTING: {
       sides: boolean;
-      sidesColor: string;
+      sidesColor: ColorValue;
       back: boolean;
-      backColor: string;
+      backColor: ColorValue;
       frame: boolean;
-      frameColor: string;
-      colorLabel: string;
-      pantoneRef: string;
+      frameColor: ColorValue;
     };
     ASSEMBLING: {
       led: boolean;
-      trafo: boolean;
-      cables: boolean;
-      frame: boolean;
       ledType: string;
       ledTemp: string;
-      ledMode: string;
-      mountingHoles: boolean;
-      waterholes: boolean;
-      waterholesSize: string;
+      trafo: boolean;
+      trafoType: 'REGULAR' | 'DIMMABLE';
+      trafoMounting: 'SEPARATE' | 'ON_FRAME';
+      cables: boolean;
+      cablesLength: string;
+      frame: boolean;
+      frameWaterholes: boolean;
+      frameMountingHoles: boolean;
     };
     DELIVERY: {
       date: string;
+      carrier: string;
+      address: string;
     };
   }
   
+  const defaultColor: ColorValue = { system: '', code: '', hex: '' };
+  
   export let configuration: Profile7stConfiguration = {
+    signType: 'EXTERIOR',
     CNC_FREZER: { face: 'OPAL', back: 'ALU 1.5' },
     BENDER: { sides: 'ALU 1.2', depth: 140 },
-    FRONT: { opal: true, oracalCodes: ['8500-031', '8500-020', '8500-052'], placement: 'EXTERIOR' },
-    PAINTING: { sides: false, sidesColor: 'WHITE', back: false, backColor: 'WHITE', frame: false, frameColor: 'WHITE', colorLabel: 'БАЗА', pantoneRef: '072C' },
-    ASSEMBLING: { led: true, trafo: true, cables: true, frame: true, ledType: 'Balt LED', ledTemp: '6500K', ledMode: 'SEPARATE', mountingHoles: true, waterholes: true, waterholesSize: '4mm' },
-    DELIVERY: { date: '2025-11-14' }
+    FRONT: { opal: true, oracalCodes: ['8500-031', '8500-020', '8500-052'] },
+    PAINTING: { 
+      sides: true, sidesColor: { ...defaultColor },
+      back: false, backColor: { ...defaultColor },
+      frame: true, frameColor: { ...defaultColor }
+    },
+    ASSEMBLING: { 
+      led: true, ledType: 'Balt LED', ledTemp: '6500K',
+      trafo: true, trafoType: 'REGULAR', trafoMounting: 'SEPARATE',
+      cables: true, cablesLength: '2m',
+      frame: true, frameWaterholes: true, frameMountingHoles: true
+    },
+    DELIVERY: { date: '2025-11-14', carrier: '', address: '' }
   };
   export let readonly: boolean = false;
   export let deliveryDate: string = '';
   
   const dispatch = createEventDispatcher();
   
-  // Sync deliveryDate prop with configuration (bidirectional sync)
+  // LED options
+  const ledTypes = ['Balt LED', 'Samsung LED', 'Osram LED', 'Philips LED', 'Meanwell LED'];
+  const ledTemps = ['3000K', '4000K', '5000K', '6000K', '6500K'];
+  const carriers = ['DHL', 'UPS', 'FedEx', 'DPD', 'TNT', 'Local Delivery', 'Customer Pickup'];
+  
+  // Sync deliveryDate prop with configuration
   $: if (deliveryDate !== undefined) {
     configuration.DELIVERY.date = deliveryDate || configuration.DELIVERY.date;
   }
@@ -76,12 +102,53 @@
     }
     return 'background-color: #fff; color: #000;';
   }
+  
+  function getColorBoxStyle(color: ColorValue): string {
+    if (color.hex) {
+      const textColor = getTextColor(color.hex);
+      return `background-color: ${color.hex}; color: ${textColor}; border-color: ${color.hex};`;
+    }
+    return 'background-color: #fff; color: #000;';
+  }
+  
+  function getTextColor(hex: string): string {
+    if (!hex || hex.length < 7) return '#000';
+    const r = parseInt(hex.substring(1, 3), 16);
+    const g = parseInt(hex.substring(3, 5), 16);
+    const b = parseInt(hex.substring(5, 7), 16);
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    return luminance > 0.5 ? '#000000' : '#FFFFFF';
+  }
 </script>
 
 <div class="profile-7st-visual">
-  <!-- Profile Badge -->
-  <div class="profile-badge">
-    <span>Profile 7st</span>
+  <!-- Profile Header with Badge and Sign Type -->
+  <div class="profile-header">
+    <div class="profile-badge">
+      <span>Profile 7st</span>
+    </div>
+    
+    <!-- Interior/Exterior Toggle -->
+    <div class="sign-type-toggle">
+      <button 
+        type="button"
+        class="sign-type-btn"
+        class:active={configuration.signType === 'INTERIOR'}
+        disabled={readonly}
+        on:click={() => { configuration.signType = 'INTERIOR'; emitChange(); }}
+      >
+        INTERIOR
+      </button>
+      <button 
+        type="button"
+        class="sign-type-btn"
+        class:active={configuration.signType === 'EXTERIOR'}
+        disabled={readonly}
+        on:click={() => { configuration.signType = 'EXTERIOR'; emitChange(); }}
+      >
+        EXTERIOR
+      </button>
+    </div>
   </div>
   
   <!-- Sections Container -->
@@ -181,28 +248,6 @@
           </label>
         </div>
         
-        <!-- Interior/Exterior Toggle -->
-        <div class="placement-toggle">
-          <button 
-            type="button"
-            class="placement-btn"
-            class:active={configuration.FRONT.placement === 'INTERIOR'}
-            disabled={readonly}
-            on:click={() => { configuration.FRONT.placement = 'INTERIOR'; emitChange(); }}
-          >
-            INT
-          </button>
-          <button 
-            type="button"
-            class="placement-btn"
-            class:active={configuration.FRONT.placement === 'EXTERIOR'}
-            disabled={readonly}
-            on:click={() => { configuration.FRONT.placement = 'EXTERIOR'; emitChange(); }}
-          >
-            EXT
-          </button>
-        </div>
-        
         <OracalCodeStack 
           bind:codes={configuration.FRONT.oracalCodes}
           {readonly}
@@ -211,11 +256,11 @@
       </div>
     </div>
     
-    <!-- PAINTING Section -->
+    <!-- PAINTING Section - Color Pickers for each element -->
     <div class="section section-wide">
       <div class="section-header">PAINTING</div>
       <div class="section-content">
-        <!-- SIDES with color -->
+        <!-- SIDES -->
         <div class="painting-row">
           <label class="checkbox-field">
             <input 
@@ -227,23 +272,17 @@
             <span class="checkbox-label">SIDES</span>
           </label>
           {#if configuration.PAINTING.sides}
-            <div class="color-mini-box">
-              {#if readonly}
-                <span>{configuration.PAINTING.sidesColor}</span>
-              {:else}
-                <input 
-                  type="text" 
-                  class="color-mini-input"
-                  bind:value={configuration.PAINTING.sidesColor}
-                  on:input={emitChange}
-                  placeholder="Color"
-                />
-              {/if}
+            <div class="color-picker-wrapper" style={getColorBoxStyle(configuration.PAINTING.sidesColor)}>
+              <CompactColorPicker
+                bind:value={configuration.PAINTING.sidesColor}
+                {readonly}
+                on:change={emitChange}
+              />
             </div>
           {/if}
         </div>
         
-        <!-- BACK with color -->
+        <!-- BACK -->
         <div class="painting-row">
           <label class="checkbox-field">
             <input 
@@ -255,23 +294,17 @@
             <span class="checkbox-label">BACK</span>
           </label>
           {#if configuration.PAINTING.back}
-            <div class="color-mini-box">
-              {#if readonly}
-                <span>{configuration.PAINTING.backColor}</span>
-              {:else}
-                <input 
-                  type="text" 
-                  class="color-mini-input"
-                  bind:value={configuration.PAINTING.backColor}
-                  on:input={emitChange}
-                  placeholder="Color"
-                />
-              {/if}
+            <div class="color-picker-wrapper" style={getColorBoxStyle(configuration.PAINTING.backColor)}>
+              <CompactColorPicker
+                bind:value={configuration.PAINTING.backColor}
+                {readonly}
+                on:change={emitChange}
+              />
             </div>
           {/if}
         </div>
         
-        <!-- FRAME with color -->
+        <!-- FRAME -->
         <div class="painting-row">
           <label class="checkbox-field">
             <input 
@@ -283,57 +316,24 @@
             <span class="checkbox-label">FRAME</span>
           </label>
           {#if configuration.PAINTING.frame}
-            <div class="color-mini-box">
-              {#if readonly}
-                <span>{configuration.PAINTING.frameColor}</span>
-              {:else}
-                <input 
-                  type="text" 
-                  class="color-mini-input"
-                  bind:value={configuration.PAINTING.frameColor}
-                  on:input={emitChange}
-                  placeholder="Color"
-                />
-              {/if}
+            <div class="color-picker-wrapper" style={getColorBoxStyle(configuration.PAINTING.frameColor)}>
+              <CompactColorPicker
+                bind:value={configuration.PAINTING.frameColor}
+                {readonly}
+                on:change={emitChange}
+              />
             </div>
-          {/if}
-        </div>
-        
-        <!-- Color Label -->
-        <div class="color-label-box">
-          {#if readonly}
-            <span>{configuration.PAINTING.colorLabel}</span>
-          {:else}
-            <input 
-              type="text" 
-              class="color-label-input"
-              bind:value={configuration.PAINTING.colorLabel}
-              on:input={emitChange}
-            />
-          {/if}
-        </div>
-        
-        <div class="pantone-ref">
-          <span class="pantone-label">PANTONE</span>
-          {#if readonly}
-            <span class="pantone-value">{configuration.PAINTING.pantoneRef}</span>
-          {:else}
-            <input 
-              type="text" 
-              class="pantone-input"
-              bind:value={configuration.PAINTING.pantoneRef}
-              on:input={emitChange}
-            />
           {/if}
         </div>
       </div>
     </div>
     
-    <!-- ASSEMBLING Section -->
+    <!-- ASSEMBLING Section - Redesigned -->
     <div class="section section-wide">
       <div class="section-header">ASSEMBLING</div>
       <div class="section-content">
-        <div class="checkbox-group horizontal">
+        <!-- LED Row -->
+        <div class="assembly-row">
           <label class="checkbox-field">
             <input 
               type="checkbox" 
@@ -343,6 +343,34 @@
             />
             <span class="checkbox-label">LED</span>
           </label>
+          {#if configuration.ASSEMBLING.led}
+            <div class="assembly-options">
+              <select 
+                class="mini-select"
+                bind:value={configuration.ASSEMBLING.ledType}
+                disabled={readonly}
+                on:change={emitChange}
+              >
+                {#each ledTypes as type}
+                  <option value={type}>{type}</option>
+                {/each}
+              </select>
+              <select 
+                class="mini-select"
+                bind:value={configuration.ASSEMBLING.ledTemp}
+                disabled={readonly}
+                on:change={emitChange}
+              >
+                {#each ledTemps as temp}
+                  <option value={temp}>{temp}</option>
+                {/each}
+              </select>
+            </div>
+          {/if}
+        </div>
+        
+        <!-- TRAFO Row -->
+        <div class="assembly-row">
           <label class="checkbox-field">
             <input 
               type="checkbox" 
@@ -352,6 +380,33 @@
             />
             <span class="checkbox-label">TRAFO</span>
           </label>
+          {#if configuration.ASSEMBLING.trafo}
+            <div class="assembly-options">
+              <select 
+                class="mini-select"
+                bind:value={configuration.ASSEMBLING.trafoType}
+                disabled={readonly}
+                on:change={emitChange}
+              >
+                <option value="REGULAR">Regular</option>
+                <option value="DIMMABLE">Dimmable</option>
+              </select>
+              <select 
+                class="mini-select"
+                class:separate={configuration.ASSEMBLING.trafoMounting === 'SEPARATE'}
+                bind:value={configuration.ASSEMBLING.trafoMounting}
+                disabled={readonly}
+                on:change={emitChange}
+              >
+                <option value="ON_FRAME">On Frame</option>
+                <option value="SEPARATE">Separate</option>
+              </select>
+            </div>
+          {/if}
+        </div>
+        
+        <!-- CABLES Row -->
+        <div class="assembly-row">
           <label class="checkbox-field">
             <input 
               type="checkbox" 
@@ -361,6 +416,24 @@
             />
             <span class="checkbox-label">CABLES</span>
           </label>
+          {#if configuration.ASSEMBLING.cables}
+            <div class="assembly-options">
+              <div class="length-input-wrapper">
+                <input 
+                  type="text" 
+                  class="length-input"
+                  bind:value={configuration.ASSEMBLING.cablesLength}
+                  disabled={readonly}
+                  on:input={emitChange}
+                  placeholder="Length"
+                />
+              </div>
+            </div>
+          {/if}
+        </div>
+        
+        <!-- FRAME Row -->
+        <div class="assembly-row">
           <label class="checkbox-field">
             <input 
               type="checkbox" 
@@ -370,101 +443,81 @@
             />
             <span class="checkbox-label">FRAME</span>
           </label>
-        </div>
-        
-        <div class="led-info">
-          <div class="led-type-box">
-            {#if readonly}
-              <span>{configuration.ASSEMBLING.ledType}</span>
-            {:else}
-              <input 
-                type="text" 
-                class="led-input"
-                bind:value={configuration.ASSEMBLING.ledType}
-                on:input={emitChange}
-              />
-            {/if}
-          </div>
-          <div class="led-temp-box">
-            {#if readonly}
-              <span>{configuration.ASSEMBLING.ledTemp}</span>
-            {:else}
-              <input 
-                type="text" 
-                class="led-input"
-                bind:value={configuration.ASSEMBLING.ledTemp}
-                on:input={emitChange}
-              />
-            {/if}
-          </div>
-          <div 
-            class="led-mode-badge"
-            class:separate={configuration.ASSEMBLING.ledMode === 'SEPARATE'}
-            class:regular={configuration.ASSEMBLING.ledMode === 'REGULAR'}
-          >
-            {#if readonly}
-              <span>{configuration.ASSEMBLING.ledMode}</span>
-            {:else}
-              <select 
-                class="led-mode-select"
-                bind:value={configuration.ASSEMBLING.ledMode}
-                on:change={emitChange}
-              >
-                <option value="REGULAR">REGULAR</option>
-                <option value="SEPARATE">SEPARATE</option>
-              </select>
-            {/if}
-          </div>
-        </div>
-        
-        <div class="warning-box" class:active={configuration.ASSEMBLING.mountingHoles}>
-          <span class="warning-icon">⚠️</span>
-          <span class="warning-text">MOUNTING HOLES</span>
-          {#if !readonly}
-            <input 
-              type="checkbox" 
-              class="warning-checkbox"
-              bind:checked={configuration.ASSEMBLING.mountingHoles}
-              on:change={emitChange}
-            />
+          {#if configuration.ASSEMBLING.frame}
+            <div class="assembly-options frame-options">
+              <label class="mini-checkbox">
+                <input 
+                  type="checkbox" 
+                  bind:checked={configuration.ASSEMBLING.frameWaterholes}
+                  disabled={readonly}
+                  on:change={emitChange}
+                />
+                <span>Waterholes</span>
+              </label>
+              <label class="mini-checkbox warning-option" class:active={configuration.ASSEMBLING.frameMountingHoles}>
+                <span class="warning-icon">⚠️</span>
+                <input 
+                  type="checkbox" 
+                  bind:checked={configuration.ASSEMBLING.frameMountingHoles}
+                  disabled={readonly}
+                  on:change={emitChange}
+                />
+                <span>Mounting Holes</span>
+              </label>
+            </div>
           {/if}
-        </div>
-        
-        <div class="waterholes-row">
-          <label class="checkbox-field">
-            <input 
-              type="checkbox" 
-              bind:checked={configuration.ASSEMBLING.waterholes}
-              disabled={readonly}
-              on:change={emitChange}
-            />
-            <span class="checkbox-label">WATERHOLES</span>
-          </label>
-          <div class="waterholes-size">
-            {#if readonly}
-              <span>{configuration.ASSEMBLING.waterholesSize}</span>
-            {:else}
-              <input 
-                type="text" 
-                class="waterholes-input"
-                bind:value={configuration.ASSEMBLING.waterholesSize}
-                on:input={emitChange}
-              />
-            {/if}
-          </div>
         </div>
       </div>
     </div>
     
-    <!-- DELIVERY Section -->
-    <div class="section">
+    <!-- DELIVERY Section - Redesigned -->
+    <div class="section section-wide">
       <div class="section-header">DELIVERY</div>
       <div class="section-content delivery-content">
-        <DeliveryDateDisplay 
-          bind:date={configuration.DELIVERY.date}
-          {readonly}
-          on:change={emitChange}
-        />
+        <!-- Date -->
+        <div class="delivery-row">
+          <label class="field-label">DATE</label>
+          <DeliveryDateDisplay 
+            bind:date={configuration.DELIVERY.date}
+            {readonly}
+            on:change={emitChange}
+          />
+        </div>
+        
+        <!-- Carrier -->
+        <div class="delivery-row">
+          <label class="field-label">CARRIER</label>
+          {#if readonly}
+            <div class="carrier-display">{configuration.DELIVERY.carrier || '-'}</div>
+          {:else}
+            <select 
+              class="carrier-select"
+              bind:value={configuration.DELIVERY.carrier}
+              on:change={emitChange}
+            >
+              <option value="">Select carrier...</option>
+              {#each carriers as carrier}
+                <option value={carrier}>{carrier}</option>
+              {/each}
+            </select>
+          {/if}
+        </div>
+        
+        <!-- Address -->
+        <div class="delivery-row">
+          <label class="field-label">ADDRESS</label>
+          {#if readonly}
+            <div class="address-display">{configuration.DELIVERY.address || '-'}</div>
+          {:else}
+            <textarea 
+              class="address-input"
+              bind:value={configuration.DELIVERY.address}
+              on:input={emitChange}
+              placeholder="Delivery address..."
+              rows="2"
+            ></textarea>
+          {/if}
+        </div>
       </div>
     </div>
   </div>
@@ -477,6 +530,15 @@
     overflow-x: auto;
   }
   
+  /* Profile Header with Sign Type */
+  .profile-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+  
   .profile-badge {
     display: inline-block;
     padding: 6px 16px;
@@ -485,7 +547,38 @@
     font-weight: 700;
     font-size: 14px;
     border-radius: 4px;
-    margin-bottom: 12px;
+  }
+  
+  .sign-type-toggle {
+    display: flex;
+    gap: 2px;
+    border: 2px solid #000;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  
+  .sign-type-btn {
+    padding: 6px 12px;
+    background: #f5f5f5;
+    border: none;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  
+  .sign-type-btn:disabled {
+    cursor: default;
+  }
+  
+  .sign-type-btn.active {
+    background: #4A5568;
+    color: #fff;
+  }
+  
+  .sign-type-btn:not(.active):hover:not(:disabled) {
+    background: #e5e5e5;
   }
   
   /* Sections Container - Horizontal Layout */
@@ -530,7 +623,7 @@
   }
   
   .delivery-content {
-    justify-content: center;
+    gap: 6px;
   }
   
   /* Field Groups */
@@ -609,18 +702,6 @@
   }
   
   /* Checkbox Fields */
-  .checkbox-group {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-  
-  .checkbox-group.horizontal {
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-  
   .checkbox-field {
     display: flex;
     align-items: center;
@@ -643,41 +724,7 @@
     color: #333;
   }
   
-  /* Placement Toggle (Interior/Exterior) */
-  .placement-toggle {
-    display: flex;
-    gap: 2px;
-    border: 2px solid #000;
-    border-radius: 3px;
-    overflow: hidden;
-  }
-  
-  .placement-btn {
-    flex: 1;
-    padding: 4px 8px;
-    background: #f5f5f5;
-    border: none;
-    font-size: 9px;
-    font-weight: 700;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: all 0.15s ease;
-  }
-  
-  .placement-btn:disabled {
-    cursor: default;
-  }
-  
-  .placement-btn.active {
-    background: #4A5568;
-    color: #fff;
-  }
-  
-  .placement-btn:not(.active):hover:not(:disabled) {
-    background: #e5e5e5;
-  }
-  
-  /* Painting Rows with Individual Colors */
+  /* Painting Rows */
   .painting-row {
     display: flex;
     align-items: center;
@@ -690,238 +737,139 @@
     border-bottom: none;
   }
   
-  .color-mini-box {
+  .color-picker-wrapper {
     flex: 1;
-    border: 2px solid #000;
     border-radius: 3px;
-    padding: 4px 6px;
-    background: #fff;
-    min-width: 60px;
+    padding: 2px;
   }
   
-  .color-mini-box span {
-    font-size: 11px;
-    font-weight: 600;
-    display: block;
-    text-align: center;
-  }
-  
-  .color-mini-input {
-    width: 100%;
-    border: none;
-    background: transparent;
-    font-size: 11px;
-    font-weight: 600;
-    text-align: center;
-    outline: none;
-  }
-  
-  /* Color Display */
-  .color-display {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-  
-  .color-box {
-    border: 2px solid #000;
-    border-radius: 3px;
-    padding: 8px;
-    min-height: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #fff;
-  }
-  
-  .color-value {
-    font-size: 16px;
-    font-weight: 700;
-    color: #000;
-  }
-  
-  .color-input {
-    width: 100%;
-    border: none;
-    background: transparent;
-    font-size: 16px;
-    font-weight: 700;
-    text-align: center;
-    outline: none;
-  }
-  
-  .color-label-box {
-    border: 2px solid #000;
-    border-radius: 3px;
-    padding: 4px;
-    background: #f5f5f5;
-    text-align: center;
-  }
-  
-  .color-label-box span,
-  .color-label-input {
-    font-size: 10px;
-    font-weight: 600;
-    text-transform: uppercase;
-    color: #666;
-  }
-  
-  .color-label-input {
-    width: 100%;
-    border: none;
-    background: transparent;
-    text-align: center;
-    outline: none;
-  }
-  
-  /* Pantone Reference */
-  .pantone-ref {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 10px;
-  }
-  
-  .pantone-label {
-    color: #666;
-    font-weight: 500;
-  }
-  
-  .pantone-value {
-    font-weight: 700;
-    color: #000;
-  }
-  
-  .pantone-input {
-    width: 60px;
-    border: 1px solid #ccc;
-    border-radius: 2px;
-    padding: 2px 4px;
-    font-size: 10px;
-    font-weight: 700;
-    outline: none;
-  }
-  
-  /* LED Info Row */
-  .led-info {
-    display: flex;
-    gap: 4px;
-    align-items: center;
-    flex-wrap: wrap;
-  }
-  
-  .led-type-box,
-  .led-temp-box {
-    border: 2px solid #000;
-    border-radius: 3px;
-    padding: 4px 8px;
-    background: #fff;
-    font-size: 11px;
-    font-weight: 600;
-  }
-  
-  .led-input {
-    border: none;
-    background: transparent;
-    font-size: 11px;
-    font-weight: 600;
-    width: 60px;
-    text-align: center;
-    outline: none;
-  }
-  
-  .led-mode-badge {
-    border-radius: 3px;
-    padding: 4px 8px;
-    font-size: 10px;
-    font-weight: 700;
-    text-transform: uppercase;
-  }
-  
-  .led-mode-badge.separate {
-    background: #DC2626;
-    color: #fff;
-  }
-  
-  .led-mode-badge.regular {
-    background: #4A5568;
-    color: #fff;
-  }
-  
-  .led-mode-select {
-    border: none;
-    background: transparent;
-    color: inherit;
-    font-size: 10px;
-    font-weight: 700;
-    cursor: pointer;
-    outline: none;
-  }
-  
-  .led-mode-select option {
-    color: #000;
-  }
-  
-  /* Warning Box */
-  .warning-box {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 8px;
-    border: 2px solid #ccc;
-    border-radius: 3px;
-    background: #f9f9f9;
-    transition: all 0.15s ease;
-  }
-  
-  .warning-box.active {
-    border-color: #DC2626;
-    background: #FEF2F2;
-  }
-  
-  .warning-icon {
-    font-size: 14px;
-  }
-  
-  .warning-text {
-    font-size: 10px;
-    font-weight: 700;
-    text-transform: uppercase;
-    color: #333;
-    flex: 1;
-  }
-  
-  .warning-checkbox {
-    width: 14px;
-    height: 14px;
-    cursor: pointer;
-    accent-color: #DC2626;
-  }
-  
-  /* Waterholes Row */
-  .waterholes-row {
+  /* Assembly Rows */
+  .assembly-row {
     display: flex;
     align-items: center;
     gap: 8px;
+    padding: 4px 0;
+    border-bottom: 1px solid #eee;
+    flex-wrap: wrap;
   }
   
-  .waterholes-size {
+  .assembly-row:last-of-type {
+    border-bottom: none;
+  }
+  
+  .assembly-options {
+    display: flex;
+    gap: 4px;
+    flex: 1;
+    flex-wrap: wrap;
+  }
+  
+  .frame-options {
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .mini-select {
+    padding: 4px 6px;
     border: 2px solid #000;
     border-radius: 3px;
-    padding: 2px 6px;
-    background: #fff;
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 600;
+    background: #fff;
+    cursor: pointer;
+    min-width: 70px;
   }
   
-  .waterholes-input {
-    width: 40px;
-    border: none;
-    background: transparent;
-    font-size: 11px;
+  .mini-select.separate {
+    background: #DC2626;
+    color: #fff;
+    border-color: #DC2626;
+  }
+  
+  .length-input-wrapper {
+    display: flex;
+    align-items: center;
+  }
+  
+  .length-input {
+    width: 60px;
+    padding: 4px 6px;
+    border: 2px solid #000;
+    border-radius: 3px;
+    font-size: 10px;
     font-weight: 600;
     text-align: center;
-    outline: none;
+  }
+  
+  .mini-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 9px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 3px 6px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    background: #f9f9f9;
+  }
+  
+  .mini-checkbox input {
+    width: 12px;
+    height: 12px;
+    margin: 0;
+  }
+  
+  .warning-option {
+    border-color: #fca5a5;
+    background: #fef2f2;
+  }
+  
+  .warning-option.active {
+    border-color: #DC2626;
+    background: #fee2e2;
+  }
+  
+  .warning-icon {
+    font-size: 12px;
+  }
+  
+  /* Delivery Section */
+  .delivery-row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .carrier-display,
+  .address-display {
+    padding: 6px 8px;
+    border: 2px solid #000;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 600;
+    background: #f5f5f5;
+  }
+  
+  .carrier-select {
+    padding: 6px 8px;
+    border: 2px solid #000;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 600;
+    background: #fff;
+    cursor: pointer;
+  }
+  
+  .address-input {
+    padding: 6px 8px;
+    border: 2px solid #000;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 600;
+    resize: vertical;
+    min-height: 40px;
+    font-family: inherit;
   }
   
   /* Responsive */

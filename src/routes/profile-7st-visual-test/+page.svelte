@@ -3,12 +3,22 @@
   import Profile7stVisual from '$lib/profiles/components/Profile7stVisual.svelte';
   
   let configuration = {
+    signType: 'EXTERIOR' as 'INTERIOR' | 'EXTERIOR',
     CNC_FREZER: { face: 'OPAL', back: 'ALU 1.5' },
     BENDER: { sides: 'ALU 1.2', depth: 140 },
-    FRONT: { opal: true, oracalCodes: ['8500-031', '8500-020', '8500-052'], placement: 'EXTERIOR' },
-    PAINTING: { sides: true, sidesColor: 'WHITE', back: false, backColor: 'WHITE', frame: true, frameColor: 'RAL 9005', colorLabel: 'БАЗА', pantoneRef: '072C' },
-    ASSEMBLING: { led: true, trafo: true, cables: true, frame: true, ledType: 'Balt LED', ledTemp: '6500K', ledMode: 'SEPARATE', mountingHoles: true, waterholes: true, waterholesSize: '4mm' },
-    DELIVERY: { date: '2025-11-14' }
+    FRONT: { opal: true, oracalCodes: ['8500-031', '8500-020', '8500-052'] },
+    PAINTING: { 
+      sides: true, sidesColor: { system: 'RAL', code: '9016', hex: '#F7F7F2' },
+      back: false, backColor: { system: '', code: '', hex: '' },
+      frame: true, frameColor: { system: 'RAL', code: '9005', hex: '#0A0A0A' }
+    },
+    ASSEMBLING: { 
+      led: true, ledType: 'Balt LED', ledTemp: '6500K',
+      trafo: true, trafoType: 'REGULAR' as 'REGULAR' | 'DIMMABLE', trafoMounting: 'SEPARATE' as 'SEPARATE' | 'ON_FRAME',
+      cables: true, cablesLength: '2m',
+      frame: true, frameWaterholes: true, frameMountingHoles: true
+    },
+    DELIVERY: { date: '2025-11-14', carrier: 'DHL', address: '' }
   };
   
   let readonly = false;
