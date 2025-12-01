@@ -11,3 +11,5 @@ export { default as OracalSelector } from './OracalSelector.svelte';
 export { default as ButtonGroup } from './ButtonGroup.svelte';
 export { default as InfoBox } from './InfoBox.svelte';
 export { default as SignTrimSelector } from './SignTrimSelector.svelte';
+export { default as OracalCodeStack } from './OracalCodeStack.svelte';
+export { default as DeliveryDateDisplay } from './DeliveryDateDisplay.svelte';
