@@ -7,6 +7,7 @@
   } from 'lucide-svelte';
   import ProfileSelectorCards from '$lib/profiles/components/ProfileSelectorCards.svelte';
   import ProfileFormRenderer from '$lib/profiles/components/ProfileFormRenderer.svelte';
+  import Profile7stVisual from '$lib/profiles/components/Profile7stVisual.svelte';
   import { profileTemplates, activeTemplates } from '$lib/profiles/stores/profileTemplatesStore';
   import type { ProfileTemplate } from '$lib/profiles/types';
   import FileUploader from './FileUploader.svelte';
@@ -440,12 +441,21 @@
               />
             </div>
 
-            <ProfileFormRenderer
-              bind:this={profiles[currentProfileIndex].formRef}
-              template={profiles[currentProfileIndex].template}
-              bind:configuration={profiles[currentProfileIndex].configuration}
-              {readonly}
-            />
+            {#if profiles[currentProfileIndex].code === 'P7st'}
+              <Profile7stVisual
+                bind:configuration={profiles[currentProfileIndex].configuration}
+                deliveryDate={deadline}
+                {readonly}
+                on:change={() => profiles = [...profiles]}
+              />
+            {:else}
+              <ProfileFormRenderer
+                bind:this={profiles[currentProfileIndex].formRef}
+                template={profiles[currentProfileIndex].template}
+                bind:configuration={profiles[currentProfileIndex].configuration}
+                {readonly}
+              />
+            {/if}
           </section>
         {/if}
 
