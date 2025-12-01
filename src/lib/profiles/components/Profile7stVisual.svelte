@@ -56,9 +56,9 @@
   
   const dispatch = createEventDispatcher();
   
-  // Sync deliveryDate prop with configuration
-  $: if (deliveryDate) {
-    configuration.DELIVERY.date = deliveryDate;
+  // Sync deliveryDate prop with configuration (bidirectional sync)
+  $: if (deliveryDate !== undefined) {
+    configuration.DELIVERY.date = deliveryDate || configuration.DELIVERY.date;
   }
   
   function emitChange() {

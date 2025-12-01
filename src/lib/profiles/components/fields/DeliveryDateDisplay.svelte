@@ -28,7 +28,18 @@
   
   function openDatePicker() {
     if (!readonly && dateInput) {
-      dateInput.showPicker?.();
+      // Try showPicker() first (modern browsers), fallback to click/focus
+      if (typeof dateInput.showPicker === 'function') {
+        try {
+          dateInput.showPicker();
+        } catch {
+          dateInput.focus();
+          dateInput.click();
+        }
+      } else {
+        dateInput.focus();
+        dateInput.click();
+      }
     }
   }
 </script>
