@@ -17,12 +17,15 @@
     FRONT: {
       opal: boolean;
       oracalCodes: string[];
+      placement: 'INTERIOR' | 'EXTERIOR';
     };
     PAINTING: {
       sides: boolean;
+      sidesColor: string;
       back: boolean;
+      backColor: string;
       frame: boolean;
-      color: string;
+      frameColor: string;
       colorLabel: string;
       pantoneRef: string;
     };
@@ -46,8 +49,8 @@
   export let configuration: Profile7stConfiguration = {
     CNC_FREZER: { face: 'OPAL', back: 'ALU 1.5' },
     BENDER: { sides: 'ALU 1.2', depth: 140 },
-    FRONT: { opal: true, oracalCodes: ['8500-031', '8500-020', '8500-052'] },
-    PAINTING: { sides: false, back: false, frame: false, color: 'WHITE', colorLabel: 'БАЗА', pantoneRef: '072C' },
+    FRONT: { opal: true, oracalCodes: ['8500-031', '8500-020', '8500-052'], placement: 'EXTERIOR' },
+    PAINTING: { sides: false, sidesColor: 'WHITE', back: false, backColor: 'WHITE', frame: false, frameColor: 'WHITE', colorLabel: 'БАЗА', pantoneRef: '072C' },
     ASSEMBLING: { led: true, trafo: true, cables: true, frame: true, ledType: 'Balt LED', ledTemp: '6500K', ledMode: 'SEPARATE', mountingHoles: true, waterholes: true, waterholesSize: '4mm' },
     DELIVERY: { date: '2025-11-14' }
   };
@@ -178,6 +181,28 @@
           </label>
         </div>
         
+        <!-- Interior/Exterior Toggle -->
+        <div class="placement-toggle">
+          <button 
+            type="button"
+            class="placement-btn"
+            class:active={configuration.FRONT.placement === 'INTERIOR'}
+            disabled={readonly}
+            on:click={() => { configuration.FRONT.placement = 'INTERIOR'; emitChange(); }}
+          >
+            INT
+          </button>
+          <button 
+            type="button"
+            class="placement-btn"
+            class:active={configuration.FRONT.placement === 'EXTERIOR'}
+            disabled={readonly}
+            on:click={() => { configuration.FRONT.placement = 'EXTERIOR'; emitChange(); }}
+          >
+            EXT
+          </button>
+        </div>
+        
         <OracalCodeStack 
           bind:codes={configuration.FRONT.oracalCodes}
           {readonly}
@@ -187,10 +212,11 @@
     </div>
     
     <!-- PAINTING Section -->
-    <div class="section">
+    <div class="section section-wide">
       <div class="section-header">PAINTING</div>
       <div class="section-content">
-        <div class="checkbox-group">
+        <!-- SIDES with color -->
+        <div class="painting-row">
           <label class="checkbox-field">
             <input 
               type="checkbox" 
@@ -200,6 +226,25 @@
             />
             <span class="checkbox-label">SIDES</span>
           </label>
+          {#if configuration.PAINTING.sides}
+            <div class="color-mini-box">
+              {#if readonly}
+                <span>{configuration.PAINTING.sidesColor}</span>
+              {:else}
+                <input 
+                  type="text" 
+                  class="color-mini-input"
+                  bind:value={configuration.PAINTING.sidesColor}
+                  on:input={emitChange}
+                  placeholder="Color"
+                />
+              {/if}
+            </div>
+          {/if}
+        </div>
+        
+        <!-- BACK with color -->
+        <div class="painting-row">
           <label class="checkbox-field">
             <input 
               type="checkbox" 
@@ -209,6 +254,25 @@
             />
             <span class="checkbox-label">BACK</span>
           </label>
+          {#if configuration.PAINTING.back}
+            <div class="color-mini-box">
+              {#if readonly}
+                <span>{configuration.PAINTING.backColor}</span>
+              {:else}
+                <input 
+                  type="text" 
+                  class="color-mini-input"
+                  bind:value={configuration.PAINTING.backColor}
+                  on:input={emitChange}
+                  placeholder="Color"
+                />
+              {/if}
+            </div>
+          {/if}
+        </div>
+        
+        <!-- FRAME with color -->
+        <div class="painting-row">
           <label class="checkbox-field">
             <input 
               type="checkbox" 
@@ -218,33 +282,35 @@
             />
             <span class="checkbox-label">FRAME</span>
           </label>
+          {#if configuration.PAINTING.frame}
+            <div class="color-mini-box">
+              {#if readonly}
+                <span>{configuration.PAINTING.frameColor}</span>
+              {:else}
+                <input 
+                  type="text" 
+                  class="color-mini-input"
+                  bind:value={configuration.PAINTING.frameColor}
+                  on:input={emitChange}
+                  placeholder="Color"
+                />
+              {/if}
+            </div>
+          {/if}
         </div>
         
-        <div class="color-display">
-          <div class="color-box">
-            {#if readonly}
-              <span class="color-value">{configuration.PAINTING.color}</span>
-            {:else}
-              <input 
-                type="text" 
-                class="color-input"
-                bind:value={configuration.PAINTING.color}
-                on:input={emitChange}
-              />
-            {/if}
-          </div>
-          <div class="color-label-box">
-            {#if readonly}
-              <span>{configuration.PAINTING.colorLabel}</span>
-            {:else}
-              <input 
-                type="text" 
-                class="color-label-input"
-                bind:value={configuration.PAINTING.colorLabel}
-                on:input={emitChange}
-              />
-            {/if}
-          </div>
+        <!-- Color Label -->
+        <div class="color-label-box">
+          {#if readonly}
+            <span>{configuration.PAINTING.colorLabel}</span>
+          {:else}
+            <input 
+              type="text" 
+              class="color-label-input"
+              bind:value={configuration.PAINTING.colorLabel}
+              on:input={emitChange}
+            />
+          {/if}
         </div>
         
         <div class="pantone-ref">
@@ -575,6 +641,79 @@
     font-weight: 600;
     text-transform: uppercase;
     color: #333;
+  }
+  
+  /* Placement Toggle (Interior/Exterior) */
+  .placement-toggle {
+    display: flex;
+    gap: 2px;
+    border: 2px solid #000;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  
+  .placement-btn {
+    flex: 1;
+    padding: 4px 8px;
+    background: #f5f5f5;
+    border: none;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  
+  .placement-btn:disabled {
+    cursor: default;
+  }
+  
+  .placement-btn.active {
+    background: #4A5568;
+    color: #fff;
+  }
+  
+  .placement-btn:not(.active):hover:not(:disabled) {
+    background: #e5e5e5;
+  }
+  
+  /* Painting Rows with Individual Colors */
+  .painting-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 0;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .painting-row:last-of-type {
+    border-bottom: none;
+  }
+  
+  .color-mini-box {
+    flex: 1;
+    border: 2px solid #000;
+    border-radius: 3px;
+    padding: 4px 6px;
+    background: #fff;
+    min-width: 60px;
+  }
+  
+  .color-mini-box span {
+    font-size: 11px;
+    font-weight: 600;
+    display: block;
+    text-align: center;
+  }
+  
+  .color-mini-input {
+    width: 100%;
+    border: none;
+    background: transparent;
+    font-size: 11px;
+    font-weight: 600;
+    text-align: center;
+    outline: none;
   }
   
   /* Color Display */

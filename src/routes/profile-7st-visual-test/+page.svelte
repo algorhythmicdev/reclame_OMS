@@ -5,8 +5,8 @@
   let configuration = {
     CNC_FREZER: { face: 'OPAL', back: 'ALU 1.5' },
     BENDER: { sides: 'ALU 1.2', depth: 140 },
-    FRONT: { opal: true, oracalCodes: ['8500-031', '8500-020', '8500-052'] },
-    PAINTING: { sides: false, back: false, frame: false, color: 'WHITE', colorLabel: 'БАЗА', pantoneRef: '072C' },
+    FRONT: { opal: true, oracalCodes: ['8500-031', '8500-020', '8500-052'], placement: 'EXTERIOR' },
+    PAINTING: { sides: true, sidesColor: 'WHITE', back: false, backColor: 'WHITE', frame: true, frameColor: 'RAL 9005', colorLabel: 'БАЗА', pantoneRef: '072C' },
     ASSEMBLING: { led: true, trafo: true, cables: true, frame: true, ledType: 'Balt LED', ledTemp: '6500K', ledMode: 'SEPARATE', mountingHoles: true, waterholes: true, waterholesSize: '4mm' },
     DELIVERY: { date: '2025-11-14' }
   };
