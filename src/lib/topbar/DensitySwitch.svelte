@@ -20,13 +20,44 @@
   }
 </script>
 
-<div class="menu">
-  <button class="icon" aria-haspopup="menu" aria-expanded="false" title={$t('ui.density.title','Density')}>
+<div class="menu density-menu">
+  <button class="density-btn" aria-haspopup="menu" aria-expanded="false" title={$t('ui.density.title','Density')}>
     <PanelTop size={18} aria-hidden="true"/>
   </button>
   <div class="dropdown" role="menu">
     {#each opts as o}
-      <button role="menuitem" aria-pressed={currentUi?.density===o.k} on:click={()=>set(o.k)}>{o.label()}</button>
+      <button role="menuitem" class:active={currentUi?.density===o.k} on:click={()=>set(o.k)}>{o.label()}</button>
     {/each}
   </div>
 </div>
+
+<style>
+  .density-menu {
+    position: relative;
+  }
+
+  .density-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    color: var(--text-2);
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .density-btn:hover {
+    background: var(--bg-2);
+    color: var(--text);
+  }
+
+  .dropdown button.active {
+    background: var(--bg-2);
+    font-weight: 600;
+  }
+</style>

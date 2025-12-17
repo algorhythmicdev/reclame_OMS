@@ -19,13 +19,14 @@
     }
   }
   
-  function getInitials(name: string): string {
+  function getInitials(name: string | undefined): string {
+    if (!name) return '?';
     return name.split(' ')
       .filter(Boolean)
       .map(x => x[0])
       .slice(0, 2)
       .join('')
-      .toUpperCase();
+      .toUpperCase() || '?';
   }
 </script>
 
@@ -49,7 +50,7 @@
       <span class="user-avatar" aria-hidden="true">
         {getInitials(user.displayName)}
       </span>
-      <span class="user-name">{user.displayName}</span>
+      <span class="user-name">{user.displayName || user.username || 'User'}</span>
     </div>
   </div>
 {/if}

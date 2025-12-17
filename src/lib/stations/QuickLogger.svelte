@@ -1,5 +1,6 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
+  import { logStage } from '$lib/orders/journal';
   
   export let po = ''; 
   export let station = 'CNC';
@@ -10,17 +11,8 @@
   
   const dispatch = createEventDispatcher();
   
-  function save(){
-    const entry = { 
-      po, 
-      station, 
-      notes, 
-      redo: redo ? reason : null, 
-      at: new Date().toISOString() 
-    };
-    const log = JSON.parse(localStorage.getItem('rf_station_log')||'[]'); 
-    log.unshift(entry);
-    localStorage.setItem('rf_station_log', JSON.stringify(log));
+  async function save(){
+    await logStage(po, station, notes, redo ? reason : undefined);
     dispatch('close');
   }
 </script>

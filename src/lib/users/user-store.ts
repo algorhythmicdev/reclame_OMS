@@ -1,6 +1,8 @@
-import { writable, derived } from 'svelte/store';
+import { writable } from 'svelte/store';
+import { base } from '$app/paths';
 
-export type Role = 'SuperAdmin' | 'Admin' | 'Station';
+export type Role = 'SuperAdmin' | 'Admin' | 'StationLead' | 'Operator' | 'Viewer';
+export type Section = 'Admin' | 'Production' | 'Logistics';
 export type StationTag =
   | 'CAD'
   | 'CNC'
@@ -13,33 +15,39 @@ export type StationTag =
   | 'LOGISTICS';
 
 export type User = {
-  id: string;
+  id: number | string;
+  username?: string;
   name: string;
-  role: Role;
+  displayName?: string;
+  primarySection?: Section;
+  sections?: Section[];
+  roles?: Record<Section, Role>;
+  role?: Role;  // Legacy compatibility
   stations?: StationTag[];
 };
 
-const KEY_USER = 'rf_current_user';
+const isBrowser = typeof window !== 'undefined';
 
-export const users = writable<User[]>([
-  { id: 'u-superadmin', name: 'Boss Director', role: 'SuperAdmin' },
-  { id: 'u-admin', name: 'Lina Ops', role: 'Admin' },
-  { id: 'u-cnc1', name: 'Marta Jansone', role: 'Station', stations: ['CNC'] },
-  { id: 'u-sanding', name: 'Igor Petrovs', role: 'Station', stations: ['SANDING'] },
-  { id: 'u-welding', name: 'Līga Ozola', role: 'Station', stations: ['WELDING'] },
-  { id: 'u-paint', name: 'Anna Kalniņa', role: 'Station', stations: ['PAINT'] },
-  { id: 'u-logistics', name: 'Ravi Nair', role: 'Station', stations: ['LOGISTICS'] }
-]);
+// Store for all users (for mentions, lookups, etc.)
+export const users = writable<User[]>([]);
+export const usersLoading = writable<boolean>(false);
 
-const start = typeof window !== 'undefined' ? localStorage.getItem(KEY_USER) : null;
-export const currentUserId = writable<string>(start || 'u-admin');
-
-currentUserId.subscribe((value) => {
-  if (typeof window !== 'undefined') {
-    localStorage.setItem(KEY_USER, value);
+/**
+ * Load users from database
+ */
+export async function loadUsers(): Promise<void> {
+  if (!isBrowser) return;
+  
+  usersLoading.set(true);
+  try {
+    const res = await fetch(`${base}/api/users`);
+    if (res.ok) {
+      const data = await res.json();
+      users.set(data);
+    }
+  } catch (err) {
+    console.error('Failed to load users:', err);
+  } finally {
+    usersLoading.set(false);
   }
-});
-
-export const currentUser = derived([users, currentUserId], ([$users, $id]) => {
-  return $users.find((user) => user.id === $id) || $users[0];
-});
+}

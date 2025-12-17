@@ -2,6 +2,8 @@
   import { base } from '$app/paths';
   import { page } from '$app/stores';
   import { onMount } from 'svelte';
+  import { goto } from '$app/navigation';
+  
   import Logo from '$lib/brand/Logo.svelte';
   import NotificationsBell from '$lib/topbar/NotificationsBell.svelte';
   import ChatPopover from '$lib/topbar/ChatPopover.svelte';
@@ -14,21 +16,26 @@
   import Toaster from '$lib/ui/Toaster.svelte';
   import LiveRegion from '$lib/ui/LiveRegion.svelte';
   import { role } from '$lib/ui/RoleSwitch.svelte';
-  import { seed } from '$lib/dev/seed';
   import CommandPalette from '$lib/ui/CommandPalette.svelte';
   import Keybindings from '$lib/help/Keybindings.svelte';
   import { t } from 'svelte-i18n';
   import { startPreferenceUrlSync } from '$lib/settings/url-sync';
   import { ui } from '$lib/state/ui';
   import { setLocale } from '$lib/i18n';
-  import { Menu, X } from 'lucide-svelte';
-  import SectionIndicator from '$lib/components/SectionIndicator.svelte';
-  import { currentUser } from '$lib/auth/user-store';
-  import { loadStoredUser } from '$lib/auth/auth-utils';
+  import { Menu, X, LayoutDashboard, ClipboardList, Calendar, Package, HelpCircle, Settings, Users, Boxes } from 'lucide-svelte';
+  import { currentUser, loadCurrentUser } from '$lib/auth/user-store';
 
   let searchOpen = false;
   let showKb = false;
   let mobileMenuOpen = false;
+  let authChecked = false;
+
+  // Public routes that don't require auth
+  const publicRoutes = ['/login', '/help'];
+
+  $: isPublicRoute = publicRoutes.some(r => $page.url.pathname === `${base}${r}` || $page.url.pathname === r);
+  $: isAdmin = $currentUser?.roles?.Admin === 'SuperAdmin';
+  $: currentPath = $page.url.pathname;
 
   const openSearch = () => {
     searchOpen = true;
@@ -38,13 +45,15 @@
     searchOpen = false;
   };
 
-  onMount(() => {
-    seed(base);
+  onMount(async () => {
+    // Load current user from session
+    const user = await loadCurrentUser();
+    authChecked = true;
     
-    // Load stored user if available
-    const storedUser = loadStoredUser();
-    if (storedUser) {
-      currentUser.set(storedUser);
+    // Redirect to login if not authenticated and not on public route
+    if (!user && !isPublicRoute) {
+      goto(`${base}/login`);
+      return;
     }
     
     // Apply query params for deep-linking preferences
@@ -61,6 +70,17 @@
       density: density || p.density,
       fontScale: font ? Math.max(0.85, Math.min(1.3, +font)) : p.fontScale
     }));
+    
+    // Use pushState from $app/navigation instead of history.replaceState if needed, 
+    // but here we just want to clean up the URL without reloading
+    if (theme || density || lang || font) {
+      const newUrl = new URL(location.href);
+      newUrl.searchParams.delete('theme');
+      newUrl.searchParams.delete('density');
+      newUrl.searchParams.delete('lang');
+      newUrl.searchParams.delete('font');
+      history.replaceState(history.state, '', newUrl.toString());
+    }
     
     const stopPreferenceSync = startPreferenceUrlSync();
     const handler = (e: KeyboardEvent) => {
@@ -103,7 +123,7 @@
       // Check only color contrast + focusable/focus-visible
       axe.default
         .run(document, {
-          runOnly: { type: 'rule', values: ['color-contrast', 'focus-order-semantics', 'focus-visible'] }
+          runOnly: { type: 'rule', values: ['color-contrast', 'focus-order-semantics'] } // Removed 'focus-visible' as it's not a valid rule ID
         })
         .then((results) => {
           if (results.violations.length) {
@@ -120,48 +140,82 @@
   <link rel="stylesheet" href={`${base}/brand.css`}>
 </svelte:head>
 
-<a href="#main" class="tag" style="position:absolute;left:-9999px;top:-9999px"
-  on:focus={() => (event.currentTarget.style.cssText='position:static')}
-  on:blur={() => (event.currentTarget.style.cssText='position:absolute;left:-9999px;top:-9999px')}>
-  {$t('a11y.skip')}
-</a>
-
-<header class="rf-topbar">
-  <a href="{base}/" class="brand"><Logo /></a>
-  <button class="mobile-menu-btn" on:click={() => mobileMenuOpen = !mobileMenuOpen} aria-label={$t('header.toggle_menu')} aria-expanded={mobileMenuOpen}>
-    {#if mobileMenuOpen}
-      <X size={24} />
-    {:else}
-      <Menu size={24} />
-    {/if}
-  </button>
-  <nav class="main" class:mobile-open={mobileMenuOpen}>
-    <a href="{base}/orders" on:click={() => mobileMenuOpen = false}>{$t('nav.orders') || 'Заказы'}</a>
-    <a href="{base}/calendar" on:click={() => mobileMenuOpen = false}>{$t('nav.calendar') || 'Календарь'}</a>
-    <a href="{base}/inventory" on:click={() => mobileMenuOpen = false}>{$t('nav.inventory') || 'Склад'}</a>
-    <a href="{base}/faq" on:click={() => mobileMenuOpen = false}>{$t('nav.faq') || 'FAQ'}</a>
-    <a href="{base}/settings" on:click={() => mobileMenuOpen = false}>{$t('nav.settings') || 'Настройки'}</a>
-  </nav>
-  <div class="actions">
-    <div title={$t('topbar.language', 'Language')}><LangSwitch /></div>
-    <div title={$t('ui.textsize', 'Text size')}><TextSizeSwitch /></div>
-    <div title={$t('ui.density.title', 'Density')}><DensitySwitch /></div>
-    <div title={$t('topbar.theme', 'Theme')}><ThemeSwitch /></div>
-    <div title={$t('ui.notifications', 'Notifications')}><NotificationsBell /></div>
-    <div title={$t('ui.chat', 'Team chat')}><ChatPopover /></div>
-    <SectionIndicator />
-    <UserSwitch />
+{#if !authChecked}
+  <!-- Loading state while checking auth -->
+  <div class="auth-loading">
+    <div class="spinner"></div>
   </div>
-</header>
+{:else if isPublicRoute || $currentUser}
+  <a href="#main" class="tag skip-link"
+    on:focus={(e) => (e.currentTarget.style.cssText='position:fixed;top:8px;left:8px;z-index:1000')}
+    on:blur={(e) => (e.currentTarget.style.cssText='position:absolute;left:-9999px;top:-9999px')}>
+    {$t('a11y.skip')}
+  </a>
 
-<main id="main" class="rf-page"><slot /></main>
+  {#if $currentUser}
+    <header class="rf-topbar">
+      <a href="{base}/orders" class="brand"><Logo /></a>
+      <button class="mobile-menu-btn" on:click={() => mobileMenuOpen = !mobileMenuOpen} aria-label={$t('header.toggle_menu')} aria-expanded={mobileMenuOpen}>
+        {#if mobileMenuOpen}
+          <X size={24} />
+        {:else}
+          <Menu size={24} />
+        {/if}
+      </button>
+      <nav class="main" class:mobile-open={mobileMenuOpen}>
+        <a href="{base}/orders" class:active={currentPath.includes('/orders')} on:click={() => mobileMenuOpen = false}>
+          <ClipboardList size={18} />
+          <span>{$t('nav.orders', { default: 'Orders' })}</span>
+        </a>
+        <a href="{base}/calendar" class:active={currentPath.includes('/calendar')} on:click={() => mobileMenuOpen = false}>
+          <Calendar size={18} />
+          <span>{$t('nav.calendar', { default: 'Calendar' })}</span>
+        </a>
+        <a href="{base}/inventory" class:active={currentPath.includes('/inventory')} on:click={() => mobileMenuOpen = false}>
+          <Package size={18} />
+          <span>{$t('nav.inventory', { default: 'Inventory' })}</span>
+        </a>
+        <a href="{base}/faq" class:active={currentPath.includes('/faq')} on:click={() => mobileMenuOpen = false}>
+          <HelpCircle size={18} />
+          <span>{$t('nav.faq', { default: 'FAQ' })}</span>
+        </a>
+        {#if isAdmin}
+          <div class="nav-divider"></div>
+          <a href="{base}/admin/users" class:active={currentPath.includes('/admin/users')} on:click={() => mobileMenuOpen = false}>
+            <Users size={18} />
+            <span>Users</span>
+          </a>
+          <a href="{base}/admin/materials" class:active={currentPath.includes('/admin/materials')} on:click={() => mobileMenuOpen = false}>
+            <Boxes size={18} />
+            <span>Materials</span>
+          </a>
+        {/if}
+      </nav>
+      <div class="actions">
+        <div class="action-group text-size-group" title={$t('topbar.textSize', { default: 'Text Size' })}><TextSizeSwitch /></div>
+        <div class="action-btn" title={$t('topbar.density', { default: 'Density' })}><DensitySwitch /></div>
+        <div class="action-btn" title={$t('topbar.theme', { default: 'Theme' })}><ThemeSwitch /></div>
+        <div class="action-btn" title={$t('ui.notifications', { default: 'Notifications' })}><NotificationsBell /></div>
+        <div class="action-btn" title={$t('ui.chat', { default: 'Chat' })}><ChatPopover /></div>
+        <a href="{base}/settings" class="action-btn settings-btn" title={$t('nav.settings', { default: 'Settings' })}>
+          <Settings size={20} />
+        </a>
+        <UserSwitch />
+      </div>
+    </header>
+  {/if}
 
-<MobileNav />
+  <main id="main" class="rf-page"><slot /></main>
 
-<Toaster />
-<LiveRegion />
-<CommandPalette open={searchOpen} onClose={closeSearch} />
-<Keybindings bind:open={showKb} />
+  {#if $currentUser}
+    <MobileNav />
+  {/if}
+
+  <Toaster />
+  <LiveRegion />
+  <CommandPalette open={searchOpen} onClose={closeSearch} />
+  <Keybindings bind:open={showKb} />
+{/if}
 
 <div id="rf-live" class="sr-only" aria-live="polite"></div>
 
@@ -173,132 +227,228 @@
   overflow: hidden;
   clip: rect(0 0 0 0);
 }
-.rf-topbar{
-  position:sticky;
-  top:0;
-  z-index:100;
-  display:flex;
-  align-items:center;
-  gap:24px;
-  padding:12px clamp(16px,3vw,28px);
-  background:var(--bg-1);
-  border-bottom:1px solid var(--border);
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: -9999px;
 }
 
-.rf-topbar .brand{
-  display:inline-flex;
-  align-items:center;
-  text-decoration:none;
+.auth-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: var(--bg-0);
 }
 
-.rf-topbar nav.main{
-  flex:1;
-  display:flex;
-  gap:16px;
-  overflow-x:auto;
-  scrollbar-width:none;
-}
-.rf-topbar nav.main::-webkit-scrollbar{display:none}
-
-.rf-topbar nav.main a{
-  padding:8px 12px;
-  border-radius:999px;
-  text-decoration:none;
-  color:var(--text);
-  white-space:nowrap;
-  transition:background .2s ease;
-}
-.rf-topbar nav.main a:hover,.rf-topbar nav.main a:focus-visible{
-  background:color-mix(in oklab,var(--bg-2) 70%,var(--bg-1) 30%);
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent, #3b82f6);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
 }
 
-.rf-topbar .actions{
-  display:flex;
-  align-items:center;
-  gap:8px;
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
-.rf-topbar .mobile-menu-btn{
-  display:none;
-  background:transparent;
-  border:1px solid var(--border);
-  border-radius:8px;
-  padding:6px;
-  cursor:pointer;
-  color:var(--text);
-  transition:background 0.2s ease;
+.rf-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 0 clamp(16px, 3vw, 28px);
+  height: 60px;
+  background: var(--bg-1);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(12px);
 }
 
-.rf-topbar .mobile-menu-btn:hover{
-  background:color-mix(in oklab,var(--bg-2) 70%,var(--bg-1) 30%);
+.rf-topbar .brand {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  flex-shrink: 0;
 }
 
-@media (max-width: 1280px){
-  .rf-topbar{
-    gap:16px;
-  }
-  .rf-topbar nav.main{
-    gap:12px;
-  }
+.rf-topbar nav.main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 4px 0;
 }
 
-@media (max-width: 720px){
-  .rf-topbar{
-    flex-wrap:nowrap;
-    padding:10px 16px;
-    gap:12px;
-    position:relative;
+.rf-topbar nav.main::-webkit-scrollbar { display: none; }
+
+.rf-topbar nav.main a {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: var(--text-2);
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.rf-topbar nav.main a:hover {
+  color: var(--text);
+  background: var(--bg-2);
+}
+
+.rf-topbar nav.main a.active {
+  color: var(--text);
+  background: var(--accent, #3b82f6);
+  color: white;
+}
+
+.rf-topbar nav.main a.active:hover {
+  background: var(--accent-hover, #2563eb);
+}
+
+.nav-divider {
+  width: 1px;
+  height: 24px;
+  background: var(--border);
+  margin: 0 8px;
+  flex-shrink: 0;
+}
+
+.rf-topbar .actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.rf-topbar .action-group {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.rf-topbar .action-group.text-size-group {
+  padding: 0 4px;
+  border-radius: 8px;
+  background: var(--bg-0);
+  border: 1px solid var(--border);
+  height: 36px;
+}
+
+.rf-topbar .action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  border-radius: 8px;
+  color: var(--text-2);
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.rf-topbar .action-btn:hover {
+  background: var(--bg-2);
+  color: var(--text);
+}
+
+.rf-topbar .settings-btn {
+  text-decoration: none;
+}
+
+.rf-topbar .mobile-menu-btn {
+  display: none;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px;
+  cursor: pointer;
+  color: var(--text);
+  transition: all 0.15s ease;
+}
+
+.rf-topbar .mobile-menu-btn:hover {
+  background: var(--bg-2);
+}
+
+@media (max-width: 1024px) {
+  .rf-topbar { gap: 12px; }
+  .rf-topbar nav.main a span { display: none; }
+  .rf-topbar nav.main a { padding: 8px 10px; }
+  .nav-divider { margin: 0 4px; }
+}
+
+@media (max-width: 720px) {
+  .rf-topbar {
+    padding: 0 16px;
+    height: 56px;
   }
   
-  .rf-topbar .brand{
-    flex:1;
+  .rf-topbar .brand { flex: 1; }
+  
+  .rf-topbar .mobile-menu-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    order: 3;
   }
   
-  .rf-topbar .mobile-menu-btn{
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    order:3;
+  .rf-topbar nav.main {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--bg-1);
+    border-bottom: 1px solid var(--border);
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding: 8px;
+    display: none;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    z-index: 100;
   }
   
-  .rf-topbar nav.main{
-    position:absolute;
-    top:100%;
-    left:0;
-    right:0;
-    background:var(--bg-1);
-    border-bottom:1px solid var(--border);
-    flex-direction:column;
-    gap:0;
-    padding:0;
-    display:none;
-    box-shadow:0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
-    z-index:100;
+  .rf-topbar nav.main.mobile-open { display: flex; }
+  
+  .rf-topbar nav.main a {
+    padding: 14px 16px;
+    border-radius: 8px;
   }
   
-  .rf-topbar nav.main.mobile-open{
-    display:flex;
+  .rf-topbar nav.main a span { display: inline; }
+  
+  .nav-divider {
+    width: 100%;
+    height: 1px;
+    margin: 8px 0;
   }
   
-  .rf-topbar nav.main a{
-    padding:16px 20px;
-    border-radius:0;
-    border-bottom:1px solid var(--border);
-    width:100%;
-    text-align:left;
+  .rf-topbar .actions {
+    order: 2;
+    gap: 2px;
   }
   
-  .rf-topbar nav.main a:last-child{
-    border-bottom:none;
+  .rf-topbar .action-btn {
+    width: 32px;
+    height: 32px;
   }
   
-  .rf-topbar .actions{
-    order:2;
-    gap:4px;
-  }
-  
-  .rf-topbar .actions > div:not(:has(.user-switch)){
-    display:none;
+  /* Keep text size and theme visible on mobile, hide others */
+  .rf-topbar .actions > :global(.action-btn):nth-child(n+3):not(:last-child):not(.settings-btn) {
+    display: none;
   }
 }
 </style>

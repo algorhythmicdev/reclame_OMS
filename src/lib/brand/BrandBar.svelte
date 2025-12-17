@@ -1,6 +1,7 @@
 <script lang="ts">
   import { base } from '$app/paths';
-  import { currentUser, users, currentUserId } from '$lib/users/user-store';
+  import { users, loadUsers } from '$lib/users/user-store';
+  import { currentUser } from '$lib/auth/user-store';
   import { unseenCount } from '$lib/notifications/count';
   import { t } from 'svelte-i18n';
   import BellIcon from 'lucide-svelte/icons/bell';
@@ -8,13 +9,17 @@
   import ThemeQuick from '$lib/ui/ThemeQuick.svelte';
   import LangQuick from '$lib/ui/LangQuick.svelte';
   import TextScaleQuick from '$lib/ui/TextScaleQuick.svelte';
+  import { onMount } from 'svelte';
 
   let showUserMenu = false, c = 0;
   unseenCount.subscribe((v) => (c = v));
-  $: $currentUser, $users, $currentUserId;
+  $: $currentUser, $users;
+
+  onMount(() => {
+    loadUsers();
+  });
 
   const logo = () => `${base}/logo.png`;
-  const pickUser = (e: Event) => currentUserId.set((e.target as HTMLSelectElement).value);
 
   $: navItems = [
     { path: '/orders', label: $t('nav.orders'), icon: 'orders' },

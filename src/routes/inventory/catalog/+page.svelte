@@ -1,30 +1,23 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { inventory } from '$lib/inventory/inventory-store';
-  import { seedSampleMaterials } from '$lib/inventory/material-seeds';
+  import { items, loadItems, lowStock } from '$lib/inventory/store';
   import { Package, Plus, Search, AlertCircle } from 'lucide-svelte';
   import { t } from 'svelte-i18n';
-  import type { MaterialCategory } from '$lib/inventory/material-types';
+  import type { Category } from '$lib/inventory/types';
   
   let searchQuery = '';
-  let categoryFilter: MaterialCategory | 'ALL' = 'ALL';
+  let categoryFilter: Category | 'ALL' = 'ALL';
   let showLowStockOnly = false;
   
-  // Subscribe to the stores from inventory object
-  const { materials, lowStockAlerts } = inventory;
-  
-  // Seed sample materials on first load
   onMount(() => {
-    if ($materials.length === 0) {
-      seedSampleMaterials(inventory);
-    }
+    loadItems();
   });
   
-  $: filteredMaterials = $materials.filter(mat => {
+  $: filteredMaterials = $items.filter(mat => {
     const matchesSearch = mat.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         mat.brand?.toLowerCase().includes(searchQuery.toLowerCase());
+                         mat.sku?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = categoryFilter === 'ALL' || mat.category === categoryFilter;
-    const matchesLowStock = !showLowStockOnly || $lowStockAlerts.some(l => l.id === mat.id);
+    const matchesLowStock = !showLowStockOnly || mat.stock <= mat.min;
     
     return matchesSearch && matchesCategory && matchesLowStock;
   });
@@ -46,10 +39,10 @@
     </button>
   </div>
   
-  {#if $lowStockAlerts.length > 0}
+  {#if $lowStock.length > 0}
     <div class="alert-banner">
       <AlertCircle size={20} />
-      <span>{$lowStockAlerts.length} {$t('inventory.low_stock_items') || 'materials low in stock'}</span>
+      <span>{$lowStock.length} {$t('inventory.low_stock_items') || 'materials low in stock'}</span>
       <button class="btn sm" on:click={() => showLowStockOnly = !showLowStockOnly}>
         {showLowStockOnly ? ($t('inventory.show_all') || 'Show All') : ($t('inventory.show_alerts') || 'Show Alerts Only')}
       </button>
@@ -67,49 +60,54 @@
     
     <select bind:value={categoryFilter}>
       <option value="ALL">{$t('inventory.all_categories') || 'All Categories'}</option>
-      <option value="SHEET_METAL">{$t('inventory.sheet_metal') || 'Sheet Metal'}</option>
-      <option value="COMPOSITE">{$t('inventory.composite') || 'Composite'}</option>
-      <option value="PLASTIC">{$t('inventory.plastic') || 'Plastic'}</option>
-      <option value="VINYL">{$t('inventory.vinyl') || 'Vinyl'}</option>
-      <option value="FINISHING">{$t('inventory.finishing') || 'Finishing'}</option>
-      <option value="HARDWARE">{$t('inventory.hardware') || 'Hardware'}</option>
+      <option value="ACRYLIC">Acrylic</option>
+      <option value="ALUMINIUM">Aluminium</option>
+      <option value="STEEL">Steel</option>
+      <option value="ACP">ACP</option>
+      <option value="VINYL">Vinyl</option>
+      <option value="PAINT">Paint</option>
+      <option value="ADHESIVE">Adhesive</option>
+      <option value="HARDWARE">Hardware</option>
+      <option value="INSTRUMENT">Instrument</option>
+      <option value="ELECTRONICS">Electronics</option>
+      <option value="LED">LED Modules</option>
+      <option value="LED_STRIP">LED Strips</option>
+      <option value="PSU">Power Supplies</option>
+      <option value="3D_PRINTING">3D Printing</option>
+      <option value="RESIN">Resin</option>
+      <option value="FILAMENT">Filament</option>
+      <option value="SCREWS">Screws & Fasteners</option>
+      <option value="MOUNTING">Mounting</option>
+      <option value="CONSUMABLE">Consumables</option>
     </select>
   </div>
   
   <div class="materials-grid">
     {#each filteredMaterials as material (material.id)}
       <div class="material-card">
-        {#if material.imageUrl}
-          <img src={material.imageUrl} alt={material.name} class="material-image" />
-        {:else}
-          <div class="material-image-placeholder">
-            <Package size={32} />
-          </div>
-        {/if}
+        <div class="material-image-placeholder">
+          <Package size={32} />
+        </div>
         
         <div class="material-info">
           <h3>{material.name}</h3>
-          {#if material.brand}
-            <div class="material-brand">{material.brand}</div>
-          {/if}
+          <div class="material-brand">{material.sku}</div>
           
           <div class="material-specs">
-            {#if material.thickness}
-              <span class="spec-tag">{material.thickness}mm</span>
+            {#if material.thicknessMM}
+              <span class="spec-tag">{material.thicknessMM}mm</span>
             {/if}
-            {#if material.weatherResistant}
-              <span class="spec-tag weather">Weather Resistant</span>
-            {/if}
+            <span class="spec-tag">{material.category}</span>
           </div>
           
           <div class="stock-info">
             <span class="stock-label">{$t('inventory.in_stock') || 'In Stock'}:</span>
             <span class="stock-value">
-              {inventory.getStock(material.id)} {material.pricePerUnit || 'units'}
+              {material.stock} {material.unit}
             </span>
           </div>
           
-          {#if $lowStockAlerts.some(l => l.id === material.id)}
+          {#if material.stock <= material.min}
             <div class="low-stock-badge">
               <AlertCircle size={14} />
               {$t('inventory.low_stock') || 'Low Stock'}

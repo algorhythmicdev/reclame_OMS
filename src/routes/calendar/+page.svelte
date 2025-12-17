@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
-  import { listOrders } from '$lib/order/signage-store';
+  import { ordersStore } from '$lib/order/signage-store';
   import { loads } from '$lib/state/loads';
   import type { Order } from '$lib/order/types';
   import { Calendar, ChevronLeft, ChevronRight, Plus, Truck, Download, Filter } from 'lucide-svelte';
@@ -14,14 +14,35 @@
   let y = today.getFullYear();
   let m = today.getMonth();
   let selectedDate: string | null = null;
-  let orders = listOrders();
+  let orders: Order[] = [];
   let loadsList: any[] = [];
   let filterStatus: 'all' | 'scheduled' | 'unscheduled' = 'all';
   
   loads.subscribe(v => loadsList = v);
   
-  function refreshOrders() {
-    orders = listOrders();
+  async function refreshOrders() {
+    try {
+      const response = await fetch('/api/draft-orders');
+      if (response.ok) {
+        const data = await response.json();
+        orders = data.map((d: any) => ({
+          id: d.poNumber,
+          title: d.title || d.clientName,
+          client: d.clientName,
+          due: d.deadline,
+          loadingDate: d.loadingDate,
+          badges: d.status === 'draft' ? ['DRAFT'] : [],
+          fields: [],
+          materials: [],
+          stages: {},
+          isDraft: d.status === 'draft',
+          profiles: d.profiles || []
+        }));
+        ordersStore.set(orders);
+      }
+    } catch (err) {
+      console.error('Failed to fetch orders:', err);
+    }
   }
   
   function prev() {

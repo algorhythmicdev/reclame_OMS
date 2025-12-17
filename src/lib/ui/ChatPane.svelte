@@ -2,7 +2,8 @@
   import { onMount } from 'svelte';
   import MentionInput from '$lib/chat/MentionInput.svelte';
   import { rooms, messages, sendMessage } from '$lib/chat/chat-store';
-  import { users, currentUser } from '$lib/users/user-store';
+  import { users, loadUsers } from '$lib/users/user-store';
+  import { currentUser } from '$lib/auth/user-store';
   import { t } from 'svelte-i18n';
   import { REWORK_LABEL } from '$lib/order/stages';
   import type { StationTag, ReworkReason } from '$lib/order/stages';
@@ -12,6 +13,10 @@
 
   let activeRoomId = 'general';
   let scroller: HTMLDivElement | null = null;
+
+  onMount(() => {
+    loadUsers();
+  });
 
   $: activeRoom = $rooms.find((room) => room.id === activeRoomId) || $rooms[0];
   $: roomMessages = $messages.filter((message) => message.roomId === activeRoomId);
@@ -23,12 +28,12 @@
 
   function authorName(id: string) {
     if (id === 'system') return $t('chat.system.name');
-    return $users.find((user) => user.id === id)?.name ?? id;
+    return $users.find((user) => String(user.id) === String(id))?.name ?? id;
   }
 
   function authorStation(id: string): StationTag | null {
     if (id === 'system') return null;
-    return $users.find((user) => user.id === id)?.stations?.[0] ?? null;
+    return $users.find((user) => String(user.id) === String(id))?.stations?.[0] ?? null;
   }
 
   function reworkReasonLabel(reason: ReworkReason) {
@@ -37,7 +42,7 @@
 
   function isMention(messageMentions: string[] | undefined) {
     if (!messageMentions || messageMentions.length === 0) return false;
-    return messageMentions.includes($currentUser.id);
+    return $currentUser ? messageMentions.includes(String($currentUser.username)) : false;
   }
 
   function avatarInitial(id: string) {

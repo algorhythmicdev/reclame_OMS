@@ -54,12 +54,13 @@ const aliasPlugin = {
       path: await resolveWithExtensions(join(root, 'src/lib', args.path.slice(5))),
       namespace: 'file'
     }));
+    // Handle $app/* imports - resolve to src/app/* mock files
     build.onResolve({ filter: /^\$app\// }, async (args) => ({
-      path: await resolveWithExtensions(join(root, 'src', args.path.slice(5))),
+      path: await resolveWithExtensions(join(root, 'src/app', args.path.slice(5))),
       namespace: 'file'
     }));
     build.onResolve({ filter: /^\.\/?\$app\// }, async (args) => ({
-      path: await resolveWithExtensions(join(root, 'src', args.path.replace(/^\.\/?\$app\//, ''))),
+      path: await resolveWithExtensions(join(root, 'src/app', args.path.replace(/^\.\/?\$app\//, ''))),
       namespace: 'file'
     }));
     build.onResolve({ filter: /^vitest$/ }, () => ({

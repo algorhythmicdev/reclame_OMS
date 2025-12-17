@@ -37,15 +37,9 @@
   import {
     getOrder,
     createOrder,
-    setDefaultRevision,
-    addRevision,
+    updateOrder,
     setBadges as setOrderBadges,
-    openChangeRequest,
-    approveChangeRequest,
-    declineChangeRequest,
-    setLoadingDate,
-    addRedoFlag,
-    setRedoSelection
+    setLoadingDate
   } from '$lib/order/signage-store';
   import { blankStages, STATIONS, type StageState, type StationTag, type ReworkReason } from '$lib/order/stages';
   import { getOrderSeed } from '$lib/order/order-seeds';
@@ -54,77 +48,112 @@
   export let params;
   const id = params.id;
 
-  let existing = getOrder(id);
-  if (!existing) {
-    const seed = getOrderSeed(id);
-    if (seed) {
-      const stages = seed.stages ? { ...blankStages(), ...seed.stages } : blankStages();
-      existing = createOrder({
-        id: seed.id,
-        title: seed.title,
-        client: seed.client,
-        due: seed.due,
-        loadingDate: seed.loadingDate,
-        badges: seed.badges,
-        fields: seed.fields,
-        materials: seed.materials,
-        stages,
-        cycles: [],
-        isRD: seed.isRD,
-        rdNotes: seed.rdNotes,
-        file: {
-          id: `${seed.id}-file`,
-          name: seed.fileName,
-          path: `${base}/files/${seed.fileName}`,
-          kind: 'pdf'
-        }
-      });
+  let o: Order | null = null;
+  let isLoading = true;
+
+  onMount(async () => {
+    // Try to fetch from API first
+    o = await getOrder(id);
+    
+    if (!o) {
+      // Fallback to seed data for demo
+      const seed = getOrderSeed(id);
+      if (seed) {
+        const stages = seed.stages ? { ...blankStages(), ...seed.stages } : blankStages();
+        o = await createOrder({
+          id: seed.id,
+          title: seed.title,
+          client: seed.client,
+          due: seed.due,
+          loadingDate: seed.loadingDate,
+          badges: seed.badges,
+          fields: seed.fields,
+          materials: seed.materials,
+          stages,
+          cycles: [],
+          isRD: seed.isRD,
+          rdNotes: seed.rdNotes
+        }) || createFallbackOrder();
+      } else {
+        o = createFallbackOrder();
+      }
+    }
+    isLoading = false;
+  });
+
+  function createFallbackOrder(): Order {
+    const stages = blankStages();
+    stages.CAD = 'COMPLETED';
+    stages.CNC = 'COMPLETED';
+    stages.SANDING = 'IN_PROGRESS';
+    return {
+      id,
+      title: '4500mm Long Frame',
+      client: 'ABTB BIJEN',
+      due: '2025-10-26',
+      loadingDate: '2025-10-24',
+      badges: ['OPEN', 'IN_PROGRESS'],
+      fields: [{ key: 'priority', label: 'Priority', value: 'Normal' }],
+      materials: [{ key: 'face', label: 'Face', value: 'Acrylic 3mm White' }],
+      stages,
+      cycles: [],
+      isDraft: false,
+      profiles: [],
+      isRD: false,
+      rdNotes: '',
+      redo: [],
+      redoReasons: {},
+      redoStage: '',
+      redoReason: '',
+      progress: {},
+      branches: [],
+      prs: [],
+      revisions: [],
+      defaultRevisionId: ''
+    };
+  }
+
+  async function saveOrder() {
+    if (!o) return;
+    const result = await updateOrder(id, o);
+    if (result) {
+      announceToast('Order saved successfully', 'success');
     } else {
-      const fallbackName = 'PO-250375_ABTB-BIJEN_4500mm.pdf';
-      const stages = blankStages();
-      stages.CAD = 'COMPLETED';
-      stages.CNC = 'COMPLETED';
-      stages.SANDING = 'IN_PROGRESS';
-      existing = createOrder({
-        id,
-        title: '4500mm Long Frame',
-        client: 'ABTB BIJEN',
-        due: '2025-10-26',
-        loadingDate: '2025-10-24',
-        badges: ['OPEN', 'IN_PROGRESS'],
-        fields: [{ key: 'priority', label: 'Priority', value: 'Normal' }],
-        materials: [{ key: 'face', label: 'Face', value: 'Acrylic 3mm White' }],
-        stages,
-        cycles: [],
-        file: { id: 'f1', name: fallbackName, path: `${base}/files/${fallbackName}`, kind: 'pdf' }
-      });
+      announceToast('Failed to save order', 'error');
     }
   }
 
-  let o = getOrder(id)!;
-  $: pdf = o.revisions.find((r) => r.id === o.defaultRevisionId)?.file;
+  function discardChanges() {
+    // Reload from API
+    getOrder(id).then(order => {
+      if (order) o = order;
+    });
+  }
+
+  $: pdf = o?.revisions?.find((r) => r.id === o?.defaultRevisionId)?.file;
   let compareRevisionId: string | null = null;
   let leftPdf = { url: '', name: '' };
   let rightPdf = { url: '', name: '' };
   let left = { url: '', name: '' };
   let right = { url: '', name: '' };
-  $: currentRevision = o.revisions.find((r) => r.id === o.defaultRevisionId) ?? o.revisions[0];
-  $: if (!compareRevisionId || !o.revisions.some((r) => r.id === compareRevisionId)) {
-    const alternate = o.revisions.find((r) => r.id !== currentRevision?.id);
+  $: currentRevision = o?.revisions?.find((r) => r.id === o?.defaultRevisionId) ?? o?.revisions?.[0];
+  $: if (!compareRevisionId || !o?.revisions?.some((r) => r.id === compareRevisionId)) {
+    const alternate = o?.revisions?.find((r) => r.id !== currentRevision?.id);
     compareRevisionId = alternate?.id ?? currentRevision?.id ?? null;
   }
   $: compareRevision = compareRevisionId
-    ? o.revisions.find((r) => r.id === compareRevisionId) ?? currentRevision
+    ? o?.revisions?.find((r) => r.id === compareRevisionId) ?? currentRevision
     : currentRevision;
   $: leftPdf = currentRevision
-    ? { url: currentRevision.file.path, name: currentRevision.file.name ?? currentRevision.name ?? 'Current' }
+    ? { url: currentRevision.file?.path || '', name: currentRevision.file?.name ?? currentRevision.name ?? 'Current' }
     : { url: '', name: '' };
   $: rightPdf = compareRevision
-    ? { url: compareRevision.file.path, name: compareRevision.file.name ?? compareRevision.name ?? 'Candidate' }
+    ? { url: compareRevision.file?.path || '', name: compareRevision.file?.name ?? compareRevision.name ?? 'Candidate' }
     : leftPdf;
   $: left = { ...leftPdf };
   $: right = { ...rightPdf };
-  let loadingSelection = o.loadingDate ?? '';
+  let loadingSelection = '';
+  $: if (o) loadingSelection = o.loadingDate ?? '';
   let showPicker = false;
   
   // New materials editor state (mock/demo) - not persisted to order store
@@ -478,8 +507,8 @@
         </div>
 
         <div class="row" style="justify-content:flex-end;gap:8px;margin-top:12px">
-          <button class="tag ghost" on:click={()=>alert('Mock: revert form')}>Discard</button>
-          <button class="tag primary" on:click={()=>alert('Mock: saved')}>Save</button>
+          <button class="tag ghost" on:click={discardChanges}>Discard</button>
+          <button class="tag primary" on:click={saveOrder}>Save</button>
         </div>
       </section>
 

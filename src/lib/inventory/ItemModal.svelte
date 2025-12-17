@@ -88,6 +88,17 @@
         <input bind:value={item.location} placeholder={$t('inventory.modal.location_placeholder')} />
       </label>
       <label>
+        {$t('inventory.labels.color', { default: 'Color Code' })}
+        <input bind:value={item.colorCode} placeholder="e.g., RAL 9010" />
+      </label>
+      <label>
+        {$t('inventory.hexColor', { default: 'Color (Hex)' })}
+        <div class="color-input-row">
+          <input type="color" bind:value={item.hexColor} class="color-picker" />
+          <input bind:value={item.hexColor} placeholder="#000000" class="color-text" />
+        </div>
+      </label>
+      <label>
         {$t('inventory.modal.supplier_label')}
         <input bind:value={item.supplier} />
       </label>
@@ -131,5 +142,19 @@ input, textarea, select {
   border-radius: 10px;
   padding: 8px;
   color: var(--text);
+}
+.color-input-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.color-picker {
+  width: 44px;
+  height: 36px;
+  padding: 2px;
+  cursor: pointer;
+}
+.color-text {
+  flex: 1;
 }
 </style>

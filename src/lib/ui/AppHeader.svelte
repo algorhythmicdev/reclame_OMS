@@ -1,10 +1,11 @@
 <script lang="ts">
   import { base } from '$app/paths';
-  import { createEventDispatcher, onDestroy } from 'svelte';
+  import { createEventDispatcher, onDestroy, onMount } from 'svelte';
   import SearchIcon from 'lucide-svelte/icons/search';
   import BellIcon from 'lucide-svelte/icons/bell';
   import HelpCircle from 'lucide-svelte/icons/help-circle';
-  import { currentUser, users, currentUserId } from '$lib/users/user-store';
+  import { users, loadUsers } from '$lib/users/user-store';
+  import { currentUser } from '$lib/auth/user-store';
   import { unseenCount } from '$lib/notifications/count';
   import RoleSwitch from './RoleSwitch.svelte';
   import { t } from 'svelte-i18n';
@@ -16,6 +17,10 @@
 
   const dispatch = createEventDispatcher<{ opensearch: void }>();
   const openSearch = () => dispatch('opensearch');
+
+  onMount(() => {
+    loadUsers();
+  });
 
   let showUserMenu = false;
   let showHelp = false;

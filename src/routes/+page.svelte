@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
+  
   import { listOrders } from '$lib/order/signage-store';
   import type { Order, Station } from '$lib/order/types';
   import { STATIONS } from '$lib/order/stages';
@@ -9,12 +10,14 @@
   import Badge from '$lib/ui/Badge.svelte';
   import { badgeTone } from '$lib/order/badges';
   
-  let orders = listOrders();
+  let orders: Order[] = [];
   
-  onMount(() => {
-    const handler = (event: StorageEvent) => {
+  onMount(async () => {
+    orders = await listOrders();
+    
+    const handler = async (event: StorageEvent) => {
       if (!event.key || event.key === 'rf_orders_vcs') {
-        orders = listOrders();
+        orders = await listOrders();
       }
     };
     window.addEventListener('storage', handler);

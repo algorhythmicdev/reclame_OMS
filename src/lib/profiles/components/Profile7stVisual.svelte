@@ -14,6 +14,7 @@
   
   // Configuration interface
   interface Profile7stConfiguration {
+    profileName?: string;
     signType: 'INTERIOR' | 'EXTERIOR';
     CNC_FREZER: {
       face: string;
@@ -58,6 +59,7 @@
   const defaultColor: ColorValue = { system: '', code: '', hex: '' };
   
   export let configuration: Profile7stConfiguration = {
+    profileName: 'Profile 7st',
     signType: 'EXTERIOR',
     CNC_FREZER: { face: 'OPAL', back: 'ALU 1.5' },
     BENDER: { sides: 'ALU 1.2', depth: 140 },
@@ -86,7 +88,7 @@
   const carriers = ['DHL', 'UPS', 'FedEx', 'DPD', 'TNT', 'Local Delivery', 'Customer Pickup'];
   
   // Sync deliveryDate prop with configuration
-  $: if (deliveryDate !== undefined) {
+  $: if (deliveryDate !== undefined && configuration && configuration.DELIVERY) {
     configuration.DELIVERY.date = deliveryDate || configuration.DELIVERY.date;
   }
   
@@ -124,8 +126,14 @@
 <div class="profile-7st-visual">
   <!-- Profile Header with Badge and Sign Type -->
   <div class="profile-header">
-    <div class="profile-badge">
-      <span>Profile 7st</span>
+    <div class="profile-name-input">
+      <input 
+        type="text" 
+        bind:value={configuration.profileName} 
+        placeholder="Profile Name"
+        disabled={readonly}
+        on:input={emitChange}
+      />
     </div>
     
     <!-- Interior/Exterior Toggle -->
@@ -539,14 +547,20 @@
     flex-wrap: wrap;
   }
   
-  .profile-badge {
-    display: inline-block;
-    padding: 6px 16px;
+  .profile-name-input input {
+    padding: 6px 12px;
     background-color: #E91E63;
     color: white;
     font-weight: 700;
     font-size: 14px;
     border-radius: 4px;
+    border: none;
+    outline: none;
+    width: 200px;
+  }
+
+  .profile-name-input input::placeholder {
+    color: rgba(255, 255, 255, 0.7);
   }
   
   .sign-type-toggle {

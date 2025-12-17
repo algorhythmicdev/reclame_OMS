@@ -1,10 +1,13 @@
 <script lang="ts">
   import Bell from 'lucide-svelte/icons/bell';
   import { notices } from '$lib/notify/bus';
+  import { onMount } from 'svelte';
+  import { base } from '$app/paths';
   
   let open = false;
   let btn: HTMLButtonElement;
-  let noticesList = [];
+  let noticesList: any[] = [];
+  let dbNotifications: any[] = [];
   const unsubscribe = notices.subscribe(v => noticesList = v);
   
   function onKey(e: KeyboardEvent) { 
@@ -14,15 +17,32 @@
     } 
   }
   
-  $: count = (() => {
-    if (typeof localStorage === 'undefined') return noticesList.length;
+  // Load notifications from database
+  async function loadNotifications() {
     try {
-      const stored = JSON.parse(localStorage.getItem('rf_notifications') || '[]');
-      return stored.length || noticesList.length;
-    } catch {
-      return noticesList.length;
+      const res = await fetch(`${base}/api/notifications?unreadOnly=true&limit=20`);
+      if (res.ok) {
+        dbNotifications = await res.json();
+      }
+    } catch (err) {
+      console.debug('Failed to load notifications:', err);
     }
-  })();
+  }
+  
+  onMount(() => {
+    loadNotifications();
+    // Poll for new notifications every 30 seconds
+    const interval = setInterval(loadNotifications, 30000);
+    return () => clearInterval(interval);
+  });
+  
+  $: allNotifications = [...noticesList, ...dbNotifications.map(n => ({
+    text: n.title,
+    kind: n.type,
+    time: n.createdAt
+  }))];
+  
+  $: count = allNotifications.length;
 </script>
 
 <div class="menu">
@@ -33,8 +53,8 @@
 
   {#if open}
   <div class="dropdown mobile-sheet" role="menu" style="max-width:92vw" on:keydown={onKey}>
-    {#if noticesList.length===0}<div class="muted">No notifications.</div>{/if}
-    {#each noticesList as n}
+    {#if allNotifications.length===0}<div class="muted">No notifications.</div>{/if}
+    {#each allNotifications as n}
       <button role="menuitem" class="row">
         <span class="tag" data-kind={n.kind}>{n.text}</span>
         <span class="muted">{new Date(n.time).toLocaleTimeString()}</span>

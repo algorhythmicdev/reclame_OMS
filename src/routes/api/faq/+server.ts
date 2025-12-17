@@ -21,7 +21,7 @@ export const GET: RequestHandler = async ({ url }) => {
   const answerCol = `answer_${lang}`;
 
   let sql = `
-    SELECT DISTINCT
+    SELECT
       fi.id,
       fi.category_id,
       fi.question_en,
@@ -46,8 +46,8 @@ export const GET: RequestHandler = async ({ url }) => {
           'usageCount', t.usage_count
         ))
         FROM faq_tags t
-        JOIN faq_item_tags fit ON fit.tag_id = t.id
-        WHERE fit.faq_item_id = fi.id
+        JOIN faq_item_tags fit_sub ON fit_sub.tag_id = t.id
+        WHERE fit_sub.faq_item_id = fi.id
       ) as tags
     FROM faq_items fi
     LEFT JOIN faq_item_tags fit ON fit.faq_item_id = fi.id
@@ -85,7 +85,7 @@ export const GET: RequestHandler = async ({ url }) => {
     paramIndex++;
   }
 
-  sql += ` ORDER BY fi.order_index ASC, fi.created_at DESC`;
+  sql += ` GROUP BY fi.id ORDER BY fi.order_index ASC, fi.created_at DESC`;
   sql += ` LIMIT $${paramIndex++} OFFSET $${paramIndex}`;
   params.push(limit, offset);
 

@@ -1,56 +1,41 @@
-import { inventory } from '$lib/inventory/inventory-store';
-import type { StockMovement } from '$lib/inventory/inventory-store';
+import { items, movements, recordMovement, getItem } from '$lib/inventory/store';
+import type { Movement } from '$lib/inventory/types';
 import type { Order } from './types';
+import { get } from 'svelte/store';
 
 /**
  * Consume materials for an order
- * Parses materials from order.materials array and records stock movements
+ * Records stock movements for materials used
  */
-export function consumeMaterialsForOrder(order: Order, username: string): void {
+export async function consumeMaterialsForOrder(order: Order, username: string): Promise<void> {
   if (!order.materials || order.materials.length === 0) return;
   
-  // Parse materials from order.materials array
-  order.materials.forEach(mat => {
-    if (!mat.value) return;
+  for (const mat of order.materials) {
+    if (!mat.value) continue;
     
     // Extract quantity and material ID (format: "materialId:colorId:quantity")
-    // Or simple format: "materialName - quantity unit"
     const parts = mat.value.split(':');
     
-    if (parts.length >= 3) {
-      // Format: "materialId:colorId:quantity"
-      const [materialId, colorId, quantityStr] = parts;
+    if (parts.length >= 2) {
+      const [materialId, quantityStr] = parts;
       const quantity = parseFloat(quantityStr);
       
-      if (!materialId || !quantity || isNaN(quantity)) return;
+      if (!materialId || !quantity || isNaN(quantity)) continue;
       
-      const movement: StockMovement = {
-        id: crypto.randomUUID(),
-        materialId,
-        colorId: colorId || undefined,
-        type: 'USAGE',
-        quantity,
-        orderId: order.id,
-        performedBy: username,
-        timestamp: new Date().toISOString(),
-        notes: `Used for order ${order.id} - ${order.title}`
-      };
-      
-      inventory.recordMovement(movement);
+      await recordMovement(materialId, 'OUT', quantity, {
+        by: username,
+        refPO: order.id,
+        note: `Used for order ${order.id} - ${order.title}`
+      });
     }
-  });
+  }
 }
 
 /**
  * Get all materials used for a specific order
  */
-export function getMaterialsForOrder(orderId: string): StockMovement[] {
-  let result: StockMovement[] = [];
-  const unsubscribe = inventory.movements.subscribe(movements => {
-    result = movements.filter(m => m.orderId === orderId);
-  });
-  unsubscribe();
-  return result;
+export function getMaterialsForOrder(orderId: string): Movement[] {
+  return get(movements).filter(m => m.refPO === orderId);
 }
 
 /**
@@ -63,15 +48,14 @@ export function checkMaterialAvailability(order: Order): boolean {
     if (!mat.value) continue;
     
     const parts = mat.value.split(':');
-    if (parts.length >= 3) {
-      const [materialId, colorId, quantityStr] = parts;
+    if (parts.length >= 2) {
+      const [materialId, quantityStr] = parts;
       const requiredQty = parseFloat(quantityStr);
       
       if (isNaN(requiredQty)) continue;
       
-      const availableQty = inventory.getStock(materialId, colorId);
-      
-      if (availableQty < requiredQty) {
+      const item = getItem(materialId);
+      if (!item || item.stock < requiredQty) {
         return false;
       }
     }
@@ -85,13 +69,21 @@ export function checkMaterialAvailability(order: Order): boolean {
 export function getOrderMaterialSummary(orderId: string): {
   totalMaterials: number;
   totalCost: number;
-  movements: StockMovement[];
+  movements: Movement[];
 } {
-  const movements = getMaterialsForOrder(orderId);
+  const orderMovements = getMaterialsForOrder(orderId);
+  const allItems = get(items);
+  
+  let totalCost = 0;
+  orderMovements.forEach(m => {
+    const item = allItems.find(i => i.id === m.itemId);
+    // Cost calculation would need price per unit from inventory
+    // For now, just count materials
+  });
   
   return {
-    totalMaterials: movements.length,
-    totalCost: 0, // TODO: Calculate based on material prices
-    movements
+    totalMaterials: orderMovements.length,
+    totalCost,
+    movements: orderMovements
   };
 }

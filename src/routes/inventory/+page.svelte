@@ -35,7 +35,9 @@
     {id:'leftovers', label: $t('inventory.leftovers')},
     {id:'paints', label: $t('inventory.paints')},
     {id:'tools', label: $t('inventory.tools')},
-    {id:'cons', label: $t('inventory.consumables')}
+    {id:'cons', label: $t('inventory.consumables')},
+    {id:'electronics', label: $t('inventory.electronics', { default: 'Electronics' })},
+    {id:'3dprinting', label: $t('inventory.3dprinting', { default: '3D Printing' })}
   ];
   
   let currentTab: Section = 'materials';
@@ -186,16 +188,23 @@
                 </thead>
                 <tbody>
                   {#each sub.items as it (it.id)}
-                    <tr>
-                      <td data-label={$t('inventory.headers.sku')}><a href={`${base}/inventory/${it.id}`} class="link">{it.sku}</a></td>
+                    <tr class:low-stock={it.stock <= it.min}>
+                      <td data-label={$t('inventory.headers.sku')}>
+                        <a href={`${base}/inventory/${it.id}`} class="sku-link">
+                          {#if it.hexColor}
+                            <span class="color-swatch" style="background-color: {it.hexColor}"></span>
+                          {/if}
+                          {it.sku}
+                        </a>
+                      </td>
                       <td data-label={$t('inventory.headers.name')}>{it.name}</td>
                       <td data-label={$t('inventory.headers.unit')}>{it.unit}</td>
-                      <td data-label={$t('inventory.headers.stock')}>{it.stock}</td>
+                      <td data-label={$t('inventory.headers.stock')} class:stock-low={it.stock <= it.min}>{it.stock}</td>
                       <td data-label={$t('inventory.headers.minimum')}>{it.min}</td>
-                      <td data-label={$t('inventory.headers.location')}>{it.location}</td>
-                      <td class="row" style="gap:6px">
-                        <a href={`${base}/inventory/${it.id}`} class="icon" aria-label={`Edit ${it.name}`}><Edit size={16} aria-hidden="true"/></a>
-                        <button class="icon warn" aria-label={`Delete ${it.name}`} on:click={() => { if (confirm(`Delete ${it.name}?`)) removeItem(it.id); }}><Trash size={16} aria-hidden="true"/></button>
+                      <td data-label={$t('inventory.headers.location')}>{it.location || '—'}</td>
+                      <td class="actions-cell">
+                        <a href={`${base}/inventory/${it.id}`} class="icon-btn" aria-label={`Edit ${it.name}`}><Edit size={16} aria-hidden="true"/></a>
+                        <button class="icon-btn warn" aria-label={`Delete ${it.name}`} on:click={() => { if (confirm(`Delete ${it.name}?`)) removeItem(it.id); }}><Trash size={16} aria-hidden="true"/></button>
                       </td>
                     </tr>
                   {/each}
@@ -262,5 +271,62 @@
   background:var(--bg-1);
 }
 .sub-summary{font-weight:600}
+
+/* Modern table styling */
+.sku-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--link);
+  text-decoration: none;
+  font-weight: 500;
+}
+.sku-link:hover {
+  text-decoration: underline;
+}
+.color-swatch {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.stock-low {
+  color: var(--danger);
+  font-weight: 600;
+}
+tr.low-stock {
+  background: color-mix(in oklab, var(--danger) 8%, transparent);
+}
+.actions-cell {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-0);
+  color: var(--text);
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+.icon-btn:hover {
+  background: var(--bg-2);
+  transform: translateY(-1px);
+}
+.icon-btn.warn {
+  color: var(--danger);
+  border-color: color-mix(in oklab, var(--danger) 50%, var(--border));
+}
+.icon-btn.warn:hover {
+  background: color-mix(in oklab, var(--danger) 15%, var(--bg-0));
+}
 
 </style>

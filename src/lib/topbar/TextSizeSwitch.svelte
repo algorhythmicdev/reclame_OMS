@@ -17,7 +17,6 @@
 
   onDestroy(unsubscribe);
 
-  $: iconSize = 18 * currentScale;
   $: canDecrement = currentScale > minScale + 0.001;
   $: canIncrement = currentScale < maxScale - 0.001;
 
@@ -76,21 +75,75 @@
   });
 </script>
 
-<div class="row">
+<div class="text-size-row">
   <button
-    class="icon"
+    class="text-size-btn"
     aria-label="Smaller text"
     on:click={dec}
     disabled={!canDecrement}
   >
-    <AArrowDown size={iconSize} aria-hidden="true" />
+    <AArrowDown size={16} aria-hidden="true" />
   </button>
+  <span class="text-size-label">{Math.round(currentScale * 100)}%</span>
   <button
-    class="icon"
+    class="text-size-btn"
     aria-label="Larger text"
     on:click={inc}
     disabled={!canIncrement}
   >
-    <AArrowUp size={iconSize} aria-hidden="true" />
+    <AArrowUp size={16} aria-hidden="true" />
   </button>
 </div>
+
+<style>
+  .text-size-row {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    flex-shrink: 0;
+  }
+
+  .text-size-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-2);
+    min-width: 32px;
+    text-align: center;
+    user-select: none;
+    flex-shrink: 0;
+  }
+
+  .text-size-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+    min-height: 28px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    color: var(--text-2);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    flex-shrink: 0;
+  }
+
+  .text-size-btn:hover:not(:disabled) {
+    background: var(--bg-2);
+    color: var(--text);
+  }
+
+  .text-size-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+
+  .text-size-btn :global(svg) {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+  }
+</style>

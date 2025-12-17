@@ -2,6 +2,102 @@
 
 import type { Material, ColorSystem } from '$lib/profiles/types';
 
+// ============================================================================
+// Core inventory types used by store
+// ============================================================================
+
+export type Section = 'materials' | 'leftovers' | 'paints' | 'tools' | 'cons' | 'electronics' | '3dprinting';
+
+export type Category = 
+  | 'ACRYLIC'
+  | 'ALUMINIUM'
+  | 'STEEL'
+  | 'ACP'
+  | 'VINYL'
+  | 'PAINT'
+  | 'ADHESIVE'
+  | 'HARDWARE'
+  | 'INSTRUMENT'
+  | 'ELECTRONICS'
+  | 'LED'
+  | 'LED_STRIP'
+  | 'PSU'
+  | '3D_PRINTING'
+  | 'RESIN'
+  | 'FILAMENT'
+  | 'SCREWS'
+  | 'MOUNTING'
+  | 'CONSUMABLE';
+
+export type Unit = 
+  | 'pcs'
+  | 'PCS'
+  | 'm'
+  | 'm²'
+  | 'kg'
+  | 'L'
+  | 'roll'
+  | 'sheet'
+  | 'box'
+  | 'set'
+  | 'SHEET'
+  | 'ROLL'
+  | 'M2'
+  | 'M'
+  | 'PC'
+  | 'KG'
+  | 'LITER';
+
+export type MovementKind = 'IN' | 'OUT' | 'ADJUST';
+
+export interface Leftover {
+  lengthMM?: number;
+  widthMM?: number;
+  heightMM?: number;
+  weightKG?: number;
+  bin?: string;
+}
+
+export interface Item {
+  id: string;
+  sku: string;
+  name: string;
+  category: Category;
+  section?: Section;
+  group?: string;
+  subgroup?: string;
+  unit: Unit;
+  stock: number;
+  min: number;
+  location?: string;
+  vendor?: string;
+  supplier?: string;
+  note?: string;
+  colorCode?: string;
+  hexColor?: string;
+  thicknessMM?: number;
+  leftover?: Leftover;
+  price?: number;
+  barcode?: string;
+  updatedAt: string;
+}
+
+export interface Movement {
+  id: string;
+  itemId: string;
+  kind: MovementKind;
+  qty: number;
+  unit: Unit;
+  by: string;
+  at: string;
+  note?: string;
+  refPO?: string;
+}
+
+// ============================================================================
+// Extended types for suppliers, orders, etc.
+// ============================================================================
+
 /**
  * Supplier/Vendor information
  */

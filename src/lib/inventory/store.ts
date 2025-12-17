@@ -1,6 +1,8 @@
 import { derived, get, writable } from 'svelte/store';
-import { createId } from '$lib/utils/id';
 import type { Category, Item, Movement, MovementKind, Section, Unit } from './types';
+
+// Re-export types for convenience
+export type { Category, Item, Movement, MovementKind, Section, Unit } from './types';
 
 export type NewItemInput = Omit<Item, 'id' | 'updatedAt'> & {
   id?: string;
@@ -67,96 +69,49 @@ export type InventorySummary = {
 };
 
 export type SectionId = Section;
-export const SECTIONS: SectionId[] = ['materials', 'leftovers', 'paints', 'tools', 'cons'];
+export const SECTIONS: SectionId[] = ['materials', 'leftovers', 'paints', 'tools', 'cons', 'electronics', '3dprinting'];
 
-const ITEM_STORAGE_KEY = 'rf_items';
-const fallbackItems: Item[] = [
-  {
-    id: 'A-001',
-    sku: 'ACR-CL-3',
-    name: 'Acrylic Clear 3mm',
-    category: 'ACRYLIC',
-    section: 'materials',
-    group: 'Acrylic',
-    subgroup: 'Sheets',
-    unit: 'M2',
-    stock: 24.5,
-    min: 10,
-    thicknessMM: 3,
-    location: 'RACK A1',
-    updatedAt: new Date().toISOString()
-  },
-  {
-    id: 'L-050',
-    sku: 'ALU-OFF-1200',
-    name: 'Aluminium Offcut 1200mm',
-    category: 'ALUMINIUM',
-    section: 'leftovers',
-    group: 'Aluminium',
-    subgroup: 'Profiles',
-    unit: 'PCS',
-    stock: 3,
-    min: 1,
-    location: 'LEFT B2',
-    leftover: { lengthMM: 1200, widthMM: 60, heightMM: 5, bin: 'B2' },
-    updatedAt: new Date().toISOString()
-  },
-  {
-    id: 'P-010',
-    sku: 'RAL-3020',
-    name: 'Paint RAL 3020 Red',
-    category: 'PAINT',
-    section: 'paints',
-    group: 'RAL',
-    subgroup: 'Red tones',
-    unit: 'L',
-    stock: 7,
-    min: 5,
-    colorCode: 'RAL3020',
-    location: 'PAINT CAB',
-    updatedAt: new Date().toISOString()
-  },
-  {
-    id: 'I-101',
-    sku: 'BIT-6MM',
-    name: 'CNC Endmill 6mm',
-    category: 'INSTRUMENT',
-    section: 'tools',
-    group: 'CNC',
-    subgroup: 'Cutters',
-    unit: 'PCS',
-    stock: 12,
-    min: 8,
-    location: 'TOOLBOX C',
-    updatedAt: new Date().toISOString()
-  }
-];
-
-function loadItems(): Item[] {
-  if (typeof localStorage === 'undefined') {
-    return fallbackItems.map((entry) => ({ ...entry }));
-  }
-  try {
-    const stored = localStorage.getItem(ITEM_STORAGE_KEY);
-    if (!stored) {
-      return fallbackItems.map((entry) => ({ ...entry }));
-    }
-    const parsed = JSON.parse(stored);
-    if (Array.isArray(parsed)) {
-      return parsed as Item[];
-    }
-  } catch (error) {
-    console.warn('Failed to parse inventory items from storage', error);
-  }
-  return fallbackItems.map((entry) => ({ ...entry }));
-}
-
-export const items = writable<Item[]>(loadItems());
-if (typeof localStorage !== 'undefined') {
-  items.subscribe((value) => localStorage.setItem(ITEM_STORAGE_KEY, JSON.stringify(value)));
-}
-
+// Svelte stores for reactive UI
+export const items = writable<Item[]>([]);
 export const movements = writable<Movement[]>([]);
+export const isLoading = writable<boolean>(false);
+
+// Load items from API
+export async function loadItems(): Promise<Item[]> {
+  if (typeof window === 'undefined') return [];
+  
+  isLoading.set(true);
+  try {
+    const response = await fetch('/api/inventory/items');
+    if (response.ok) {
+      const data = await response.json();
+      items.set(data);
+      return data;
+    }
+  } catch (err) {
+    console.error('Failed to load inventory items:', err);
+  } finally {
+    isLoading.set(false);
+  }
+  return [];
+}
+
+// Load movements from API
+export async function loadMovements(limit = 50): Promise<Movement[]> {
+  if (typeof window === 'undefined') return [];
+  
+  try {
+    const response = await fetch(`/api/inventory/movements?limit=${limit}`);
+    if (response.ok) {
+      const data = await response.json();
+      movements.set(data);
+      return data;
+    }
+  } catch (err) {
+    console.error('Failed to load movements:', err);
+  }
+  return [];
+}
 
 export function getItem(itemId: string) {
   return get(items).find((item) => item.id === itemId) ?? null;
@@ -168,18 +123,27 @@ export function findItemBySku(sku: string) {
   return get(items).find((item) => item.sku.toLowerCase() === needle) ?? null;
 }
 
-export function addItem(input: NewItemInput): Item {
-  const id = input.id ?? createId('inv');
-  const updatedAt = input.updatedAt ?? new Date().toISOString();
-  const entry: Item = { ...input, id, updatedAt };
-  items.update((list) => [entry, ...list]);
-  return entry;
+export async function addItem(input: NewItemInput): Promise<Item | null> {
+  try {
+    const response = await fetch('/api/inventory/items', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(input)
+    });
+    
+    if (response.ok) {
+      const newItem = await response.json();
+      items.update((list) => [newItem, ...list]);
+      return newItem;
+    }
+  } catch (err) {
+    console.error('Failed to add item:', err);
+  }
+  return null;
 }
 
-export function createItem(partial: Partial<Item> = {}): Item {
-  const timestamp = partial.updatedAt ?? new Date().toISOString();
-  const newItem: Item = {
-    id: partial.id ?? createId('inv'),
+export async function createItem(partial: Partial<Item> = {}): Promise<Item | null> {
+  const newItem: Partial<Item> = {
     sku: '',
     name: '',
     category: 'HARDWARE',
@@ -189,103 +153,112 @@ export function createItem(partial: Partial<Item> = {}): Item {
     unit: 'PCS',
     stock: 0,
     min: 0,
-    ...partial,
-    updatedAt: timestamp
+    ...partial
   };
-  items.update((list) => [newItem, ...list]);
-  return newItem;
+  return addItem(newItem as NewItemInput);
 }
 
-export function updateItem(itemId: string, patch: ItemUpdate): Item | null;
-export function updateItem(entry: Item): Item | null;
-export function updateItem(arg1: string | Item, patch: ItemUpdate = {}): Item | null {
-  if (typeof arg1 !== 'string') {
-    const { id, ...rest } = arg1;
-    return updateItem(id, { ...rest, updatedAt: arg1.updatedAt });
-  }
-  let updated: Item | null = null;
-  const stamp = patch.updatedAt ?? new Date().toISOString();
-  const itemId = arg1;
-  items.update((list) =>
-    list.map((item) => {
-      if (item.id !== itemId) return item;
-      updated = { ...item, ...patch, id: item.id, updatedAt: stamp };
-      return updated;
-    })
-  );
-  return updated;
-}
-
-export function removeItem(itemId: string) {
-  let removed = false;
-  items.update((list) => {
-    const next = list.filter((item) => {
-      if (item.id === itemId) {
-        removed = true;
-        return false;
-      }
-      return true;
+export async function updateItem(itemId: string, patch: ItemUpdate): Promise<Item | null> {
+  try {
+    const response = await fetch(`/api/inventory/items/${itemId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(patch)
     });
-    return next;
-  });
-  if (removed) {
-    movements.update((records) => records.filter((movement) => movement.itemId !== itemId));
+    
+    if (response.ok) {
+      const updated = await response.json();
+      items.update((list) =>
+        list.map((item) => (item.id === itemId ? { ...item, ...updated } : item))
+      );
+      return updated;
+    }
+  } catch (err) {
+    console.error('Failed to update item:', err);
   }
-  return removed;
+  return null;
 }
 
-export function recordMovement(
+export async function removeItem(itemId: string): Promise<boolean> {
+  try {
+    const response = await fetch(`/api/inventory/items/${itemId}`, {
+      method: 'DELETE'
+    });
+    
+    if (response.ok) {
+      items.update((list) => list.filter((item) => item.id !== itemId));
+      movements.update((records) => records.filter((m) => m.itemId !== itemId));
+      return true;
+    }
+  } catch (err) {
+    console.error('Failed to remove item:', err);
+  }
+  return false;
+}
+
+export async function recordMovement(
   itemId: string,
   kind: MovementKind,
   qty: number,
   options: MovementOptions = {}
-) {
+): Promise<Movement | null> {
   const target = getItem(itemId);
   if (!target) return null;
 
-  const id = createId('mv');
-  const at = new Date().toISOString();
-  const unit = options.unit ?? target.unit;
-  const by = options.by ?? 'admin';
-  const movement: Movement = {
-    id,
-    itemId,
-    kind,
-    qty,
-    unit,
-    by,
-    at,
-    note: options.note,
-    refPO: options.refPO
-  };
+  try {
+    const response = await fetch('/api/inventory/movements', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        itemId,
+        kind,
+        qty,
+        unit: options.unit ?? target.unit,
+        by: options.by ?? 'admin',
+        note: options.note,
+        refPO: options.refPO
+      })
+    });
 
-  movements.update((records) => [movement, ...records]);
+    if (response.ok) {
+      const result = await response.json();
+      
+      // Update local store with new stock
+      items.update((list) =>
+        list.map((item) => {
+          if (item.id !== itemId) return item;
+          return { ...item, stock: result.newStock, updatedAt: new Date().toISOString() };
+        })
+      );
 
-  items.update((list) =>
-    list.map((item) => {
-      if (item.id !== itemId) return item;
-      let stock: number;
-      if (kind === 'ADJUST') {
-        stock = Math.max(0, qty);
-      } else {
-        const delta = kind === 'IN' ? qty : -qty;
-        stock = Math.max(0, item.stock + delta);
-      }
-      return { ...item, stock, updatedAt: at };
-    })
-  );
+      // Add movement to local store
+      const movement: Movement = {
+        id: result.id,
+        itemId,
+        kind,
+        qty,
+        unit: result.unit,
+        by: options.by ?? 'admin',
+        at: new Date().toISOString(),
+        note: options.note,
+        refPO: options.refPO
+      };
+      movements.update((records) => [movement, ...records]);
 
-  return movement;
+      return movement;
+    }
+  } catch (err) {
+    console.error('Failed to record movement:', err);
+  }
+  return null;
 }
 
-export function move(itemId: string, kind: MovementKind, qty: number, by = 'admin', note?: string) {
-  const result = recordMovement(itemId, kind, qty, { by, note });
+export async function move(itemId: string, kind: MovementKind, qty: number, by = 'admin', note?: string) {
+  const result = await recordMovement(itemId, kind, qty, { by, note });
   
-  // Check for low stock after movement
   if (result) {
     const item = getItem(itemId);
     if (item && item.stock <= item.min) {
-      // Use dynamic imports to avoid circular dependencies
       Promise.all([
         import('$lib/stores/toast'),
         import('$lib/notify/bus')
@@ -386,7 +359,17 @@ export function inventorySummary(): InventorySummary {
     PAINT: { total: 0, lowStock: 0 },
     ADHESIVE: { total: 0, lowStock: 0 },
     HARDWARE: { total: 0, lowStock: 0 },
-    INSTRUMENT: { total: 0, lowStock: 0 }
+    INSTRUMENT: { total: 0, lowStock: 0 },
+    ELECTRONICS: { total: 0, lowStock: 0 },
+    LED: { total: 0, lowStock: 0 },
+    LED_STRIP: { total: 0, lowStock: 0 },
+    PSU: { total: 0, lowStock: 0 },
+    '3D_PRINTING': { total: 0, lowStock: 0 },
+    RESIN: { total: 0, lowStock: 0 },
+    FILAMENT: { total: 0, lowStock: 0 },
+    SCREWS: { total: 0, lowStock: 0 },
+    MOUNTING: { total: 0, lowStock: 0 },
+    CONSUMABLE: { total: 0, lowStock: 0 }
   };
 
   let latest: string | null = null;

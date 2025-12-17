@@ -1,4 +1,5 @@
 import { writable } from 'svelte/store';
+import { base } from '$app/paths';
 
 export interface CapacityConfig {
   defaultCapacity: number;
@@ -10,33 +11,53 @@ const DEFAULT_CONFIG: CapacityConfig = {
   customCapacities: {}
 };
 
+const isBrowser = typeof window !== 'undefined';
+
 function createCapacityStore() {
-  const stored = typeof localStorage !== 'undefined' ? localStorage.getItem('rf_capacity_config') : null;
-  const initial = stored ? JSON.parse(stored) : DEFAULT_CONFIG;
-  const { subscribe, set, update } = writable<CapacityConfig>(initial);
+  const { subscribe, set, update } = writable<CapacityConfig>(DEFAULT_CONFIG);
+
+  // Load from database on init
+  if (isBrowser) {
+    fetch(`${base}/api/calendar/capacity`)
+      .then(res => res.ok ? res.json() : DEFAULT_CONFIG)
+      .then(data => set(data))
+      .catch(() => set(DEFAULT_CONFIG));
+  }
 
   return {
     subscribe,
-    setDefaultCapacity: (capacity: number) => {
-      update(config => {
-        const updated = { ...config, defaultCapacity: capacity };
-        if (typeof localStorage !== 'undefined') {
-          localStorage.setItem('rf_capacity_config', JSON.stringify(updated));
+    setDefaultCapacity: async (capacity: number) => {
+      update(config => ({ ...config, defaultCapacity: capacity }));
+      
+      if (isBrowser) {
+        try {
+          await fetch(`${base}/api/calendar/capacity`, {
+            method: 'PUT',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ defaultCapacity: capacity })
+          });
+        } catch (err) {
+          console.error('Failed to save capacity config:', err);
         }
-        return updated;
-      });
+      }
     },
-    setDayCapacity: (iso: string, capacity: number) => {
-      update(config => {
-        const updated = {
-          ...config,
-          customCapacities: { ...config.customCapacities, [iso]: capacity }
-        };
-        if (typeof localStorage !== 'undefined') {
-          localStorage.setItem('rf_capacity_config', JSON.stringify(updated));
+    setDayCapacity: async (iso: string, capacity: number) => {
+      update(config => ({
+        ...config,
+        customCapacities: { ...config.customCapacities, [iso]: capacity }
+      }));
+      
+      if (isBrowser) {
+        try {
+          await fetch(`${base}/api/calendar/capacity`, {
+            method: 'PUT',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ date: iso, capacity })
+          });
+        } catch (err) {
+          console.error('Failed to save day capacity:', err);
         }
-        return updated;
-      });
+      }
     },
     getDayCapacity: (iso: string): number => {
       let capacity = DEFAULT_CONFIG.defaultCapacity;
@@ -46,10 +67,17 @@ function createCapacityStore() {
       unsub();
       return capacity;
     },
-    reset: () => {
+    reset: async () => {
       set(DEFAULT_CONFIG);
-      if (typeof localStorage !== 'undefined') {
-        localStorage.removeItem('rf_capacity_config');
+      
+      if (isBrowser) {
+        try {
+          await fetch(`${base}/api/calendar/capacity`, {
+            method: 'DELETE'
+          });
+        } catch (err) {
+          console.error('Failed to reset capacity config:', err);
+        }
       }
     }
   };

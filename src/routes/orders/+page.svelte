@@ -4,14 +4,13 @@
   import Input from '$lib/ui/Input.svelte';
   import Tooltip from '$lib/ui/Tooltip.svelte';
   import type { Order, Station, Badge as BadgeCode } from '$lib/order/types';
-  import { listOrders, createOrder } from '$lib/order/signage-store';
-  import DraftOrderModal from '$lib/orders/components/DraftOrderModal.svelte';
+  import { ordersStore } from '$lib/order/signage-store';
   import { blankStages, STATE_LABEL, type StageState } from '$lib/order/stages';
   import { TERMS } from '$lib/order/names';
   import { t } from 'svelte-i18n';
   import { BADGE_ICONS, badgeTone } from '$lib/order/badges';
   import Badge from '$lib/ui/Badge.svelte';
-  import { currentUser } from '$lib/users/user-store';
+  import { currentUser } from '$lib/auth/user-store';
   import { dragging } from '$lib/dnd';
   import { Plus, Settings, Package, Warehouse, Users, FileText, Download, X, Activity, AlertCircle, FilePlus } from 'lucide-svelte';
   import KpiCard from '$lib/ui/KpiCard.svelte';
@@ -28,9 +27,6 @@
     isDraft: boolean;
     expanded: boolean;
   };
-
-  // TODO: Orders should be loaded from API instead of localStorage
-  // Currently using vcs-store (localStorage) - needs migration to database + API
 
   function toRow(order: Order): OrderRow {
     const stagesMap = order.stages ?? blankStages();
@@ -50,7 +46,6 @@
 
   let rows: OrderRow[] = [];
   let q = '';
-  let draftFormOpen = false;
   let visible: OrderRow[] = [];
   let qLower = '';
   let sortKey: 'id' | 'client' | 'title' | 'due' | 'loadingDate' = 'due';
@@ -88,14 +83,37 @@
   }).length;
   $: activeOrders = totalOrders - draftOrders;
 
-  function refresh() {
-    const allOrders = listOrders();
-    // Filter draft orders - only visible to Admin and SuperAdmin
-    const filteredOrders = isAdmin 
-      ? allOrders 
-      : allOrders.filter(order => !order.isDraft);
-    
-    rows = filteredOrders.map(toRow);
+  async function refresh() {
+    try {
+      const response = await fetch('/api/draft-orders');
+      if (response.ok) {
+        const data = await response.json();
+        const allOrders = data.map((d: any) => ({
+          id: d.poNumber,
+          title: d.title || d.clientName,
+          client: d.clientName,
+          due: d.deadline,
+          loadingDate: d.loadingDate,
+          badges: d.status === 'draft' ? ['DRAFT'] : [],
+          fields: [],
+          materials: [],
+          stages: {},
+          isDraft: d.status === 'draft',
+          profiles: d.profiles || []
+        }));
+        
+        ordersStore.set(allOrders);
+        
+        // Filter draft orders - only visible to Admin and SuperAdmin
+        const filteredOrders = isAdmin 
+          ? allOrders 
+          : allOrders.filter((order: any) => !order.isDraft);
+        
+        rows = filteredOrders.map(toRow);
+      }
+    } catch (err) {
+      console.error('Failed to fetch orders:', err);
+    }
   }
 
   function toggleSort(key: typeof sortKey) {
@@ -123,37 +141,31 @@
   
   function openProfileBuilder() {
     adminMenuOpen = false;
-    // Navigate to profile template builder (will be implemented)
     window.location.href = `${base}/admin/profiles`;
   }
   
   function openMaterialsManager() {
     adminMenuOpen = false;
-    // Navigate to materials catalog
     window.location.href = `${base}/admin/materials`;
   }
   
   function openInventoryManager() {
     adminMenuOpen = false;
-    // Navigate to inventory manager
     window.location.href = `${base}/inventory`;
   }
   
   function openSystemSettings() {
     adminMenuOpen = false;
-    // Navigate to system settings
     window.location.href = `${base}/settings`;
   }
   
   function openUserManagement() {
     adminMenuOpen = false;
-    // Navigate to user management
     window.location.href = `${base}/admin/users`;
   }
   
   // Export functions
   function exportToPDF() {
-    // Simple CSV-like export for now
     const csvContent = visible.map(row => 
       `${row.id},${row.client},${row.title},${row.due},${row.loadingDate || 'N/A'}`
     ).join('\n');
@@ -166,15 +178,8 @@
     URL.revokeObjectURL(url);
   }
 
-  refresh();
-
   onMount(() => {
     refresh();
-    const handleStorage = (event: StorageEvent) => {
-      if (!event.key || event.key === 'rf_orders_vcs') refresh();
-    };
-    window.addEventListener('storage', handleStorage);
-    return () => window.removeEventListener('storage', handleStorage);
   });
 </script>
 
@@ -212,10 +217,10 @@
     </div>
     <div class="row actions-row">
       {#if isAdmin}
-        <button class="tag primary" on:click={() => (draftFormOpen = true)}>
+        <a href="{base}/orders/new" class="tag primary">
           <Plus aria-hidden="true" />
           {$t('orderLists.new')}
-        </button>
+        </a>
       {/if}
       <button class="tag ghost" on:click={exportToPDF} title="Export to CSV">
         <Download size={18} aria-hidden="true" />
@@ -414,8 +419,6 @@
     </button>
   </div>
 {/if}
-
-<DraftOrderModal bind:isOpen={draftFormOpen} on:saved={refresh} on:close={() => { draftFormOpen = false; refresh(); }} />
 
 <style>
   /* KPI Section */

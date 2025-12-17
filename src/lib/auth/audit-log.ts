@@ -1,5 +1,8 @@
 // audit-log.ts
+import { base } from '$app/paths';
+
 export interface AuditLogEvent {
+  id?: number;
   time: string;
   username: string;
   section: string;
@@ -7,42 +10,51 @@ export interface AuditLogEvent {
   details: string;
 }
 
-export function logAction(username: string, section: string, action: string, details = ''): void {
-  if (typeof window === 'undefined') return;
-  
-  const event: AuditLogEvent = {
-    time: new Date().toISOString(),
-    username,
-    section,
-    action,
-    details
-  };
+const isBrowser = typeof window !== 'undefined';
+
+export async function logAction(username: string, section: string, action: string, details = ''): Promise<void> {
+  if (!isBrowser) return;
   
   try {
-    const logs = JSON.parse(localStorage.getItem('rf_audit_log') || '[]') as AuditLogEvent[];
-    logs.push(event);
-    // Keep only last 1000 entries to prevent localStorage from growing too large
-    if (logs.length > 1000) {
-      logs.shift();
-    }
-    localStorage.setItem('rf_audit_log', JSON.stringify(logs));
+    await fetch(`${base}/api/audit-log`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        username,
+        action,
+        entityType: section,
+        details
+      })
+    });
   } catch (e) {
     console.error('Failed to log action:', e);
   }
 }
 
-export function getAuditLogs(): AuditLogEvent[] {
-  if (typeof window === 'undefined') return [];
+export async function getAuditLogs(limit = 100): Promise<AuditLogEvent[]> {
+  if (!isBrowser) return [];
   
   try {
-    return JSON.parse(localStorage.getItem('rf_audit_log') || '[]');
+    const res = await fetch(`${base}/api/audit-log?limit=${limit}`);
+    if (res.ok) {
+      const data = await res.json();
+      return data.map((row: any) => ({
+        id: row.id,
+        time: row.createdAt,
+        username: row.username,
+        section: row.entityType || '',
+        action: row.action,
+        details: row.details || ''
+      }));
+    }
   } catch (e) {
     console.error('Failed to get audit logs:', e);
-    return [];
   }
+  return [];
 }
 
 export function clearAuditLogs(): void {
-  if (typeof window === 'undefined') return;
-  localStorage.removeItem('rf_audit_log');
+  // Audit logs should not be cleared in production
+  // This is intentionally a no-op for database-backed storage
+  console.warn('clearAuditLogs is disabled for database-backed audit logging');
 }
