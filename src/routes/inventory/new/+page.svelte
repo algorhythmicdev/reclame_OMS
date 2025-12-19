@@ -1,4 +1,5 @@
 <script lang="ts">
+  export let params = {};
   import { t } from 'svelte-i18n';
   import { goto } from '$app/navigation';
   import { base } from '$app/paths';

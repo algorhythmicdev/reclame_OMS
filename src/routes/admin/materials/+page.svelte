@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { t } from 'svelte-i18n';
   import { base } from '$app/paths';
   import { currentUser } from '$lib/auth/user-store';
   import { Package, Plus, Edit2, Trash2, Search, X, Check, AlertCircle, ChevronDown } from 'lucide-svelte';
@@ -105,8 +106,11 @@
     { value: 'LED_STRIP', label: 'LED Strips' },
     { value: 'LED_NEON', label: 'LED Neon Flex' },
     { value: 'PSU', label: 'Power Supplies (PSU)' },
+    { value: 'PSU_MEANWELL', label: 'Power Supplies - MeanWell' },
     { value: 'CONTROLLER', label: 'Controllers & Dimmers' },
     { value: 'WIRING', label: 'Wiring & Connectors' },
+    { value: 'WIRE', label: 'Wire Cables' },
+    { value: 'LED_ACCESSORY', label: 'LED Accessories' },
     // Hardware & Mounting
     { value: 'SCREWS', label: 'Screws & Bolts' },
     { value: 'ANCHORS', label: 'Anchors & Fixings' },
@@ -137,7 +141,7 @@
   ];
 
   // Category groups for conditional fields
-  const electronicsCategories = ['LED_MODULE', 'LED_STRIP', 'LED_NEON', 'PSU', 'CONTROLLER', 'WIRING'];
+  const electronicsCategories = ['LED_MODULE', 'LED_STRIP', 'LED_NEON', 'PSU', 'PSU_MEANWELL', 'CONTROLLER', 'WIRING', 'WIRE', 'LED_ACCESSORY'];
   const paintCategories = ['PAINT_RAL', 'PAINT_PANTONE', 'PAINT_AUTOMOTIVE', 'PAINT_SPRAY', 'PRIMER', 'CLEARCOAT'];
   const sheetCategories = ['ACRYLIC_XT', 'ACRYLIC_GS', 'ACRYLIC_LED', 'ACRYLIC_MIRROR', 'ACRYLIC_SPECIAL', 'ALU_SHEET', 'ALU_COMPOSITE', 'STEEL', 'STAINLESS', 'BRASS', 'PVC_FOAM', 'POLYCARBONATE', 'PETG', 'HIPS', 'WOOD'];
   const filamentCategories = ['RESIN_ANYCUBIC', 'RESIN_ELEGOO', 'RESIN_OTHER', 'FDM_PLA', 'FDM_PETG', 'FDM_ABS', 'FDM_ASA', 'FDM_TPU', 'FDM_OTHER'];

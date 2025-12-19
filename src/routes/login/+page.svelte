@@ -1,4 +1,5 @@
 <script lang="ts">
+  export let params = {};
   import { onMount } from 'svelte';
   import { base } from '$app/paths';
   import { goto } from '$app/navigation';

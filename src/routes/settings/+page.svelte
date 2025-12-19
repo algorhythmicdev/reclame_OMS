@@ -1,4 +1,5 @@
 <script lang="ts">
+  export let params = {};
   import { ui } from '$lib/state/ui';
   import PasswordChange from '$lib/auth/PasswordChange.svelte';
   import { t, locale } from 'svelte-i18n';
@@ -80,10 +81,10 @@
       </div>
 
       <div class="setting-group">
-        <label class="setting-label">
+        <div class="setting-label">
           <span class="label-text">{$t('theme.title', { default: 'Theme' })}</span>
           <span class="label-hint">{$t('theme.hint', { default: 'Choose your preferred color scheme' })}</span>
-        </label>
+        </div>
         <div class="theme-options" role="radiogroup" aria-label="Theme selection">
           {#each themes as theme}
             <button
@@ -111,10 +112,10 @@
       </div>
 
       <div class="setting-group">
-        <label class="setting-label">
+        <div class="setting-label">
           <span class="label-text">{$t('settings.textSize', { default: 'Text Size' })}</span>
           <span class="label-hint">{$t('settings.textSizeHint', { default: 'Adjust text size for readability' })}</span>
-        </label>
+        </div>
         <div class="scale-options" role="radiogroup" aria-label="Text size selection">
           {#each fontScales as scale}
             <button
@@ -134,10 +135,10 @@
       </div>
 
       <div class="setting-group">
-        <label class="setting-label">
+        <div class="setting-label">
           <span class="label-text">{$t('settings.density', { default: 'Density' })}</span>
           <span class="label-hint">{$t('settings.densityHint', { default: 'Control spacing between elements' })}</span>
-        </label>
+        </div>
         <div class="density-options" role="radiogroup" aria-label="Density selection">
           {#each densities as density}
             <button

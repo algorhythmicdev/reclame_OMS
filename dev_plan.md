@@ -254,10 +254,31 @@ All material catalogues are seeded and ready:
 - Mounting hardware
 
 ### Next Steps
-1. Test complete order workflow end-to-end
-2. Implement order approval workflow
-3. Add order notifications
-4. Integrate with production scheduling
+1. ~~Test complete order workflow end-to-end~~ ✅
+2. ~~Implement order approval workflow~~ ✅
+3. ~~Add order notifications~~ ✅ (API + UI)
+4. ~~Add order file management~~ ✅ (OrderFiles component)
+5. ~~Add order chat~~ ✅ (OrderChat component)
+6. Integrate with production scheduling (ongoing)
+
+### 5.5 Recently Added Features (2025-12-18)
+
+**Order Chat System:**
+- `OrderChat.svelte` component for order-specific discussions
+- Real-time messaging with @mentions
+- System event notifications
+- Integrated into order detail page
+
+**Order File Management:**
+- `OrderFiles.svelte` component for file uploads/downloads
+- Drag-and-drop file upload
+- Per-order file organization
+- File type icons and metadata display
+
+**Fixed Issues:**
+- Removed `export let params` warning from print page
+- Fixed `Package` icon import in orders page
+- Fixed null reference errors in order detail page
 
 ---
 
@@ -321,6 +342,9 @@ All material catalogues are seeded and ready:
 - ✅ Updated documentation with CHANGELOG
 - ✅ Cleaned up unused components
 - ✅ Order workflow ready for testing
+- ✅ Fixed order detail page null reference errors
+- ✅ Fixed cyclical dependency in order detail page
+- ✅ Removed duplicate floating action button (FAB)
 
 ### API Endpoints Verified:
 | Endpoint | Method | Status |

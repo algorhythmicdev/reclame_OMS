@@ -1,6 +1,8 @@
 <script lang="ts">
+  export let params = {};
   import { base } from '$app/paths';
   import { onMount } from 'svelte';
+  import { goto } from '$app/navigation';
   import Input from '$lib/ui/Input.svelte';
   import Tooltip from '$lib/ui/Tooltip.svelte';
   import type { Order, Station, Badge as BadgeCode } from '$lib/order/types';
@@ -12,7 +14,7 @@
   import Badge from '$lib/ui/Badge.svelte';
   import { currentUser } from '$lib/auth/user-store';
   import { dragging } from '$lib/dnd';
-  import { Plus, Settings, Package, Warehouse, Users, FileText, Download, X, Activity, AlertCircle, FilePlus } from 'lucide-svelte';
+  import { Plus, Download, Activity, AlertCircle, FilePlus, Filter, RefreshCw, Eye, Edit, Trash2, MoreVertical, Search, ChevronLeft, ChevronRight, Package } from 'lucide-svelte';
   import KpiCard from '$lib/ui/KpiCard.svelte';
 
   type OrderRow = {
@@ -50,15 +52,28 @@
   let qLower = '';
   let sortKey: 'id' | 'client' | 'title' | 'due' | 'loadingDate' = 'due';
   let sortAsc = true;
-  let adminMenuOpen = false;
+  let statusFilter: 'all' | 'draft' | 'active' | 'completed' = 'all';
+  let refreshing = false;
+  let currentPage = 1;
+  let itemsPerPage = 20;
 
   $: qLower = q.trim().toLowerCase();
   $: {
-    let filtered = qLower
-      ? rows.filter((row) =>
-          `${row.id} ${row.client} ${row.title}`.toLowerCase().includes(qLower)
-        )
-      : rows;
+    let filtered = rows;
+    
+    // Apply status filter
+    if (statusFilter === 'draft') {
+      filtered = filtered.filter(r => r.isDraft);
+    } else if (statusFilter === 'active') {
+      filtered = filtered.filter(r => !r.isDraft);
+    }
+    
+    // Apply search filter
+    if (qLower) {
+      filtered = filtered.filter((row) =>
+        `${row.id} ${row.client} ${row.title}`.toLowerCase().includes(qLower)
+      );
+    }
     
     // Sort the filtered results
     visible = filtered.sort((a, b) => {
@@ -69,8 +84,12 @@
     });
   }
 
-  $: isAdmin = $currentUser?.role === 'Admin' || $currentUser?.role === 'SuperAdmin';
-  $: isSuperAdmin = $currentUser?.role === 'SuperAdmin';
+  // Pagination
+  $: totalPages = Math.ceil(visible.length / itemsPerPage);
+  $: paginatedRows = visible.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  $: isSuperAdmin = $currentUser?.roles?.Admin === 'SuperAdmin';
+  $: isAdmin = $currentUser?.primarySection === 'Admin' || isSuperAdmin;
   
   // KPI Stats
   $: totalOrders = rows.length;
@@ -84,6 +103,7 @@
   $: activeOrders = totalOrders - draftOrders;
 
   async function refresh() {
+    refreshing = true;
     try {
       const response = await fetch('/api/draft-orders');
       if (response.ok) {
@@ -110,10 +130,17 @@
           : allOrders.filter((order: any) => !order.isDraft);
         
         rows = filteredOrders.map(toRow);
+        currentPage = 1; // Reset to first page on refresh
       }
     } catch (err) {
       console.error('Failed to fetch orders:', err);
+    } finally {
+      refreshing = false;
     }
+  }
+
+  function createNewOrder() {
+    goto(`${base}/orders/new`);
   }
 
   function toggleSort(key: typeof sortKey) {
@@ -134,36 +161,6 @@
   const stationLabel = (code: Station) => $t(TERMS.stations[code]);
   const badgeLabel = (badge: BadgeCode) => $t(TERMS.badges[badge]);
   
-  // Admin menu functions
-  function toggleAdminMenu() {
-    adminMenuOpen = !adminMenuOpen;
-  }
-  
-  function openProfileBuilder() {
-    adminMenuOpen = false;
-    window.location.href = `${base}/admin/profiles`;
-  }
-  
-  function openMaterialsManager() {
-    adminMenuOpen = false;
-    window.location.href = `${base}/admin/materials`;
-  }
-  
-  function openInventoryManager() {
-    adminMenuOpen = false;
-    window.location.href = `${base}/inventory`;
-  }
-  
-  function openSystemSettings() {
-    adminMenuOpen = false;
-    window.location.href = `${base}/settings`;
-  }
-  
-  function openUserManagement() {
-    adminMenuOpen = false;
-    window.location.href = `${base}/admin/users`;
-  }
-  
   // Export functions
   function exportToPDF() {
     const csvContent = visible.map(row => 
@@ -182,6 +179,30 @@
     refresh();
   });
 </script>
+
+<!-- Page Header with Actions -->
+<div class="page-header">
+  <div class="header-left">
+    <h1 class="page-title">{$t('orderLists.title')}</h1>
+    <p class="page-subtitle">Manage and track all orders</p>
+  </div>
+  <div class="header-actions">
+    {#if isSuperAdmin}
+      <button class="btn btn-primary" on:click={createNewOrder}>
+        <Plus size={18} />
+        Create Draft Order
+      </button>
+    {/if}
+    <button class="btn btn-secondary" on:click={refresh} disabled={refreshing}>
+      <span class:spinning={refreshing}><RefreshCw size={18} /></span>
+      Refresh
+    </button>
+    <button class="btn btn-ghost" on:click={exportToPDF}>
+      <Download size={18} />
+      Export
+    </button>
+  </div>
+</div>
 
 <!-- KPI Stats Cards -->
 <div class="kpi-section">
@@ -209,28 +230,34 @@
   />
 </div>
 
-<section class="card">
-  <div class="row header-row">
-    <div class="row title-row">
-      <h2 class="card-title">{$t('orderLists.title')}</h2>
-      <Tooltip text="Click column headers to sort. Click the arrow button to expand order details." />
-    </div>
-    <div class="row actions-row">
-      {#if isAdmin}
-        <a href="{base}/orders/new" class="tag primary">
-          <Plus aria-hidden="true" />
-          {$t('orderLists.new')}
-        </a>
-      {/if}
-      <button class="tag ghost" on:click={exportToPDF} title="Export to CSV">
-        <Download size={18} aria-hidden="true" />
-        Export
-      </button>
-      <div class="filter-field">
+<section class="card orders-card">
+  <!-- Filter Bar -->
+  <div class="filter-bar">
+    <div class="filter-left">
+      <div class="search-box">
+        <Search size={18} />
         <Input bind:value={q} placeholder={$t('orderLists.filter_placeholder')} ariaLabel={$t('orderLists.filter_label')} />
       </div>
+      <div class="status-filters">
+        <button class="filter-btn" class:active={statusFilter === 'all'} on:click={() => { statusFilter = 'all'; currentPage = 1; }}>
+          All ({rows.length})
+        </button>
+        <button class="filter-btn" class:active={statusFilter === 'active'} on:click={() => { statusFilter = 'active'; currentPage = 1; }}>
+          Active ({activeOrders})
+        </button>
+        {#if isAdmin}
+          <button class="filter-btn" class:active={statusFilter === 'draft'} on:click={() => { statusFilter = 'draft'; currentPage = 1; }}>
+            Drafts ({draftOrders})
+          </button>
+        {/if}
+      </div>
+    </div>
+    <div class="filter-right">
+      <Tooltip text="Click column headers to sort. Click the arrow button to expand order details." />
     </div>
   </div>
+
+  <!-- Orders Table -->
   <div class="table-wrapper">
     <div class="rf-scroll" style="max-height:60vh">
       <table class="rf-table orders-table">
@@ -262,12 +289,13 @@
                 {$t('orderLists.headers.due')}
               </button>
             </th>
-            <th style="width:240px">{$t('orderLists.headers.badges')}</th>
+            <th style="width:200px">{$t('orderLists.headers.badges')}</th>
+            <th style="width:80px">Actions</th>
           </tr>
         </thead>
         <tbody>
-          {#each visible as row (row.id)}
-            <tr class="order-row rowi" class:expanded={row.expanded}>
+          {#each paginatedRows as row (row.id)}
+            <tr class="order-row rowi" class:expanded={row.expanded} class:is-draft={row.isDraft}>
               <td>
                 <button 
                   class="expand-btn" 
@@ -278,27 +306,32 @@
                 </button>
               </td>
               <td>
-                <a 
-                  href={row.href} 
-                  class="order-link"
-                  draggable="true"
-                  on:dragstart={(e) => {
-                    e.dataTransfer?.setData('text/plain', row.id);
-                    dragging.set({ type: 'po', po: row.id });
-                  }}
-                  on:dragend={() => dragging.set(null)}
-                  aria-grabbed="true"
-                  aria-label={`Drag ${row.id} to a loading day`}>
-                  {row.id}
-                </a>
+                <div class="po-cell">
+                  <a 
+                    href={row.href} 
+                    class="order-link"
+                    draggable="true"
+                    on:dragstart={(e) => {
+                      e.dataTransfer?.setData('text/plain', row.id);
+                      dragging.set({ type: 'po', po: row.id });
+                    }}
+                    on:dragend={() => dragging.set(null)}
+                    aria-grabbed="true"
+                    aria-label={`Drag ${row.id} to a loading day`}>
+                    {row.id}
+                  </a>
+                  {#if row.isDraft}
+                    <span class="draft-badge">DRAFT</span>
+                  {/if}
+                </div>
               </td>
               <td>{row.client}</td>
-              <td>{row.title}</td>
+              <td class="title-cell">{row.title}</td>
               <td>{row.loadingDate ? row.loadingDate : '—'}</td>
               <td>{row.due}</td>
               <td>
                 <div class="badges-cell">
-                  {#if row.badges.length}
+                  {#if row.badges.length && !row.isDraft}
                     {#each row.badges as badge}
                       {@const label = badgeLabel(badge)}
                       <Badge tone={badgeTone(badge)} label={label}>
@@ -306,15 +339,27 @@
                         <span class="badge-text">{label}</span>
                       </Badge>
                     {/each}
-                  {:else}
+                  {:else if !row.isDraft}
                     <span class="muted">{$t('orderLists.no_badges')}</span>
+                  {/if}
+                </div>
+              </td>
+              <td>
+                <div class="actions-cell">
+                  <a href={row.href} class="action-icon" title="View Order">
+                    <Eye size={16} />
+                  </a>
+                  {#if isAdmin}
+                    <a href="{base}/orders/{row.id}/edit" class="action-icon" title="Edit Order">
+                      <Edit size={16} />
+                    </a>
                   {/if}
                 </div>
               </td>
             </tr>
             {#if row.expanded}
               <tr class="expanded-row">
-                <td colspan="7">
+                <td colspan="8">
                   <div class="expanded-content">
                     <div class="expanded-section">
                       <h4>{$t('orderLists.headers.stages')}</h4>
@@ -352,253 +397,323 @@
               </tr>
             {/if}
           {/each}
-          {#if visible.length === 0}
-            <tr><td colspan="7" class="muted">{$t('orderLists.empty')}</td></tr>
+          {#if paginatedRows.length === 0}
+            <tr><td colspan="8" class="muted empty-message">{$t('orderLists.empty')}</td></tr>
           {/if}
         </tbody>
       </table>
     </div>
   </div>
-</section>
 
-<!-- Admin Floating Action Menu -->
-{#if isAdmin}
-  <div class="admin-fab-container">
-    <!-- Backdrop for closing menu -->
-    {#if adminMenuOpen}
-      <div 
-        class="admin-fab-backdrop" 
-        role="button" 
-        tabindex="0"
-        on:click={toggleAdminMenu}
-        on:keydown={(e) => e.key === 'Enter' || e.key === ' ' ? toggleAdminMenu() : null}
-        aria-label="Close admin menu"
-      ></div>
-    {/if}
-    
-    <!-- Menu Items -->
-    {#if adminMenuOpen}
-      <div class="admin-fab-menu">
-        <button class="admin-fab-item" on:click={openProfileBuilder} title="Profile Template Builder">
-          <Settings size={20} />
-          <span>Profile Builder</span>
+  <!-- Pagination -->
+  {#if totalPages > 1}
+    <div class="pagination">
+      <div class="pagination-info">
+        Showing {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, visible.length)} of {visible.length} orders
+      </div>
+      <div class="pagination-controls">
+        <button 
+          class="pagination-btn" 
+          disabled={currentPage === 1}
+          on:click={() => currentPage = 1}
+          title="First page"
+        >
+          ««
         </button>
-        <button class="admin-fab-item" on:click={openMaterialsManager} title="Materials Catalog">
-          <Package size={20} />
-          <span>Materials Catalog</span>
+        <button 
+          class="pagination-btn" 
+          disabled={currentPage === 1}
+          on:click={() => currentPage--}
+          title="Previous page"
+        >
+          <ChevronLeft size={18} />
         </button>
-        <button class="admin-fab-item" on:click={openInventoryManager} title="Inventory Manager">
-          <Warehouse size={20} />
-          <span>Inventory</span>
+        <span class="pagination-current">
+          Page {currentPage} of {totalPages}
+        </span>
+        <button 
+          class="pagination-btn" 
+          disabled={currentPage === totalPages}
+          on:click={() => currentPage++}
+          title="Next page"
+        >
+          <ChevronRight size={18} />
         </button>
-        <button class="admin-fab-item" on:click={openUserManagement} title="User Management">
-          <Users size={20} />
-          <span>User Management</span>
-        </button>
-        <button class="admin-fab-item" on:click={openSystemSettings} title="System Settings">
-          <FileText size={20} />
-          <span>Settings</span>
+        <button 
+          class="pagination-btn" 
+          disabled={currentPage === totalPages}
+          on:click={() => currentPage = totalPages}
+          title="Last page"
+        >
+          »»
         </button>
       </div>
-    {/if}
-    
-    <!-- Main FAB Button -->
-    <button 
-      class="admin-fab-button" 
-      class:active={adminMenuOpen}
-      on:click={toggleAdminMenu}
-      title="Admin Controls"
-      aria-label="Admin Controls Menu"
-      aria-expanded={adminMenuOpen}
-    >
-      {#if adminMenuOpen}
-        <X size={24} />
-      {:else}
-        <Settings size={24} />
-      {/if}
-    </button>
-  </div>
-{/if}
+      <div class="items-per-page">
+        <label>
+          <span>Per page:</span>
+          <select bind:value={itemsPerPage} on:change={() => currentPage = 1}>
+            <option value={10}>10</option>
+            <option value={20}>20</option>
+            <option value={50}>50</option>
+            <option value={100}>100</option>
+          </select>
+        </label>
+      </div>
+    </div>
+  {/if}
+</section>
+
+
 
 <style>
+  /* Page Header */
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--space-lg);
+    gap: var(--space-md);
+    flex-wrap: wrap;
+  }
+
+  .header-left {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+  }
+
+  .page-title {
+    margin: 0;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .page-subtitle {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--text-muted, #6b7280);
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    flex-wrap: wrap;
+  }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #ff6b35, #f7931e);
+    color: white;
+    border-color: transparent;
+    box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.4);
+  }
+
+  .btn-secondary {
+    background: var(--bg-1);
+    color: var(--text);
+    border-color: var(--border);
+  }
+
+  .btn-secondary:hover {
+    background: var(--bg-2);
+    border-color: var(--text-muted);
+  }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-muted);
+    border-color: transparent;
+  }
+
+  .btn-ghost:hover {
+    background: var(--bg-2);
+    color: var(--text);
+  }
+
+  .btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  :global(.spinning) {
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
   /* KPI Section */
   .kpi-section {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: var(--space-md);
     margin-bottom: var(--space-lg);
   }
 
-  /* Admin Floating Action Button */
-  .admin-fab-container {
-    position: fixed;
-    bottom: 2rem;
-    right: 2rem;
-    z-index: 1000;
+  /* Orders Card */
+  .orders-card {
+    padding: 0;
+    overflow: hidden;
   }
 
-  .admin-fab-backdrop {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.2);
-    z-index: -1;
-    animation: fadeIn 0.2s ease;
-  }
-
-  .admin-fab-button {
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    background: var(--primary, #3b82f6);
-    color: white;
-    border: none;
-    cursor: pointer;
+  /* Filter Bar */
+  .filter-bar {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .admin-fab-button:hover {
-    background: color-mix(in oklab, var(--primary, #3b82f6) 90%, black);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2), 0 3px 6px rgba(0, 0, 0, 0.15);
-    transform: scale(1.05);
-  }
-
-  .admin-fab-button.active {
-    background: var(--danger, #dc2626);
-    transform: rotate(90deg);
-  }
-
-  .admin-fab-menu {
-    position: absolute;
-    bottom: 70px;
-    right: 0;
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-sm);
-    animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .admin-fab-item {
-    display: flex;
-    align-items: center;
-    gap: var(--space-sm);
-    padding: var(--space-sm) var(--space-md);
-    background: white;
-    color: var(--text-primary, #1a1a1a);
-    border: 1px solid var(--border, #e5e7eb);
-    border-radius: var(--radius-lg, 8px);
-    cursor: pointer;
-    white-space: nowrap;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    transition: all 0.2s ease;
-    font-size: var(--text-sm, 0.875rem);
-    font-weight: 600;
-  }
-
-  .admin-fab-item:hover {
-    background: var(--bg-2, #f9fafb);
-    border-color: var(--primary, #3b82f6);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    transform: translateX(-4px);
-  }
-
-  .admin-fab-item:active {
-    transform: translateX(-4px) scale(0.98);
-  }
-
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
-
-  @keyframes slideUp {
-    from {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  .header-row {
     justify-content: space-between;
     align-items: center;
+    padding: var(--space-md) var(--space-lg);
+    background: var(--bg-2);
+    border-bottom: 1px solid var(--border);
     gap: var(--space-md);
+    flex-wrap: wrap;
   }
 
-  .title-row {
+  .filter-left {
+    display: flex;
     align-items: center;
-    gap: var(--space-sm);
+    gap: var(--space-md);
+    flex-wrap: wrap;
+    flex: 1;
   }
 
-  .card-title {
-    margin: 0;
-  }
-
-  .actions-row {
+  .search-box {
+    display: flex;
     align-items: center;
-    gap: var(--space-sm);
+    gap: 8px;
+    background: var(--bg-1);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0 12px;
+    min-width: 240px;
   }
 
-  .filter-field {
-    width: min(18rem, 100%);
+  .search-box :global(input) {
+    border: none;
+    background: transparent;
+    padding: 8px 0;
+    min-width: 180px;
   }
 
-  .table-wrapper {
-    margin-top: var(--space-md);
+  .search-box :global(svg) {
+    color: var(--text-muted);
   }
 
-  .orders-table :global(th.sortable) {
+  .status-filters {
+    display: flex;
+    gap: 4px;
+    background: var(--bg-1);
+    border-radius: 8px;
+    padding: 4px;
+    border: 1px solid var(--border);
+  }
+
+  .filter-btn {
+    padding: 6px 12px;
+    border: none;
+    background: transparent;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
     cursor: pointer;
-    user-select: none;
-    transition: background-color 0.2s ease;
+    color: var(--text-muted);
+    transition: all 0.15s ease;
   }
 
-  .orders-table :global(th.sortable:hover) {
-    background-color: color-mix(in oklab, var(--bg-1) 95%, var(--text));
+  .filter-btn:hover {
+    background: var(--bg-2);
+    color: var(--text);
+  }
+
+  .filter-btn.active {
+    background: var(--primary, #3b82f6);
+    color: white;
+  }
+
+  .filter-right {
+    display: flex;
+    align-items: center;
+  }
+
+  /* Table Wrapper */
+  .table-wrapper {
+    overflow-x: auto;
+  }
+
+  .orders-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+  }
+
+  .orders-table th,
+  .orders-table td {
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .orders-table th {
+    background: var(--bg-1);
+    font-weight: 600;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    position: sticky;
+    top: 0;
+    z-index: 10;
   }
 
   .order-row {
-    transition: background-color 0.15s ease;
+    transition: background 0.15s ease;
   }
 
   .order-row:hover {
-    background-color: color-mix(in oklab, var(--bg-1) 95%, var(--text));
+    background: var(--bg-2);
   }
 
   .order-row.expanded {
-    background-color: color-mix(in oklab, var(--accent-1) 10%, transparent);
+    background: color-mix(in oklab, var(--primary, #3b82f6) 5%, transparent);
   }
 
-  .expand-btn {
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    font-size: 0.85rem;
-    padding: var(--space-xs) var(--space-sm);
-    color: var(--text);
-    transition: transform 0.2s ease;
+  .order-row.is-draft {
+    background: color-mix(in oklab, var(--warning, #f59e0b) 5%, transparent);
   }
 
-  .expand-btn:hover {
-    background-color: color-mix(in oklab, var(--bg-1) 85%, var(--text));
-    border-radius: var(--radius-sm);
+  .order-row.is-draft:hover {
+    background: color-mix(in oklab, var(--warning, #f59e0b) 10%, transparent);
+  }
+
+  /* PO Cell */
+  .po-cell {
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
 
   .order-link {
-    color: var(--accent-1);
+    color: var(--primary, #3b82f6);
     text-decoration: none;
     font-weight: 600;
   }
@@ -607,37 +722,83 @@
     text-decoration: underline;
   }
 
+  .draft-badge {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: var(--warning, #f59e0b);
+    color: white;
+  }
+
+  .title-cell {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Expand Button */
+  .expand-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 0.75rem;
+    padding: 6px 8px;
+    color: var(--text-muted);
+    border-radius: 4px;
+    transition: all 0.15s ease;
+  }
+
+  .expand-btn:hover {
+    background: var(--bg-2);
+    color: var(--text);
+  }
+
+  /* Badges Cell */
   .badges-cell {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--space-xs);
+    gap: 4px;
     align-items: center;
   }
 
   .badge-text {
     display: none;
-    font-size: 0.75rem;
   }
 
-  /* Show badge text on wider screens */
   @media (min-width: 64rem) {
     .badge-text {
       display: inline;
     }
   }
 
-  /* Scale down table font sizes for better fit */
-  .orders-table {
-    font-size: 0.95rem;
+  /* Actions Cell */
+  .actions-cell {
+    display: flex;
+    gap: 4px;
   }
 
-  .orders-table td,
-  .orders-table th {
-    padding: var(--space-sm);
+  .action-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: all 0.15s ease;
   }
 
+  .action-icon:hover {
+    background: var(--bg-2);
+    color: var(--text);
+  }
+
+  /* Expanded Row */
   .expanded-row {
-    background-color: color-mix(in oklab, var(--bg-2) 50%, transparent);
+    background: var(--bg-2);
   }
 
   .expanded-content {
@@ -653,15 +814,15 @@
 
   .expanded-section h4 {
     margin: 0;
-    font-size: 0.875rem;
+    font-size: 0.8rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: var(--muted);
+    color: var(--text-muted);
   }
 
   .stages-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(12.5rem, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
     gap: var(--space-sm);
   }
 
@@ -686,67 +847,157 @@
     border-top: 1px solid var(--border);
   }
 
-  /* Mobile responsive improvements */
-  @media (max-width: 48rem) {
-    .orders-table {
-      font-size: 0.9rem;
-    }
+  .empty-message {
+    text-align: center;
+    padding: 48px !important;
+    color: var(--text-muted);
+  }
 
-    .orders-table td,
-    .orders-table th {
-      padding: calc(var(--space-xs) + var(--space-xxs)) var(--space-xs);
-    }
+  /* Pagination */
+  .pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-md) var(--space-lg);
+    border-top: 1px solid var(--border);
+    background: var(--bg-1);
+    gap: var(--space-md);
+    flex-wrap: wrap;
+  }
 
-    /* Hide less important columns on mobile */
-    .orders-table th:nth-child(4), /* Title */
-    .orders-table td:nth-child(4),
-    .orders-table th:nth-child(5), /* Loading */
-    .orders-table td:nth-child(5) {
-      display: none;
-    }
+  .pagination-info {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
 
-    .badges-cell {
+  .pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .pagination-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    padding: 0 8px;
+    border: 1px solid var(--border);
+    background: var(--bg-1);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: var(--text);
+    transition: all 0.15s ease;
+  }
+
+  .pagination-btn:hover:not(:disabled) {
+    background: var(--bg-2);
+    border-color: var(--text-muted);
+  }
+
+  .pagination-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .pagination-current {
+    padding: 0 12px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+
+  .items-per-page {
+    display: flex;
+    align-items: center;
+  }
+
+  .items-per-page label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+
+  .items-per-page select {
+    padding: 6px 8px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--bg-1);
+    font-size: 0.85rem;
+    cursor: pointer;
+  }
+
+  /* Mobile responsive */
+  @media (max-width: 1024px) {
+    .page-header {
       flex-direction: column;
-      align-items: flex-start;
-      gap: var(--space-xxs);
+      align-items: stretch;
     }
-
-    .stages-grid {
-      grid-template-columns: 1fr;
-    }
-
-    .expanded-content {
-      padding: var(--space-md);
+    
+    .header-actions {
+      justify-content: flex-end;
     }
   }
 
-  @media (max-width: 30rem) {
-    .orders-table {
-      font-size: 0.85rem;
+  @media (max-width: 768px) {
+    .filter-bar {
+      flex-direction: column;
+      align-items: stretch;
     }
-
-    /* Show only essential columns on very small screens */
-    .orders-table th:nth-child(3), /* Client */
-    .orders-table td:nth-child(3),
-    .orders-table th:nth-child(6), /* Due */
-    .orders-table td:nth-child(6) {
+    
+    .filter-left {
+      flex-direction: column;
+    }
+    
+    .search-box {
+      width: 100%;
+      min-width: auto;
+    }
+    
+    .status-filters {
+      width: 100%;
+      justify-content: center;
+    }
+    
+    .pagination {
+      flex-direction: column;
+      gap: var(--space-sm);
+    }
+    
+    .pagination-info, .items-per-page {
+      width: 100%;
+      text-align: center;
+      justify-content: center;
+    }
+    
+    /* Hide less important columns on mobile */
+    .orders-table th:nth-child(4),
+    .orders-table td:nth-child(4),
+    .orders-table th:nth-child(5),
+    .orders-table td:nth-child(5),
+    .orders-table th:nth-child(8),
+    .orders-table td:nth-child(8) {
       display: none;
     }
+  }
 
-    .badges-cell :global(.badge) {
-      font-size: 0.7rem;
+  @media (max-width: 480px) {
+    .orders-table th:nth-child(3),
+    .orders-table td:nth-child(3),
+    .orders-table th:nth-child(7),
+    .orders-table td:nth-child(7) {
+      display: none;
     }
-  }
-
-  /* Primary button styling */
-  .tag.primary {
-    background: var(--primary, #3b82f6);
-    color: white;
-    border-color: var(--primary, #3b82f6);
-    font-weight: 700;
-  }
-
-  .tag.primary:hover {
-    background: color-mix(in oklab, var(--primary, #3b82f6) 90%, black);
+    
+    .header-actions .btn span {
+      display: none;
+    }
+    
+    .header-actions .btn {
+      padding: 10px;
+    }
   }
 </style>

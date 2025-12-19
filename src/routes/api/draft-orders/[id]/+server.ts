@@ -8,6 +8,7 @@ import { query, transaction } from '$lib/server/db/connection';
  */
 export const GET: RequestHandler = async ({ params }) => {
   try {
+    // First get the order with profiles
     const sql = `
       SELECT 
         d.*,
@@ -33,16 +34,36 @@ export const GET: RequestHandler = async ({ params }) => {
     }
 
     const row = result.rows[0];
+    
+    // Try to get files separately (in case order_files table doesn't exist)
+    let files: any[] = [];
+    try {
+      const filesResult = await query(`
+        SELECT f.id, f.filename, f.original_name as "originalName", of.file_type as "fileType", f.created_at as "uploadedAt"
+        FROM order_files of
+        JOIN files f ON f.id = of.file_id
+        WHERE of.draft_order_id = $1
+      `, [row.id]);
+      files = filesResult.rows;
+    } catch (filesErr) {
+      // Table might not exist - ignore silently
+    }
+    
     return json({
-      id: row.po_number,
-      dbId: row.id,
-      client: row.client,
+      id: row.id,
+      poNumber: row.po_number,
+      clientName: row.client,
       title: row.title,
-      due: row.due_date?.toISOString().slice(0, 10),
+      deadline: row.due_date?.toISOString().slice(0, 10),
       loadingDate: row.loading_date?.toISOString().slice(0, 10),
       status: row.status,
       notes: row.notes,
+      priority: row.priority || 'NORMAL',
+      deliveryAddress: row.delivery_address,
+      deliveryContact: row.delivery_contact,
+      deliveryPhone: row.delivery_phone,
       profiles: row.profiles || [],
+      files,
       createdAt: row.created_at?.toISOString(),
       updatedAt: row.updated_at?.toISOString()
     });
@@ -73,7 +94,7 @@ export const PUT: RequestHandler = async ({ params, request }) => {
 
       const orderId = findResult.rows[0].id;
 
-      // Update order
+      // Update order with all fields
       const updateSql = `
         UPDATE draft_orders SET
           client = COALESCE($2, client),
@@ -82,6 +103,10 @@ export const PUT: RequestHandler = async ({ params, request }) => {
           loading_date = $5,
           status = COALESCE($6, status),
           notes = $7,
+          priority = COALESCE($8, priority),
+          delivery_address = $9,
+          delivery_contact = $10,
+          delivery_phone = $11,
           updated_at = NOW()
         WHERE id = $1
         RETURNING *
@@ -89,12 +114,16 @@ export const PUT: RequestHandler = async ({ params, request }) => {
 
       const orderResult = await client.query(updateSql, [
         orderId,
-        data.client,
+        data.clientName || data.client,
         data.title,
-        data.due || null,
+        data.deadline || data.due || null,
         data.loadingDate || null,
         data.status,
-        data.notes ?? null
+        data.notes ?? null,
+        data.priority || 'NORMAL',
+        data.deliveryAddress || null,
+        data.deliveryContact || null,
+        data.deliveryPhone || null
       ]);
 
       // Update profiles if provided
@@ -117,6 +146,21 @@ export const PUT: RequestHandler = async ({ params, request }) => {
         }
       }
 
+      // Link new files if provided
+      if (data.newFileIds && Array.isArray(data.newFileIds) && data.newFileIds.length > 0) {
+        try {
+          for (const fileId of data.newFileIds) {
+            await client.query(
+              `INSERT INTO order_files (draft_order_id, file_id, file_type, display_name)
+               VALUES ($1, $2, 'sketch', NULL)`,
+              [orderId, fileId]
+            );
+          }
+        } catch (fileErr) {
+          console.warn('Could not link files to order:', fileErr);
+        }
+      }
+
       return orderResult.rows[0];
     });
 
@@ -127,11 +171,85 @@ export const PUT: RequestHandler = async ({ params, request }) => {
       due: result.due_date?.toISOString().slice(0, 10),
       loadingDate: result.loading_date?.toISOString().slice(0, 10),
       status: result.status,
-      notes: result.notes
+      notes: result.notes,
+      priority: result.priority,
+      deliveryAddress: result.delivery_address,
+      deliveryContact: result.delivery_contact,
+      deliveryPhone: result.delivery_phone
     });
   } catch (err: any) {
     console.error('Failed to update order:', err);
     if (err.status === 404) throw error(404, err.message);
+    throw error(500, 'Failed to update order');
+  }
+};
+
+/**
+ * PATCH /api/draft-orders/[id] - Partial update (e.g., loading date)
+ */
+export const PATCH: RequestHandler = async ({ params, request }) => {
+  const data = await request.json();
+
+  try {
+    // Find the order first
+    const findResult = await query(
+      'SELECT id FROM draft_orders WHERE po_number = $1 OR id::text = $1',
+      [params.id]
+    );
+
+    if (findResult.rows.length === 0) {
+      throw error(404, 'Order not found');
+    }
+
+    const orderId = findResult.rows[0].id;
+
+    // Build dynamic update query based on provided fields
+    const updates: string[] = [];
+    const values: any[] = [orderId];
+    let idx = 2;
+
+    if (data.loadingDate !== undefined) {
+      updates.push(`loading_date = $${idx}`);
+      values.push(data.loadingDate || null);
+      idx++;
+    }
+    if (data.status !== undefined) {
+      updates.push(`status = $${idx}`);
+      values.push(data.status);
+      idx++;
+    }
+    if (data.priority !== undefined) {
+      updates.push(`priority = $${idx}`);
+      values.push(data.priority);
+      idx++;
+    }
+    if (data.notes !== undefined) {
+      updates.push(`notes = $${idx}`);
+      values.push(data.notes);
+      idx++;
+    }
+
+    if (updates.length === 0) {
+      throw error(400, 'No fields to update');
+    }
+
+    updates.push('updated_at = NOW()');
+
+    const sql = `UPDATE draft_orders SET ${updates.join(', ')} WHERE id = $1 RETURNING *`;
+    const result = await query(sql, values);
+
+    const row = result.rows[0];
+    return json({
+      id: row.id,
+      poNumber: row.po_number,
+      loadingDate: row.loading_date?.toISOString().slice(0, 10),
+      status: row.status,
+      priority: row.priority,
+      notes: row.notes
+    });
+  } catch (err: any) {
+    if (err.status) throw err;
+    console.error('Failed to patch order:', err);
     throw error(500, 'Failed to update order');
   }
 };

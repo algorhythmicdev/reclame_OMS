@@ -1,4 +1,5 @@
 <script lang="ts">
+  export let params = {};
   import { items, lowStock, createItem, updateItem, removeItem } from '$lib/inventory/store';
   import type { Item, Section } from '$lib/inventory/types';
   import { base } from '$app/paths';

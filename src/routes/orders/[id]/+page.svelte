@@ -1,10 +1,20 @@
 <script lang="ts">
   import { base } from '$app/paths';
+  import { page } from '$app/stores';
   import { onMount, onDestroy } from 'svelte';
   import { get } from 'svelte/store';
   import { t } from 'svelte-i18n';
-
-  import RepoHeader from '$lib/order/RepoHeader.svelte';
+  import { replaceState } from '$app/navigation';
+  import { goto } from '$app/navigation';
+  
+  // Icons
+  import { 
+    Save, FileText, MapPin, Calendar, Activity, Boxes, MessageSquare, 
+    FolderOpen, ChevronDown, ChevronLeft, ChevronRight, X, ZoomIn, ZoomOut,
+    Plus, Trash2, Upload, Eye, AlertCircle, ArrowLeft, FlaskConical
+  } from 'lucide-svelte';
+  
+  // Components
   import Tabs from '$lib/ui/Tabs.svelte';
   import PdfFrame from '$lib/pdf/PdfFrame.svelte';
   import StationLogTimeline from '$lib/order/StationLogTimeline.svelte';
@@ -13,46 +23,79 @@
   import RevisionsList from '$lib/order/RevisionsList.svelte';
   import BranchesTable from '$lib/order/BranchesTable.svelte';
   import { role } from '$lib/ui/RoleSwitch.svelte';
-  import OrderCompareView from '$lib/order/CompareView.svelte';
-  import CompareView from '$lib/compare/CompareView.svelte';
-  import PdfCompare from '$lib/compare/PdfCompare.svelte';
-  import StationQuickLogger from '$lib/order/StationQuickLogger.svelte';
   import BadgesManager from '$lib/order/BadgesManager.svelte';
-  import GanttLine from '$lib/order/GanttLine.svelte';
   import { announce as announceToast } from '$lib/stores/toast';
   import { announce } from '$lib/a11y/live';
-  import MaterialsEditor from '$lib/order/MaterialsEditor.svelte';
-  import NewMaterialsEditor, { type MaterialRow } from '$lib/orders/MaterialsEditor.svelte';
-  import { TERMS } from '$lib/order/names';
-  import LoadingDatePicker from '$lib/order/LoadingDatePicker.svelte';
   import LoadingPicker from '$lib/calendar/LoadingPicker.svelte';
-  import StageLegend from '$lib/order/StageLegend.svelte';
-  import StageEditor from '$lib/order/StageEditor.svelte';
   import ReworkQuick from '$lib/order/ReworkQuick.svelte';
-  import { adminSendToRework, adminApplyStage, trackStageProposal } from '$lib/order/signage-actions';
-  import { ClipboardList, Boxes, CalendarDays, FileText, Activity, FlaskConical } from 'lucide-svelte';
-  import { setTicketRedo } from '$lib/stations/store';
-
-  import type { Order, StationLog, Badge } from '$lib/order/types.signage';
+  import OrderChat from '$lib/order/OrderChat.svelte';
+  import OrderFiles from '$lib/order/OrderFiles.svelte';
+  import Profile7stVisual from '$lib/profiles/components/Profile7stVisual.svelte';
+  
+  // Store and types
+  import type { Order, Badge } from '$lib/order/types.signage';
   import {
-    getOrder,
-    createOrder,
-    updateOrder,
-    setBadges as setOrderBadges,
-    setLoadingDate
+    getOrder, updateOrder, setBadges as setOrderBadges, setLoadingDate,
+    addRedoFlag, openChangeRequest, approveChangeRequest, declineChangeRequest
   } from '$lib/order/signage-store';
-  import { blankStages, STATIONS, type StageState, type StationTag, type ReworkReason } from '$lib/order/stages';
+  import { blankStages, STATIONS, type StageState, type StationTag } from '$lib/order/stages';
   import { getOrderSeed } from '$lib/order/order-seeds';
-  import { logStage } from '$lib/orders/journal';
 
-  export let params;
-  const id = params.id;
+  // Accept params prop to silence SvelteKit warning
+  export let params = {};
+
+  // Get ID from SvelteKit page params
+  $: id = $page.params.id;
 
   let o: Order | null = null;
   let isLoading = true;
+  let saving = false;
+  let error = '';
+
+  // Tabs
+  let tab = 'overview';
+  const tabs = [
+    { id: 'overview', label: 'Overview', icon: FileText },
+    { id: 'production', label: 'Production', icon: Activity },
+    { id: 'files', label: 'Files', icon: FolderOpen },
+    { id: 'chat', label: 'Chat', icon: MessageSquare },
+    { id: 'logs', label: 'Logs', icon: Boxes }
+  ];
+
+  // PDF Preview state
+  let pdfCanvas: HTMLCanvasElement;
+  let pdfCurrentPage = 1;
+  let pdfTotalPages = 1;
+  let pdfDoc: any = null;
+  let previewZoom = 1;
+  let pdfRendering = false;
+  
+  // Loading picker
+  let showPicker = false;
+
+  // Delivery presets
+  interface DeliveryPreset {
+    id: number;
+    clientName: string;
+    presetName: string;
+    addressLine1: string;
+    city: string;
+    country: string;
+    isDefault: boolean;
+  }
+  let deliveryPresets: DeliveryPreset[] = [];
+  let showPresetDropdown = false;
+
+  // Profile configuration (matching new order form)
+  interface ProfileConfig {
+    id: string;
+    quantity: number;
+    configuration: any;
+    collapsed: boolean;
+  }
+  let profiles: ProfileConfig[] = [];
 
   onMount(async () => {
-    // Try to fetch from API first
     o = await getOrder(id);
     
     if (!o) {
@@ -60,41 +103,79 @@
       const seed = getOrderSeed(id);
       if (seed) {
         const stages = seed.stages ? { ...blankStages(), ...seed.stages } : blankStages();
-        o = await createOrder({
+        o = {
           id: seed.id,
           title: seed.title,
           client: seed.client,
           due: seed.due,
-          loadingDate: seed.loadingDate,
-          badges: seed.badges,
-          fields: seed.fields,
-          materials: seed.materials,
+          loadingDate: seed.loadingDate || '',
+          badges: seed.badges || ['OPEN'],
+          fields: seed.fields || [],
+          materials: seed.materials || [],
           stages,
           cycles: [],
-          isRD: seed.isRD,
-          rdNotes: seed.rdNotes
-        }) || createFallbackOrder();
+          isRD: seed.isRD || false,
+          rdNotes: seed.rdNotes || '',
+          isDraft: false,
+          profiles: [],
+          redo: [],
+          redoReasons: {},
+          redoStage: '',
+          revisions: [],
+          branches: [],
+          prs: [],
+          defaultBranch: 'main',
+          defaultRevisionId: ''
+        };
       } else {
         o = createFallbackOrder();
       }
     }
+
+    // Initialize profiles from order
+    if (o.profiles && o.profiles.length > 0) {
+      profiles = o.profiles.map((p: any, idx: number) => ({
+        id: p.id || `profile-${idx}`,
+        quantity: p.quantity || 1,
+        configuration: p.configuration || getDefaultProfileConfig(),
+        collapsed: idx > 0
+      }));
+    } else {
+      profiles = [{
+        id: 'profile-1',
+        quantity: 1,
+        configuration: getDefaultProfileConfig(),
+        collapsed: false
+      }];
+    }
+
+    // Load delivery presets
+    try {
+      const res = await fetch(`${base}/api/delivery-presets`);
+      if (res.ok) deliveryPresets = await res.json();
+    } catch {}
+
     isLoading = false;
+    
+    // Render PDF if available
+    if (o?.file?.path) {
+      setTimeout(() => renderPdfPreview(o!.file!.path), 100);
+    }
   });
 
   function createFallbackOrder(): Order {
     const stages = blankStages();
     stages.CAD = 'COMPLETED';
-    stages.CNC = 'COMPLETED';
-    stages.SANDING = 'IN_PROGRESS';
+    stages.CNC = 'IN_PROGRESS';
     return {
       id,
-      title: '4500mm Long Frame',
-      client: 'ABTB BIJEN',
-      due: '2025-10-26',
-      loadingDate: '2025-10-24',
+      title: 'New Order',
+      client: 'Client Name',
+      due: new Date().toISOString().slice(0, 10),
+      loadingDate: '',
       badges: ['OPEN', 'IN_PROGRESS'],
-      fields: [{ key: 'priority', label: 'Priority', value: 'Normal' }],
-      materials: [{ key: 'face', label: 'Face', value: 'Acrylic 3mm White' }],
+      fields: [],
+      materials: [],
       stages,
       cycles: [],
       isDraft: false,
@@ -104,627 +185,1006 @@
       redo: [],
       redoReasons: {},
       redoStage: '',
-      redoReason: '',
-      progress: {},
+      revisions: [],
       branches: [],
       prs: [],
-      revisions: [],
+      defaultBranch: 'main',
       defaultRevisionId: ''
     };
   }
 
+  function getDefaultProfileConfig() {
+    // Configuration structure matching Profile7stVisual component
+    return {
+      profileName: 'New Profile',
+      signType: 'EXTERIOR' as const,
+      CNC_FREZER: { face: '', back: '', faceThickness: '', backThickness: '', laser: false, print3d: false, notes: '' },
+      BENDER: { sides: '', sidesThickness: '', depth: 100, notes: '' },
+      FRONT: { 
+        face: false, faceFilm: '', faceCustom: '',
+        back: false, backFilm: '', backCustom: '',
+        sides: false, sidesFilm: '', sidesCustom: '',
+        notes: ''
+      },
+      PAINTING: { 
+        face: false, faceColor: { system: '', code: '', hex: '' }, faceCustom: '',
+        sides: true, sidesColor: { system: '', code: '', hex: '' }, sidesCustom: '',
+        back: false, backColor: { system: '', code: '', hex: '' }, backCustom: '',
+        frame: false, frameColor: { system: '', code: '', hex: '' }, frameCustom: '',
+        notes: ''
+      },
+      ASSEMBLING: { 
+        led: true, ledModule: '', ledCustom: '',
+        psu: true, psuModel: '', psuType: 'regular' as const, psuMounting: '',
+        cables: true, cableType: '', cablesLength: '2m', cablesWago: false,
+        frame: true, frameMaterial: '', frameDimensions: '40x40x2', frameCustom: '',
+        frameWaterholes: true, frameMountingHoles: false,
+        shablon: false, notes: ''
+      }
+    };
+  }
+
+  // PDF rendering
+  declare global {
+    interface Window { pdfjsLib: any; }
+  }
+
+  async function renderPdfPreview(path: string) {
+    if (typeof window === 'undefined' || !window.pdfjsLib || !pdfCanvas) return;
+    if (pdfRendering) return;
+    pdfRendering = true;
+
+    try {
+      const loadingTask = window.pdfjsLib.getDocument(path);
+      pdfDoc = await loadingTask.promise;
+      pdfTotalPages = pdfDoc.numPages;
+      await renderPage(pdfCurrentPage);
+    } catch (err) {
+      console.error('PDF render error:', err);
+    } finally {
+      pdfRendering = false;
+    }
+  }
+
+  async function renderPage(pageNum: number) {
+    if (!pdfDoc || !pdfCanvas) return;
+    
+    const page = await pdfDoc.getPage(pageNum);
+    const scale = 1.5 * previewZoom;
+    const viewport = page.getViewport({ scale });
+    
+    const context = pdfCanvas.getContext('2d');
+    pdfCanvas.height = viewport.height;
+    pdfCanvas.width = viewport.width;
+    
+    await page.render({ canvasContext: context, viewport }).promise;
+  }
+
+  function prevPage() {
+    if (pdfCurrentPage > 1) {
+      pdfCurrentPage--;
+      renderPage(pdfCurrentPage);
+    }
+  }
+
+  function nextPage() {
+    if (pdfCurrentPage < pdfTotalPages) {
+      pdfCurrentPage++;
+      renderPage(pdfCurrentPage);
+    }
+  }
+
+  function zoomIn() {
+    previewZoom = Math.min(previewZoom + 0.25, 3);
+    renderPage(pdfCurrentPage);
+  }
+
+  function zoomOut() {
+    previewZoom = Math.max(previewZoom - 0.25, 0.5);
+    renderPage(pdfCurrentPage);
+  }
+
+  // Save order
   async function saveOrder() {
     if (!o) return;
-    const result = await updateOrder(id, o);
-    if (result) {
-      announceToast('Order saved successfully', 'success');
-    } else {
-      announceToast('Failed to save order', 'error');
+    saving = true;
+    error = '';
+
+    try {
+      await updateOrder(o.id, {
+        title: o.title,
+        client: o.client,
+        due: o.due,
+        loadingDate: o.loadingDate,
+        isRD: o.isRD,
+        rdNotes: o.rdNotes,
+        profiles: profiles.map(p => ({
+          id: p.id,
+          quantity: p.quantity,
+          configuration: p.configuration
+        }))
+      });
+      announceToast({ message: 'Order saved', type: 'success' });
+    } catch (err: any) {
+      error = err.message || 'Failed to save';
+      announceToast({ message: error, type: 'error' });
+    } finally {
+      saving = false;
     }
   }
 
-  function discardChanges() {
-    // Reload from API
-    getOrder(id).then(order => {
-      if (order) o = order;
-    });
+  // Badge management
+  async function updateBadges(badges: Badge[]) {
+    if (!o) return;
+    await setOrderBadges(o.id, badges);
+    o.badges = badges;
   }
 
-  $: pdf = o?.revisions?.find((r) => r.id === o?.defaultRevisionId)?.file;
-  let compareRevisionId: string | null = null;
-  let leftPdf = { url: '', name: '' };
-  let rightPdf = { url: '', name: '' };
-  let left = { url: '', name: '' };
-  let right = { url: '', name: '' };
-  $: currentRevision = o?.revisions?.find((r) => r.id === o?.defaultRevisionId) ?? o?.revisions?.[0];
-  $: if (!compareRevisionId || !o?.revisions?.some((r) => r.id === compareRevisionId)) {
-    const alternate = o?.revisions?.find((r) => r.id !== currentRevision?.id);
-    compareRevisionId = alternate?.id ?? currentRevision?.id ?? null;
-  }
-  $: compareRevision = compareRevisionId
-    ? o?.revisions?.find((r) => r.id === compareRevisionId) ?? currentRevision
-    : currentRevision;
-  $: leftPdf = currentRevision
-    ? { url: currentRevision.file?.path || '', name: currentRevision.file?.name ?? currentRevision.name ?? 'Current' }
-    : { url: '', name: '' };
-  $: rightPdf = compareRevision
-    ? { url: compareRevision.file?.path || '', name: compareRevision.file?.name ?? compareRevision.name ?? 'Candidate' }
-    : leftPdf;
-  $: left = { ...leftPdf };
-  $: right = { ...rightPdf };
-  let loadingSelection = '';
-  $: if (o) loadingSelection = o.loadingDate ?? '';
-  let showPicker = false;
-  
-  // New materials editor state (mock/demo) - not persisted to order store
-  let materialRows: MaterialRow[] = [];
-
-  let tab = 'overview';
-  let tabs: { id: string; label: string }[] = [];
-  const redoStageChoices: StationTag[] = ['CNC', 'SANDING', 'WELDING', 'PAINT', 'ASSEMBLY', 'QC'];
-  const redoReasonChoices = ['recut', 'resand', 'reweld', 'repaint'] as const;
-  type RedoReason = (typeof redoReasonChoices)[number];
-  let redoStage: StationTag | '' = o.redoStage ?? '';
-  let redoReason: RedoReason | '' = (o.redoReason as RedoReason) ?? '';
-  $: redoFlags = Array.from(new Set([
-    ...(o.redo ?? []),
-    ...(o.cycles ?? []).map((cycle) => cycle.station)
-  ]));
-  $: if (o) {
-    o.redoStage = redoStage;
-    o.redoReason = redoReason;
-    setRedoSelection(o.id, redoStage, redoReason);
-  }
-  $: setTicketRedo(o.id, (o.redo ?? []).length > 0);
-  const stagePriority: StageState[] = ['IN_PROGRESS', 'REWORK', 'BLOCKED', 'QUEUED'];
-  $: activeStage = (() => {
-    for (const state of stagePriority) {
-      const match = STATIONS.find((station) => o.stages?.[station] === state);
-      if (match) return match;
-    }
-    return STATIONS[STATIONS.length - 1];
-  })();
-
-  function stageName(station: StationTag) {
-    const names = TERMS.stations as Record<string, string>;
-    return get(t)(names?.[station] ?? station);
+  // Loading date
+  async function setLoading(date: string) {
+    if (!o) return;
+    await setLoadingDate(o.id, date);
+    o.loadingDate = date;
+    showPicker = false;
+    announceToast({ message: 'Loading date updated', type: 'success' });
   }
 
-  function applyRedoFlag() {
-    if (!redoStage || !redoReason) return;
-    const updated = addRedoFlag(o.id, redoStage, redoReason);
-    if (updated && updated.length) {
-      o.redo = updated;
-      const reasonLabel = get(t)(`orders.reasons.${redoReason}`) ?? redoReason;
-      logStage(o.id, redoStage, '', redoReason);
-      announceToast(`${stageName(redoStage)} • ${reasonLabel}`, 'info');
-    }
-    redoStage = '';
-    redoReason = '';
+  // Profile management
+  function addProfile() {
+    const newId = `profile-${Date.now()}`;
+    profiles = [...profiles, {
+      id: newId,
+      quantity: 1,
+      configuration: getDefaultProfileConfig(),
+      collapsed: false
+    }];
   }
 
-  $: tabs = [
-    { id: 'overview', label: $t('order.overview') },
-    { id: 'revisions', label: $t('order.revisions') },
-    { id: 'changes', label: $t('order.changes') },
-    { id: 'logs', label: $t('order.logs') },
-    { id: 'workstreams', label: $t('order.workstreams') }
-  ];
-
-  function setTabFromHash(hash: string) {
-    const target = hash.startsWith('#') ? hash.slice(1) : hash;
-    if (!target) return;
-    if (tabs.some((t) => t.id === target)) {
-      tab = target;
+  function removeProfile(id: string) {
+    if (profiles.length > 1) {
+      profiles = profiles.filter(p => p.id !== id);
     }
   }
 
-  $: syncHash(tab);
-
-  function syncHash(activeTab: string) {
-    if (typeof window === 'undefined') return;
-    const target = `#${activeTab}`;
-    if (window.location.hash === target) return;
-    const { pathname, search } = window.location;
-    history.replaceState(null, '', `${pathname}${search}${target}`);
+  function toggleProfileCollapse(id: string) {
+    profiles = profiles.map(p => 
+      p.id === id ? { ...p, collapsed: !p.collapsed } : p
+    );
   }
 
-  const shortcutEvents = [
-    'rf-approve-selected',
-    'rf-decline-selected',
-    'rf-open-cr',
-    'rf-focus-quicklog',
-    'rf-attach-revision'
-  ] as const;
+  // Stage helpers
+  $: activeStages = o ? Object.entries(o.stages)
+    .filter(([_, state]) => state === 'IN_PROGRESS')
+    .map(([station]) => station) : [];
 
-  let newPath = '';
-  function refreshOrder() {
-    o = getOrder(id)!;
-    loadingSelection = o.loadingDate ?? '';
-  }
-  function attach() {
-    if (!newPath.trim()) return;
-    addRevision(o.id, { id: crypto.randomUUID(), name: newPath.split('/').pop()!, path: newPath, kind: 'pdf' }, 'admin');
-    refreshOrder();
-    newPath = '';
-    announce(get(t)('toast.revision_attached'));
-  }
-  function useRevision(revisionId: string) {
-    setDefaultRevision(o.id, revisionId, 'admin');
-    compareRevisionId = revisionId;
-    refreshOrder();
-    announce(get(t)('toast.revision_switched'));
-  }
-
-  function useAsCurrent(revisionId: string) {
-    useRevision(revisionId);
-  }
-
-  function createCR(title: string, changes: StationLog['changes'], message?: string) {
-    openChangeRequest(o.id, { title, author: 'Station', proposed: changes, message });
-    refreshOrder();
-  }
-  function applyStage(station: StationTag, state: StageState, note?: string) {
-    adminApplyStage(o.id, station, state, note, 'admin');
-    logStage(o.id, station, note || `Stage changed to ${state}`);
-    refreshOrder();
-  }
-  function proposeStage(station: StationTag, state: StageState, note?: string) {
-    createCR(`${station} → ${state}`, { stages: { [station]: state } }, note);
-    trackStageProposal(o.id, station, state, note);
-  }
-  function sendRework(station: StationTag, reason: ReworkReason, note: string) {
-    adminSendToRework(o.id, station, reason, note, 'admin');
-    refreshOrder();
-  }
-  function approve(crId: string) {
-    approveChangeRequest(o.id, crId, 'admin');
-    refreshOrder();
-    selectedCRId = null;
-    announce(get(t)('toast.approved'));
-  }
-  function decline(crId: string) {
-    declineChangeRequest(o.id, crId);
-    refreshOrder();
-    selectedCRId = null;
-    announce(get(t)('toast.declined'));
-  }
-
-  function updateBadges(badges: Badge[]) {
-    setOrderBadges(o.id, badges);
-    refreshOrder();
-  }
-
-  function assignLoadingDate() {
-    const next = loadingSelection || '';
-    if ((o.loadingDate ?? '') === next) return;
-    setLoadingDate(o.id, next, 'admin');
-    refreshOrder();
-    announce(get(t)('loading.updated'));
-  }
-
-  function clearLoadingDate() {
-    loadingSelection = '';
-    assignLoadingDate();
-  }
-
-  function setLoading(d: string) {
-    setLoadingDate(o.id, d, 'admin');
-    refreshOrder();
-    announceToast(`Loading date set to ${d}`, 'success');
-  }
-
-  const ganttItems = [
-    { label: 'CAD', planned: [Date.parse('2025-10-20'), Date.parse('2025-10-21')], actual: [Date.parse('2025-10-20'), Date.parse('2025-10-20T18:00')] },
-    { label: 'CNC', planned: [Date.parse('2025-10-21'), Date.parse('2025-10-22')], actual: [Date.parse('2025-10-21T09:00'), Date.parse('2025-10-21T16:00')] },
-    { label: 'SANDING', planned: [Date.parse('2025-10-22'), Date.parse('2025-10-23')] }
-  ];
-
-  let selectedCRId: string | null = null;
-  function selectCR(id: string) {
-    selectedCRId = id;
-  }
-
-  const handleHashChange = () => setTabFromHash(window.location.hash);
-
-  function onKeyActions(event: Event) {
-    const name = event.type;
-    if (name === 'rf-approve-selected' && selectedCRId) approve(selectedCRId);
-    if (name === 'rf-decline-selected' && selectedCRId) decline(selectedCRId);
-    if (name === 'rf-open-cr') {
-      tab = 'changes';
-      setTimeout(() => document.getElementById('cr-title')?.focus(), 0);
-    }
-    if (name === 'rf-focus-quicklog') {
-      tab = 'changes';
-      setTimeout(() => document.getElementById('quicklog-note')?.focus(), 0);
-    }
-    if (name === 'rf-attach-revision') {
-      tab = 'revisions';
-      setTimeout(() => document.getElementById('attach-path')?.focus(), 0);
-    }
-  }
-
-  onMount(() => {
-    if (typeof window === 'undefined') return;
-    setTabFromHash(window.location.hash);
-    window.addEventListener('hashchange', handleHashChange);
-    for (const name of shortcutEvents) {
-      window.addEventListener(name, onKeyActions as EventListener);
-    }
-  });
-
-  onDestroy(() => {
-    if (typeof window === 'undefined') return;
-    window.removeEventListener('hashchange', handleHashChange);
-    for (const name of shortcutEvents) {
-      window.removeEventListener(name, onKeyActions as EventListener);
-    }
-  });
-
-  $: openRequests = o.prs.filter((p) => p.status === 'open');
-  $: if (selectedCRId && !openRequests.some((p) => p.id === selectedCRId)) {
-    selectedCRId = null;
-  }
-  $: selectedChangeRequest = selectedCRId ? o.prs.find((item) => item.id === selectedCRId) ?? null : null;
-  $: compareFieldsRight = selectedChangeRequest?.proposed.fields || o.fields;
-  $: compareMaterialsRight = selectedChangeRequest?.proposed.materials || o.materials;
-  $: compareStagesRight = selectedChangeRequest?.proposed.stages
-    ? { ...o.stages, ...selectedChangeRequest.proposed.stages }
-    : o.stages;
-
-  function handleQuickLog(payload: { station: string; progress?: number; note?: string }) {
-    const changes: StationLog['changes'] = {};
-    if (payload.note) {
-      changes.fields = [
-        {
-          key: 'station_note',
-          label: get(t)('order.station_note'),
-          value: payload.note
-        }
-      ];
-    }
-    if (!changes.fields) return;
-    const translate = get(t);
-    const title = `${payload.station} ${translate('terms.changeRequest')}`;
-    createCR(title, changes, payload.note);
-  }
-
-  function proposeMaterials(items: { key: string; label: string; value: string }[]) {
-    openChangeRequest(o.id, {
-      title: 'Materials update',
-      author: 'Station',
-      proposed: { materials: items }
-    });
-    refreshOrder();
-  }
-
-  function applyMaterialsAdmin(items: { key: string; label: string; value: string }[]) {
-    const prId = openChangeRequest(o.id, {
-      title: 'Admin materials update',
-      author: 'Admin',
-      proposed: { materials: items }
-    });
-    approveChangeRequest(o.id, prId, 'admin');
-    refreshOrder();
-    announce(get(t)('toast.approved'));
-  }
+  $: completedStages = o ? Object.entries(o.stages)
+    .filter(([_, state]) => state === 'COMPLETED')
+    .map(([station]) => station) : [];
 </script>
 
-<RepoHeader id={o.id} title={o.title} client={o.client} badges={o.badges} />
+<svelte:head>
+  <script src="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+  <title>{o?.title || 'Order'} - OMS</title>
+</svelte:head>
 
-{#if $role === 'Admin' && o.loadingDate}
-  <div class="card" style="margin-top:12px;display:flex;justify-content:space-between;align-items:center">
-    <div>
-      <span class="tag">Load: {o.loadingDate}</span>
-    </div>
-    <button class="tag ghost" on:click={() => (showPicker = true)}>Change loading date…</button>
+<div class="page-container">
+{#if isLoading}
+  <div class="loading-container">
+    <div class="spinner-large"></div>
+    <p>{$t('pdf.loading', { default: 'Loading...' })}</p>
   </div>
-{/if}
-
-{#if $role === 'Admin'}
-  <div style="margin-top:12px">
-    <BadgesManager value={o.badges} onChange={updateBadges} />
+{:else if !o}
+  <div class="error-container">
+    <AlertCircle size={48} />
+    <h2>Order not found</h2>
+    <a href="{base}/orders" class="btn-secondary">
+      <ArrowLeft size={18} />
+      Back to Orders
+    </a>
   </div>
-{/if}
-
-{#if showPicker}
-  <LoadingPicker
-    po={o.id}
-    onPick={(d) => {
-      setLoading(d);
-      showPicker = false;
-    }}
-  />
-{/if}
-
-<div style="margin:10px 0"><Tabs {tabs} bind:active={tab} /></div>
-
-<section id="overview" hidden={tab!=='overview'} aria-label={$t('order.overview')}>
-  <div class="order-overview">
-    <div class="order-overview__preview" aria-label={$t('order.currentPdf')}>
-      {#if pdf}
-        <PdfFrame src={pdf.path} po={o.id} revision={o.defaultRevisionId || 'current'} />
-      {:else}
-        <section class="card order-preview--empty">
-          <h3>{$t('order.currentPdf')}</h3>
-          <p class="muted">{$t('order.no_file')}</p>
-        </section>
-      {/if}
-      
-      <section class="card">
-        <NewMaterialsEditor bind:rows={materialRows} />
-      </section>
+{:else}
+  <!-- Header -->
+  <header class="order-header">
+    <div class="header-left">
+      <button class="btn-ghost" on:click={() => goto(`${base}/orders`)}>
+        <ArrowLeft size={18} />
+      </button>
+      <div class="header-info">
+        <h1>{o.id}</h1>
+        <span class="client-name">{o.client}</span>
+      </div>
+      <div class="badges">
+        {#each o.badges as badge}
+          <span class="badge badge-{badge.toLowerCase()}">{badge}</span>
+        {/each}
+        {#if o.isRD}
+          <span class="badge badge-rd">
+            <FlaskConical size={14} />
+            R&D
+          </span>
+        {/if}
+      </div>
     </div>
+    <div class="header-actions">
+      <button class="btn-secondary" on:click={() => goto(`${base}/orders`)}>
+        {$t('actions.cancel', { default: 'Cancel' })}
+      </button>
+      <button class="btn-primary" on:click={saveOrder} disabled={saving}>
+        {#if saving}
+          <span class="spinner"></span>
+          {$t('actions.saving', { default: 'Saving...' })}
+        {:else}
+          <Save size={18} />
+          {$t('ui.save', { default: 'Save' })}
+        {/if}
+      </button>
+    </div>
+  </header>
 
-    <div class="order-overview__details">
-      {#if $role === 'Admin'}
-        <section class="card order-detail">
-          <header class="order-detail__title">
-            <CalendarDays size={18} aria-hidden="true" />
-            <h3>{$t('orderform.scheduling')}</h3>
-          </header>
-          <div style="display:grid;gap:12px;margin-top:8px">
-            <div>
-              <label class="muted" style="font-size:0.85rem">{$t('orderform.due_date')}</label>
-              <div style="margin-top:4px"><strong>{o.due || '—'}</strong></div>
-            </div>
-            <div>
-              <label class="muted" style="font-size:0.85rem">{$t('orderPage.loading.title')}</label>
-              <LoadingDatePicker bind:selected={loadingSelection} />
-              <div style="margin-top:4px" class="muted">{$t('orderPage.loading.current')} {o.loadingDate || '—'}</div>
-              <div class="order-detail__actions" style="margin-top:4px">
-                <button class="tag" type="button" on:click={assignLoadingDate}>{$t('loading.assign')}</button>
-                <button class="tag" type="button" on:click={clearLoadingDate} disabled={!o.loadingDate}>{$t('orderPage.loading.clear')}</button>
-              </div>
-            </div>
-            <div>
-              <label class="muted" style="font-size:0.85rem">{$t('orderform.carrier')}</label>
-              <div style="margin-top:4px">{o.carrier || '—'}</div>
+  {#if error}
+    <div class="error-banner">
+      <AlertCircle size={18} />
+      {error}
+      <button class="close-btn" on:click={() => error = ''}>
+        <X size={16} />
+      </button>
+    </div>
+  {/if}
+
+  {#if $role === 'Admin'}
+    <div class="badges-manager">
+      <BadgesManager value={o.badges} onChange={updateBadges} />
+    </div>
+  {/if}
+
+  <!-- Tabs -->
+  <div class="tabs-container">
+    <Tabs {tabs} bind:active={tab} />
+  </div>
+
+  <!-- Overview Tab -->
+  <section id="overview" class="tab-content" class:hidden={tab !== 'overview'}>
+    <!-- Top Row: Order Details + Delivery Address -->
+    <div class="top-row">
+      <!-- Order Details Card -->
+      <section class="card details-card">
+        <h2>
+          <FileText size={20} />
+          {$t('orderform.order_details', { default: 'Order Details' })}
+        </h2>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="poNumber">PO Number</label>
+            <input type="text" id="poNumber" value={o.id} readonly class="readonly" />
+          </div>
+          <div class="form-group">
+            <label for="priority">Priority</label>
+            <select id="priority" bind:value={o.priority}>
+              <option value="LOW">Low</option>
+              <option value="NORMAL">Normal</option>
+              <option value="HIGH">High</option>
+              <option value="URGENT">Urgent</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="clientName">Client Name</label>
+          <input type="text" id="clientName" bind:value={o.client} />
+        </div>
+        <div class="form-group">
+          <label for="title">Project Title</label>
+          <input type="text" id="title" bind:value={o.title} />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="deadline">
+              <Calendar size={14} />
+              Due Date
+            </label>
+            <input type="date" id="deadline" bind:value={o.due} />
+          </div>
+          <div class="form-group">
+            <label for="loadingDate">
+              <Calendar size={14} />
+              Loading Date
+            </label>
+            <div class="loading-date-row">
+              <input type="text" value={o.loadingDate || 'Not assigned'} readonly class="readonly" />
+              <button class="btn-ghost" on:click={() => showPicker = true}>
+                Change
+              </button>
             </div>
           </div>
-        </section>
-      {/if}
-
-      <section class="card">
-        <h3 class="order-detail__heading">
-          <FileText size={18} aria-hidden="true" />
-          Overview
-        </h3>
-        <div class="grid" style="--cols:2">
-          <label>Client <input bind:value={o.client}></label>
-          <label>Project <input bind:value={o.title}></label>
-          <label>Region <input bind:value={o.region} placeholder="LT / LV / EE…"></label>
-          <label>Priority
-            <select bind:value={o.priority}>
-              <option>Low</option><option>Normal</option><option>High</option>
-            </select>
+        </div>
+        <div class="form-group">
+          <label class="checkbox-label">
+            <input type="checkbox" bind:checked={o.isRD} />
+            <FlaskConical size={16} />
+            R&D Project (may repeat stages)
           </label>
-          <label>Due date <input type="date" bind:value={o.due}></label>
-          <label>Loading link <input bind:value={o.loadingDate} placeholder="pick from Loading Board/Calendar"></label>
-          <label>Carrier <input bind:value={o.carrier}></label>
-          <label>Manager <input bind:value={o.manager} placeholder="Who owns it"></label>
         </div>
-
-        <div class="row" style="justify-content:flex-end;gap:8px;margin-top:12px">
-          <button class="tag ghost" on:click={discardChanges}>Discard</button>
-          <button class="tag primary" on:click={saveOrder}>Save</button>
-        </div>
+        {#if o.isRD}
+          <div class="form-group">
+            <label for="rdNotes">R&D Notes</label>
+            <textarea id="rdNotes" bind:value={o.rdNotes} rows="2"></textarea>
+          </div>
+        {/if}
       </section>
 
-      <section class="card">
-        <div class="row" style="justify-content:space-between;align-items:center">
-          <h3 class="order-detail__heading">
-            <Activity size={18} aria-hidden="true" />
-            {$t('orders.status')}
-          </h3>
-          <label class="row" style="gap:6px"><input type="checkbox" bind:checked={o.isRD}> {$t('orders.rd')}</label>
+      <!-- Delivery Address Card -->
+      <section class="card delivery-card">
+        <h2>
+          <MapPin size={20} />
+          Delivery Address
+        </h2>
+        {#if deliveryPresets.length > 0}
+          <div class="preset-selector">
+            <button 
+              class="preset-dropdown-trigger"
+              class:active={showPresetDropdown}
+              on:click={() => showPresetDropdown = !showPresetDropdown}
+            >
+              Select from saved addresses...
+              <ChevronDown size={16} />
+            </button>
+          </div>
+        {/if}
+        <div class="form-group">
+          <label for="deliveryAddress">Address</label>
+          <textarea id="deliveryAddress" bind:value={o.deliveryAddress} rows="3" placeholder="Delivery address..."></textarea>
         </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="deliveryContact">Contact Person</label>
+            <input type="text" id="deliveryContact" bind:value={o.deliveryContact} />
+          </div>
+          <div class="form-group">
+            <label for="deliveryPhone">Phone</label>
+            <input type="tel" id="deliveryPhone" bind:value={o.deliveryPhone} />
+          </div>
+        </div>
+      </section>
+    </div>
 
-        <div class="row" style="flex-wrap:wrap; gap:8px">
-          {#each ['CAD','CNC','SANDING','BENDING','WELDING','PAINT','ASSEMBLY','QC','LOGISTICS'] as st}
-            <span class="chip" data-active={activeStage===st}>{st}{#if redoFlags.includes(st)}<em class="muted">&nbsp;• redo</em>{/if}</span>
+    <!-- File Upload & Preview Card -->
+    <section class="card files-card full-width">
+      <h2>
+        <FolderOpen size={20} />
+        Files & Preview
+      </h2>
+      <div class="files-layout">
+        <!-- File List -->
+        <div class="file-list">
+          <OrderFiles orderId={o.id} compact={true} />
+        </div>
+        
+        <!-- PDF Preview -->
+        <div class="pdf-preview">
+          {#if o.file?.path}
+            <div class="pdf-toolbar">
+              <div class="page-nav">
+                <button on:click={prevPage} disabled={pdfCurrentPage <= 1}>
+                  <ChevronLeft size={18} />
+                </button>
+                <span>{pdfCurrentPage} / {pdfTotalPages}</span>
+                <button on:click={nextPage} disabled={pdfCurrentPage >= pdfTotalPages}>
+                  <ChevronRight size={18} />
+                </button>
+              </div>
+              <div class="zoom-controls">
+                <button on:click={zoomOut}><ZoomOut size={18} /></button>
+                <span>{Math.round(previewZoom * 100)}%</span>
+                <button on:click={zoomIn}><ZoomIn size={18} /></button>
+              </div>
+            </div>
+            <div class="canvas-container">
+              <canvas bind:this={pdfCanvas}></canvas>
+            </div>
+          {:else}
+            <div class="no-preview">
+              <Eye size={48} />
+              <p>No PDF preview available</p>
+            </div>
+          {/if}
+        </div>
+      </div>
+    </section>
+
+    <!-- Profile Configuration -->
+    <section class="card profiles-card full-width">
+      <div class="profiles-header">
+        <h2>
+          <Boxes size={20} />
+          Profile Configuration
+        </h2>
+        <button class="btn-secondary" on:click={addProfile}>
+          <Plus size={18} />
+          Add Profile
+        </button>
+      </div>
+      
+      {#each profiles as profile, idx (profile.id)}
+        <div class="profile-item" class:collapsed={profile.collapsed}>
+          <div 
+            class="profile-header" 
+            on:click={() => toggleProfileCollapse(profile.id)}
+            on:keydown={(e) => e.key === 'Enter' && toggleProfileCollapse(profile.id)}
+            role="button"
+            tabindex="0"
+          >
+            <div class="profile-title">
+              <span class="chevron" class:rotated={profile.collapsed}><ChevronDown size={18} /></span>
+              <span>Profile {idx + 1}: {profile.configuration?.profileName || 'Unnamed'}</span>
+              <span class="quantity-badge">×{profile.quantity}</span>
+            </div>
+            <div class="profile-actions">
+              {#if profiles.length > 1}
+                <button class="btn-ghost danger" on:click|stopPropagation={() => removeProfile(profile.id)}>
+                  <Trash2 size={16} />
+                </button>
+              {/if}
+            </div>
+          </div>
+          
+          {#if !profile.collapsed}
+            <div class="profile-content">
+              {#if profile.configuration}
+                <Profile7stVisual bind:configuration={profile.configuration} />
+              {:else}
+                <p class="text-muted">No profile configuration available</p>
+              {/if}
+              <div class="quantity-row">
+                <label>
+                  Quantity:
+                  <input type="number" bind:value={profile.quantity} min="1" />
+                </label>
+              </div>
+            </div>
+          {/if}
+        </div>
+      {/each}
+    </section>
+  </section>
+
+  <!-- Production Tab -->
+  <section id="production" class="tab-content" class:hidden={tab !== 'production'}>
+    <div class="production-grid">
+      <!-- Station Status -->
+      <section class="card">
+        <h3>
+          <Activity size={18} />
+          Station Status
+        </h3>
+        <div class="stages-grid">
+          {#each STATIONS as station}
+            {@const state = o.stages[station]}
+            <div class="stage-item" data-state={state}>
+              <span class="stage-name">{station}</span>
+              <span class="stage-state">{state || 'NOT_STARTED'}</span>
+            </div>
           {/each}
         </div>
-
-        <div class="row" style="gap:8px;margin-top:8px">
-          <label class="row" style="gap:6px">
-            <select bind:value={redoStage}>
-              <option value="">{$t('orders.redoStage')}</option>
-              {#each redoStageChoices as option}
-                <option value={option}>{stageName(option)}</option>
-              {/each}
-            </select>
-            <select bind:value={redoReason}>
-              <option value="">{$t('orders.reason')}</option>
-              {#each redoReasonChoices as option}
-                <option value={option}>{$t(`orders.reasons.${option}`)}</option>
-              {/each}
-            </select>
-            <button class="tag" type="button" on:click={applyRedoFlag}>Apply</button>
-          </label>
-        </div>
       </section>
 
-      <section class="card order-detail order-detail--fields">
-        <h3 class="order-detail__heading">
-          <ClipboardList size={16} aria-hidden="true" />
-          {$t('order.fields')}
-        </h3>
-        <ul class="order-list">{#each o.fields as field}<li><span>{field.label}</span><strong>{field.value}</strong></li>{/each}</ul>
-        <h3 class="order-detail__heading">
-          <Boxes size={16} aria-hidden="true" />
-          {$t('order.materials')}
-        </h3>
-        <ul class="order-list">{#each o.materials as material}<li><span>{material.label}</span><strong>{material.value}</strong></li>{/each}</ul>
-      </section>
-
-      {#if o.isRD}
-        <section class="card order-detail order-detail--rd">
-          <h3 class="order-detail__heading">
-            <FlaskConical size={18} aria-hidden="true" />
-            {$t('rd.flag')}
-          </h3>
-          <p class="muted">{o.rdNotes || '—'}</p>
+      <!-- Rework Section (Admin only) -->
+      {#if $role === 'Admin'}
+        <section class="card">
+          <ReworkQuick onSend={() => {}} />
         </section>
       {/if}
     </div>
+  </section>
 
-    <div class="order-overview__modules">
-      <MaterialsEditor items={o.materials} onPropose={proposeMaterials} onApplyAdmin={applyMaterialsAdmin} />
-      <StageLegend stages={o.stages} cycles={o.cycles ?? []} />
-      <StageEditor value={o.stages} onApplyAdmin={applyStage} onPropose={proposeStage} />
-      <GanttLine items={ganttItems} />
+  <!-- Files Tab -->
+  <section id="files" class="tab-content" class:hidden={tab !== 'files'}>
+    <OrderFiles orderId={o.id} />
+  </section>
+
+  <!-- Chat Tab -->
+  <section id="chat" class="tab-content" class:hidden={tab !== 'chat'}>
+    <OrderChat orderId={o.id} />
+  </section>
+
+  <!-- Logs Tab -->
+  <section id="logs" class="tab-content" class:hidden={tab !== 'logs'}>
+    <StationLogTimeline logs={o.branches?.find(b => b.name === o.defaultBranch)?.commits || []} />
+  </section>
+
+  <!-- Loading Date Picker Modal -->
+  {#if showPicker}
+    <div 
+      class="modal-backdrop" 
+      on:click={() => showPicker = false}
+      on:keydown={(e) => e.key === 'Escape' && (showPicker = false)}
+      role="button"
+      tabindex="-1"
+    >
+      <div class="modal" on:click|stopPropagation on:keydown|stopPropagation role="dialog" aria-modal="true">
+        <header>
+          <h3>Select Loading Date</h3>
+          <button on:click={() => showPicker = false}><X size={20} /></button>
+        </header>
+        <LoadingPicker
+          po={o.id}
+          onPick={(d) => setLoading(d)}
+        />
+      </div>
     </div>
-  </div>
-</section>
+  {/if}
+{/if}
+</div>
 
 <style>
-  .order-overview{ display:grid; gap:24px }
-  .order-overview__preview{ display:grid; gap:12px }
-  .order-preview--empty{ min-height:260px; display:flex; flex-direction:column; gap:8px; justify-content:center }
-  .order-preview--empty h3{ margin:0 }
-  .order-preview--empty p{ margin:0 }
-  .order-overview__details{ display:grid; gap:16px; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); align-items:start }
-  .order-overview__modules{ display:grid; gap:16px; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); align-items:start }
-  .order-detail h3{ margin:0 0 8px }
-  .order-detail__title{ display:flex; align-items:center; gap:8px }
-  .order-detail__title h3{ margin:0; font-size:1rem }
-  .order-detail__heading{ display:flex; align-items:center; gap:8px; margin:0 0 8px; font-size:1rem }
-  .order-detail__heading :global(svg){ flex:0 0 auto }
-  .order-detail__meta{ display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap }
-  .order-detail__actions{ display:flex; gap:8px; flex-wrap:wrap }
-  .order-list{ list-style:none; padding:0; margin:0; display:grid; gap:6px }
-  .order-list li{ display:flex; justify-content:space-between; gap:12px; border-bottom:1px solid color-mix(in oklab,var(--border) 60%, transparent); padding:6px 0 }
-  .order-list li:last-child{ border-bottom:none }
-  .order-list li span{ color:var(--muted); font-weight:500 }
-  .order-list li strong{ font-weight:600 }
-  .order-detail--rd{ background:color-mix(in oklab,var(--accent-2) 14%, var(--bg-1)) }
-  .order-detail--rd p{ margin:0; white-space:pre-wrap }
+  /* Page Container */
+  .page-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  /* Loading & Error States */
+  .loading-container, .error-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+    gap: 16px;
+    color: var(--text-muted);
+  }
+  .spinner-large {
+    width: 48px;
+    height: 48px;
+    border: 3px solid var(--border);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
 
-  .chip{ display:inline-flex; align-items:center; gap:4px; padding:6px 12px; border-radius:999px; border:1px solid color-mix(in oklab,var(--border) 85%, transparent); background:color-mix(in oklab,var(--bg-1) 60%, var(--bg-2) 40%); font-size:0.8rem; text-transform:uppercase; letter-spacing:0.04em; }
-  .chip[data-active='true']{ background:linear-gradient(135deg,var(--accent-1),color-mix(in oklab,var(--accent-1) 70%, var(--accent-2))); color:var(--ink-0, var(--text)); border-color:color-mix(in oklab,var(--accent-1) 60%, transparent); }
-  select{ min-width:160px; }
-  @media (max-width: 960px){
-    .order-overview__modules{ grid-template-columns:1fr }
+  /* Header */
+  .order-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .header-info h1 {
+    margin: 0;
+    font-size: 1.5rem;
+  }
+  .client-name {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+  }
+  .badges {
+    display: flex;
+    gap: 8px;
+  }
+  .badge {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .badge-open { background: var(--info-bg); color: var(--info); }
+  .badge-in_progress { background: var(--warning-bg); color: var(--warning); }
+  .badge-completed { background: var(--success-bg); color: var(--success); }
+  .badge-rd { background: var(--accent-bg); color: var(--accent); }
+  
+  .header-actions {
+    display: flex;
+    gap: 12px;
+  }
+
+  /* Error banner */
+  .error-banner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: var(--danger-bg);
+    color: var(--danger);
+    border-radius: 8px;
+    margin-bottom: 16px;
+  }
+  .close-btn {
+    margin-left: auto;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: inherit;
+  }
+
+  .badges-manager {
+    margin-bottom: 16px;
+  }
+
+  .tabs-container {
+    margin-bottom: 16px;
+  }
+
+  .tab-content {
+    animation: fadeIn 0.2s ease;
+  }
+  .tab-content.hidden {
+    display: none;
+  }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  /* Top Row Layout */
+  .top-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  @media (max-width: 900px) {
+    .top-row { grid-template-columns: 1fr; }
+  }
+
+  /* Cards */
+  .card {
+    background: var(--bg-1);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+  }
+  .card.full-width {
+    grid-column: 1 / -1;
+    margin-bottom: 16px;
+  }
+  .card h2 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 16px 0;
+    font-size: 1.1rem;
+    color: var(--text);
+  }
+  .card h3 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 12px 0;
+    font-size: 1rem;
+  }
+
+  /* Form Elements */
+  .form-group {
+    margin-bottom: 12px;
+  }
+  .form-group label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  input, select, textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg-2);
+    color: var(--text);
+    font-size: 0.95rem;
+  }
+  input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+  }
+  input.readonly {
+    background: var(--bg-3);
+    color: var(--text-muted);
+  }
+  .checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 0.95rem !important;
+    color: var(--text) !important;
+  }
+  .checkbox-label input {
+    width: auto;
+  }
+  .loading-date-row {
+    display: flex;
+    gap: 8px;
+  }
+  .loading-date-row input {
+    flex: 1;
+  }
+
+  /* Files Card */
+  .files-card {
+    margin-bottom: 16px;
+  }
+  .files-layout {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 16px;
+    min-height: 400px;
+  }
+  @media (max-width: 900px) {
+    .files-layout { grid-template-columns: 1fr; }
+  }
+  .file-list {
+    border-right: 1px solid var(--border);
+    padding-right: 16px;
+  }
+  .pdf-preview {
+    display: flex;
+    flex-direction: column;
+  }
+  .pdf-toolbar {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px;
+    background: var(--bg-2);
+    border-radius: 8px;
+    margin-bottom: 12px;
+  }
+  .page-nav, .zoom-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .page-nav button, .zoom-controls button {
+    padding: 6px;
+    background: var(--bg-1);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+  }
+  .page-nav button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .canvas-container {
+    flex: 1;
+    overflow: auto;
+    background: var(--bg-2);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+  .canvas-container canvas {
+    max-width: 100%;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+  .no-preview {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--text-muted);
+    gap: 12px;
+  }
+
+  /* Profiles Card */
+  .profiles-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  .profiles-header h2 {
+    margin: 0;
+  }
+  .profile-item {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+  .profile-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: var(--bg-2);
+    cursor: pointer;
+  }
+  .profile-header:hover {
+    background: var(--bg-3);
+  }
+  .profile-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 500;
+  }
+  .chevron {
+    display: flex;
+    transition: transform 0.2s ease;
+  }
+  .chevron.rotated {
+    transform: rotate(-90deg);
+  }
+  .quantity-badge {
+    background: var(--primary);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+  }
+  .profile-content {
+    padding: 16px;
+    border-top: 1px solid var(--border);
+  }
+  .quantity-row {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+  }
+  .quantity-row label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .quantity-row input {
+    width: 80px;
+  }
+
+  /* Production Tab */
+  .production-grid {
+    display: grid;
+    gap: 16px;
+  }
+  .stages-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+  }
+  .stage-item {
+    padding: 12px;
+    border-radius: 8px;
+    background: var(--bg-2);
+    text-align: center;
+  }
+  .stage-item[data-state="COMPLETED"] {
+    background: var(--success-bg);
+    border: 1px solid var(--success);
+  }
+  .stage-item[data-state="IN_PROGRESS"] {
+    background: var(--warning-bg);
+    border: 1px solid var(--warning);
+  }
+  .stage-name {
+    display: block;
+    font-weight: 600;
+    font-size: 0.85rem;
+  }
+  .stage-state {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  /* Modal */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+  .modal {
+    background: var(--bg-1);
+    border-radius: 12px;
+    padding: 20px;
+    min-width: 400px;
+    max-width: 90vw;
+    max-height: 90vh;
+    overflow: auto;
+  }
+  .modal header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  .modal header h3 {
+    margin: 0;
+  }
+  .modal header button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted);
+  }
+
+  /* Buttons */
+  .btn-primary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  .btn-primary:hover { filter: brightness(1.1); }
+  .btn-primary:disabled { opacity: 0.7; cursor: not-allowed; }
+  
+  .btn-secondary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: var(--bg-2);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  .btn-secondary:hover { background: var(--bg-3); }
+  
+  .btn-ghost {
+    background: none;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+    color: var(--text-muted);
+    border-radius: 6px;
+  }
+  .btn-ghost:hover { background: var(--bg-2); }
+  .btn-ghost.danger:hover { color: var(--danger); }
+
+  .spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  /* Preset dropdown */
+  .preset-selector {
+    margin-bottom: 12px;
+  }
+  .preset-dropdown-trigger {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    color: var(--text-muted);
   }
 </style>
-
-<section id="revisions" hidden={tab!=='revisions'} aria-label={$t('order.revisions')}>
-  <div class="grid" style="gap:16px">
-    <div class="grid" style="grid-template-columns:2fr 1fr;align-items:start;gap:16px">
-      <RevisionsList
-        items={o.revisions}
-        currentId={o.defaultRevisionId}
-        onUse={useRevision}
-        canManage={$role==='Admin'}
-      />
-      {#if $role==='Admin'}
-        <section class="card">
-          <h3 style="margin:0 0 8px 0">{$t('order.attach_admin_heading')}</h3>
-          <input
-            id="attach-path"
-            class="rf-input"
-            placeholder={$t('order.attach_help')}
-            bind:value={newPath}
-            aria-label={$t('order.attach_help')}
-          />
-          <div class="row" style="margin-top:8px"><button class="tag" on:click={attach}>{$t('order.attach')}</button></div>
-        </section>
-      {/if}
-    </div>
-    
-    <PdfCompare {left} {right} />
-    <CompareView
-      baseFields={{ client: o.client, due: o.due, loadingDate: o.loadingDate }}
-      candidateFields={{ client: o.client, due: o.due, loadingDate: o.loadingDate }}
-      fileList={o.revisions.map((r, idx) => ({
-        rev: r.id,
-        name: r.name,
-        size: Math.floor(200000 + Math.random() * 800000),
-        date: new Date(Date.now() - idx * 86400000).toISOString()
-      }))}
-      canManage={$role==='Admin'}
-      onUseAsCurrent={useAsCurrent}
-      activeRev={o.defaultRevisionId}
-      previewRev={compareRevision?.id ?? null}
-      on:preview={(event) => (compareRevisionId = event.detail)}
-    />
-  </div>
-</section>
-
-<section id="changes" hidden={tab!=='changes'} aria-label={$t('order.changes')}>
-  <div class="grid" style="grid-template-columns:2fr 1fr;gap:16px">
-    <div class="grid" style="gap:12px">
-      {#if $role === 'Admin'}
-        <ReworkQuick onSend={sendRework} />
-      {/if}
-      <div class="card" style="margin-top:10px">
-        <h3 style="margin:0 0 8px 0">{$t('orderPage.requests.title')}</h3>
-        <ul style="display:grid;gap:6px">
-          {#each openRequests as p}
-            <li class="row" style="justify-content:space-between">
-              <label class="row" style="gap:8px;cursor:pointer">
-                <input type="radio" name="selCR" checked={selectedCRId===p.id} on:change={() => selectCR(p.id)} />
-                <span>{p.title}</span>
-              </label>
-              {#if $role === 'Admin'}
-                <div class="row">
-                  <button class="tag" on:click={() => approve(p.id)}>{$t('orderPage.requests.approve')}</button>
-                  <button class="tag" on:click={() => decline(p.id)}>{$t('orderPage.requests.decline')}</button>
-                </div>
-              {/if}
-            </li>
-          {/each}
-          {#if openRequests.length===0}
-            <div class="muted">{$t('orderPage.requests.empty')}</div>
-          {/if}
-        </ul>
-      </div>
-      <ChangeRequestList
-        items={o.prs}
-        isAdmin={$role==='Admin'}
-        onApprove={approve}
-        onDecline={decline}
-        bind:selectedId={selectedCRId}
-      />
-      {#if selectedChangeRequest}
-        <OrderCompareView
-          leftTitle={$t('compare.before')}
-          rightTitle={$t('compare.after')}
-          leftFields={o.fields}
-          rightFields={compareFieldsRight}
-          leftMaterials={o.materials}
-          rightMaterials={compareMaterialsRight}
-          leftStages={o.stages}
-          rightStages={compareStagesRight}
-        />
-      {:else}
-        <div class="card">
-          <h3 style="margin:0 0 8px 0">{$t('order.changeRequests.selected')}</h3>
-          <div class="muted">{$t('order.changeRequests.select_prompt')}</div>
-        </div>
-      {/if}
-    </div>
-
-    <div class="grid" style="gap:12px">
-      {#if $role!=='Admin'}
-        <ChangeRequestForm onCreate={createCR} />
-        <StationQuickLogger onSubmit={handleQuickLog} />
-      {:else}
-        <section class="card">
-          <h3 style="margin:0">{$t('order.create_change_request')}</h3>
-          <div class="muted">{$t('order.create_change_request_hint')}</div>
-        </section>
-      {/if}
-    </div>
-  </div>
-</section>
-
-<section id="logs" hidden={tab!=='logs'} aria-label={$t('order.logs')}>
-  <StationLogTimeline logs={o.branches.find((b) => b.name === o.defaultBranch)?.commits || []} />
-</section>
-
-<section id="workstreams" hidden={tab!=='workstreams'} aria-label={$t('order.workstreams')} style="width:100%">
-  <BranchesTable branches={o.branches} defaultBranch={o.defaultBranch} onSetDefault={() => {}} onDelete={() => {}} onRollback={() => {}} />
-</section>

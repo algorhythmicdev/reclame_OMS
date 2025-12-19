@@ -43,7 +43,8 @@
     "faq": "Bieži uzdotie jautājumi",
     "settings": "Iestatījumi",
     "kanban": "Ražošana",
-    "help": "Palīdzība"
+    "help": "Palīdzība",
+    "chat": "Čats"
   },
   "header": {
     "actions": "Galvenes darbības",
@@ -78,7 +79,8 @@
     "language": "Valoda",
     "textSize": "Teksta izmērs",
     "chat": "Čats",
-    "notifications": "Paziņojumi"
+    "notifications": "Paziņojumi",
+    "density": "Blīvums"
   },
   "orders": {
     "status": "Statuss",
@@ -92,7 +94,13 @@
       "reweld": "Pārmetināšana",
       "repaint": "Pārkrāsošana"
     },
-    "compare": "Salīdzināt"
+    "compare": "Salīdzināt",
+    "active_stages": "Aktīvie posmi",
+    "client": "Klients",
+    "due": "Termiņš",
+    "materials": "Materiāli",
+    "rd_project": "R&D projekts",
+    "title": "Nosaukums"
   },
   "print": {
     "due_label": "Termiņš",
@@ -167,7 +175,9 @@
     },
     "log_details": "Detalizācija",
     "log_recorded_by": "reģistrēja {author}",
-    "log_recorded_station": " · {station}"
+    "log_recorded_station": " · {station}",
+    "chat": "Čats",
+    "files": "Faili"
   },
   "orderPage": {
     "loading": {
@@ -248,19 +258,28 @@
     "text_size_toggle": "Mainīt teksta izmēru",
     "text_size_hint": "Noklikšķiniet, lai mainītu teksta izmērus",
     "text_size_options": {
-      "sm": { "label": "Mazs teksts", "abbr": "Mazs" },
-      "md": { "label": "Noklusējuma teksts", "abbr": "Noklusējums" },
-      "lg": { "label": "Liels teksts", "abbr": "Liels" },
-      "xl": { "label": "Ļoti liels teksts", "abbr": "Ļoti liels" }
+      "sm": {
+        "label": "Mazs teksts",
+        "abbr": "Mazs"
+      },
+      "md": {
+        "label": "Noklusējuma teksts",
+        "abbr": "Noklusējums"
+      },
+      "lg": {
+        "label": "Liels teksts",
+        "abbr": "Liels"
+      },
+      "xl": {
+        "label": "Ļoti liels teksts",
+        "abbr": "Ļoti liels"
+      }
     },
     "help_hints": "Palīdzības padomi",
     "show_hints": "Rādīt noderīgus padomus visā saskarnē"
   },
   "help": {
-    "title": "Palīdzība un dokumentācija",
-    "faq": "Bieži uzdotie jautājumi",
-    "hints_enabled": "Palīdzības padomi iespējoti",
-    "hints_disabled": "Palīdzības padomi atspējoti"
+    "title": "Tastatūras saīsnes"
   },
   "faq": {
     "title": "BUJ - Bieži uzdotie jautājumi",
@@ -365,7 +384,6 @@
     "loading_on": "Ieslēgts",
     "loading_off": "Izslēgts",
     "capacity": "Kapacitāte",
-    "note": "Piezīme",
     "loading_day": "Iekraušanas diena",
     "loading_day_with_date": "Iekraušanas diena: {date}",
     "meta": "Jauda {capacity} · Piezīme: {note}",
@@ -496,7 +514,8 @@
     }
   },
   "actions": {
-    "cancel": "Atcelt"
+    "cancel": "Atcelt",
+    "saving": "Saglabā..."
   },
   "chat": {
     "title": "Komandas čats",
@@ -507,7 +526,7 @@
     "to": "Kam",
     "sending_to": "Adresē",
     "remove_mention": "Noņemt pieminējumu {name}",
-    "empty": "Vēl nav ziņu.",
+    "empty": "Vēl nav ziņojumu.",
     "quick_mentions": "Brigāžu saīsnes",
     "quick_mentions_station": "Pievienot {station} brigādi",
     "system": {
@@ -522,7 +541,10 @@
         "badge": "Pabeigts",
         "body": "Stadija atzīmēta kā pabeigta"
       }
-    }
+    },
+    "no_messages": "Vēl nav ziņojumu",
+    "order_discussion": "Pasūtījuma diskusija",
+    "type_message": "Ierakstiet ziņojumu..."
   },
   "loading": {
     "assign": "Piešķirt",
@@ -548,9 +570,6 @@
     "import": "Masveida imports",
     "scan": "Skenēt svītrkodu",
     "labels": "Drukāt etiķetes"
-  },
-  "help": {
-    "title": "Tastatūras saīsnes"
   },
   "users": {
     "current": "Lietotājs"
@@ -581,14 +600,14 @@
     "tip": "Padoms: spiediet ⌘K / Ctrl-K"
   },
   "inventory": {
-    "title": "Noliktava",
+    "title": "Krājumi",
     "search": "Meklēt",
-    "search_placeholder": "Artikuls, nosaukums, krāsa, atrašanās vieta…",
+    "search_placeholder": "SKU, nosaukums, krāsa, vieta…",
     "add_item": "Pievienot vienumu",
-    "movements": "Pārvietojumi",
-    "low_stock": "Zems atlikums",
+    "movements": "Kustības",
+    "low_stock": "Zems krājums",
     "minimum_label": "Minimums {value}",
-    "count": "{count} vienības",
+    "count": "{count} vienumi",
     "newItem": "Jauns vienums",
     "editItem": "Rediģēt vienumu",
     "save": "Saglabāt",
@@ -638,7 +657,7 @@
     "leftovers": "Atlikumi",
     "paints": "Krāsas",
     "tools": "Instrumenti",
-    "consumables": "Patēriņa materiāli",
+    "consumables": "Patēriņa preces",
     "add": "Pievienot",
     "headers": {
       "sku": "Artikuls",
@@ -671,7 +690,23 @@
     "prompt": {
       "add": "Pievienot daudzumu:",
       "consume": "Patērēt daudzumu:"
-    }
+    },
+    "3dprinting": "3D drukāšana",
+    "basicInfo": "Pamatinformācija",
+    "colorInfo": "Krāsas informācija",
+    "stockInfo": "Krājumu informācija",
+    "supplierInfo": "Piegādātāja informācija",
+    "hexColor": "HEX krāsa",
+    "electronics": "Elektronika",
+    "catalog": "Materiālu katalogs",
+    "add_material": "Pievienot materiālu",
+    "low_stock_items": "materiāli ar zemu krājumu",
+    "show_all": "Rādīt visu",
+    "show_alerts": "Tikai brīdinājumi",
+    "search_materials": "Meklēt materiālus...",
+    "all_categories": "Visas kategorijas",
+    "empty_filter": "Nav vienumu šim filtram.",
+    "in_stock": "Noliktavā"
   },
   "notifications": {
     "title": "Paziņojumi",
@@ -713,13 +748,35 @@
       "telegram": "Telegram (makets)",
       "n8n": "n8n (makets)",
       "openrouter": "OpenRouter (makets)"
+    },
+    "appearance": "Izskats",
+    "accessibility": "Pieejamība",
+    "density": "Blīvums",
+    "densityHint": "Kontrolējiet atstarpi starp elementiem",
+    "description": "Pielāgojiet savu pieredzi",
+    "interfaceLanguage": "Saskarnes valoda",
+    "language": "Valoda",
+    "previewText": "Priekšskatījums: Ātrā brūnā lapsa pārlec pāri slinkajam sunim.",
+    "security": "Drošība",
+    "textSize": "Teksta izmērs",
+    "textSizeHint": "Pielāgojiet teksta izmēru lasāmībai",
+    "password": {
+      "confirm": "Apstipriniet paroli",
+      "current": "Pašreizējā parole",
+      "hint": "Atstājiet tukšu, lai saglabātu pašreizējo paroli",
+      "new": "Jaunā parole",
+      "submit": "Atjaunināt paroli",
+      "title": "Mainīt paroli"
     }
   },
   "files": {
     "title": "Faili",
     "download": "Lejupielādēt",
-    "error": "Neizdodas ielādēt failu. Pārbaudiet ceļu vai augšupielādējiet static/files.",
-    "path_label": "Faila ceļš"
+    "error": "Nevar ielādēt failu. Pārbaudiet ceļu vai augšupielādējiet static/files.",
+    "path_label": "Faila ceļš",
+    "drop_or_click": "Velciet failus šeit vai noklikšķiniet, lai augšupielādētu",
+    "no_files": "Faili nav augšupielādēti",
+    "order_files": "Pasūtījuma faili"
   },
   "layout": {
     "notifications": "Paziņojumi",
@@ -753,7 +810,8 @@
     "title": "Valoda"
   },
   "theme": {
-    "title": "Tēma"
+    "title": "Tēma",
+    "hint": "Izvēlieties vēlamo krāsu shēmu"
   },
   "rd": {
     "flag": "R&D pasūtījums",
@@ -780,11 +838,11 @@
     "download_cdr": "Lejupielādēt CDR"
   },
   "ui": {
-    "density": { 
+    "density": {
       "title": "Blīvums",
-      "compact": "Kompakts", 
-      "cozy": "Ērts", 
-      "comfortable": "Komfortabls" 
+      "compact": "Kompakts",
+      "cozy": "Ērts",
+      "comfortable": "Komfortabls"
     },
     "quickCreate": "Ātrā izveide",
     "notifications": "Paziņojumi",
@@ -795,7 +853,7 @@
     "new_note": "Jauna piezīme",
     "export_ics": "Eksportēt ICS",
     "print_pack": "Drukāt komplektu",
-    "save": "Saglabāt", 
+    "save": "Saglabāt",
     "discard": "Atcelt"
   }
 }

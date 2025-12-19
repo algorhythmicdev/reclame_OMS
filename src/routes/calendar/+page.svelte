@@ -2,23 +2,30 @@
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { ordersStore } from '$lib/order/signage-store';
-  import { loads } from '$lib/state/loads';
   import type { Order } from '$lib/order/types';
-  import { Calendar, ChevronLeft, ChevronRight, Plus, Truck, Download, Filter } from 'lucide-svelte';
+  import { Calendar, ChevronLeft, ChevronRight, Plus, Truck, Download, Filter, X, Check } from 'lucide-svelte';
   import Badge from '$lib/ui/Badge.svelte';
   import { badgeTone } from '$lib/order/badges';
   import { downloadCSV, toCSV } from '$lib/export/csv';
   import { get } from 'svelte/store';
+  
+  // Accept params prop to silence SvelteKit warning
+  export let params = {};
   
   let today = new Date();
   let y = today.getFullYear();
   let m = today.getMonth();
   let selectedDate: string | null = null;
   let orders: Order[] = [];
-  let loadsList: any[] = [];
+  let loadingDays: any[] = [];
   let filterStatus: 'all' | 'scheduled' | 'unscheduled' = 'all';
   
-  loads.subscribe(v => loadsList = v);
+  // Modal state
+  let showAddOrderModal = false;
+  let showNewLoadingDayModal = false;
+  let newLoadingDayCarrier = '';
+  let newLoadingDayNote = '';
+  let availableOrders: Order[] = [];
   
   async function refreshOrders() {
     try {
@@ -26,7 +33,8 @@
       if (response.ok) {
         const data = await response.json();
         orders = data.map((d: any) => ({
-          id: d.poNumber,
+          id: d.id,
+          poNumber: d.poNumber,
           title: d.title || d.clientName,
           client: d.clientName,
           due: d.deadline,
@@ -43,6 +51,86 @@
     } catch (err) {
       console.error('Failed to fetch orders:', err);
     }
+  }
+  
+  async function refreshLoadingDays() {
+    try {
+      const response = await fetch('/api/loading-days?active=true');
+      if (response.ok) {
+        loadingDays = await response.json();
+      }
+    } catch (err) {
+      console.error('Failed to fetch loading days:', err);
+    }
+  }
+  
+  async function createLoadingDay() {
+    if (!selectedDate) return;
+    
+    try {
+      const response = await fetch('/api/loading-days', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          date: selectedDate,
+          carrier: newLoadingDayCarrier,
+          note: newLoadingDayNote
+        })
+      });
+      
+      if (response.ok) {
+        await refreshLoadingDays();
+        showNewLoadingDayModal = false;
+        newLoadingDayCarrier = '';
+        newLoadingDayNote = '';
+      }
+    } catch (err) {
+      console.error('Failed to create loading day:', err);
+    }
+  }
+  
+  async function assignOrderToLoadingDate(orderId: number) {
+    if (!selectedDate) return;
+    
+    try {
+      const response = await fetch(`/api/draft-orders/${orderId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          loadingDate: selectedDate
+        })
+      });
+      
+      if (response.ok) {
+        await refreshOrders();
+        showAddOrderModal = false;
+      }
+    } catch (err) {
+      console.error('Failed to assign order:', err);
+    }
+  }
+  
+  async function removeOrderFromLoadingDate(orderId: number) {
+    try {
+      const response = await fetch(`/api/draft-orders/${orderId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          loadingDate: null
+        })
+      });
+      
+      if (response.ok) {
+        await refreshOrders();
+      }
+    } catch (err) {
+      console.error('Failed to remove order:', err);
+    }
+  }
+  
+  function openAddOrderModal() {
+    availableOrders = orders.filter(o => !o.loadingDate);
+    showAddOrderModal = true;
   }
   
   function prev() {
@@ -84,7 +172,11 @@
   }
   
   function formatDate(date: Date): string {
-    return date.toISOString().split('T')[0];
+    // Use local date to avoid timezone issues
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
   
   function getOrdersForDate(date: string): Order[] {
@@ -92,7 +184,11 @@
   }
   
   function isLoadingDay(date: string): boolean {
-    return loadsList.some(l => l.dateISO === date);
+    return loadingDays.some(l => l.date === date && l.active);
+  }
+  
+  function getLoadingDayInfo(date: string) {
+    return loadingDays.find(l => l.date === date);
   }
   
   function isToday(date: Date): boolean {
@@ -113,10 +209,10 @@
     const dayOrders = getOrdersForDate(selectedDate);
     const translate = get(t);
     const columns = [
-      { label: translate('calendar.columns.po'), value: (order: Order) => order.id },
-      { label: translate('calendar.columns.client'), value: (order: Order) => order.client },
-      { label: translate('calendar.columns.title'), value: (order: Order) => order.title },
-      { label: translate('calendar.columns.due'), value: (order: Order) => order.due }
+      { label: translate('calendar.columns.po') || 'PO', value: (order: Order) => order.poNumber || order.id },
+      { label: translate('calendar.columns.client') || 'Client', value: (order: Order) => order.client },
+      { label: translate('calendar.columns.title') || 'Title', value: (order: Order) => order.title },
+      { label: translate('calendar.columns.due') || 'Due', value: (order: Order) => order.due }
     ];
     const rows = dayOrders.map((order) =>
       Object.fromEntries(columns.map((column) => [column.label, column.value(order)]))
@@ -126,13 +222,14 @@
   
   $: days = getDaysInMonth(y, m);
   $: selectedDayOrders = selectedDate ? getOrdersForDate(selectedDate) : [];
+  $: selectedLoadingDay = selectedDate ? getLoadingDayInfo(selectedDate) : null;
   $: filteredOrders = filterStatus === 'all' ? orders :
                       filterStatus === 'scheduled' ? orders.filter(o => o.loadingDate) :
                       orders.filter(o => !o.loadingDate);
   $: monthName = new Date(y, m, 1).toLocaleDateString('en-US', { month: 'long' });
   
-  onMount(() => {
-    refreshOrders();
+  onMount(async () => {
+    await Promise.all([refreshOrders(), refreshLoadingDays()]);
     const handler = (event: StorageEvent) => {
       if (!event.key || event.key === 'rf_orders_vcs') {
         refreshOrders();
@@ -155,9 +252,9 @@
       <h1>Loading Schedule</h1>
     </div>
     <div class="topbar-right">
-      <button class="btn-secondary">
+      <button class="btn-secondary" on:click={() => selectedDate && (showNewLoadingDayModal = true)} disabled={!selectedDate}>
         <Plus size={18} />
-        New Loading Day
+        Mark Loading Day
       </button>
       <button class="btn-ghost" on:click={exportDayCSV} disabled={!selectedDate}>
         <Download size={18} />
@@ -229,13 +326,23 @@
         {/if}
       </div>
       
+      {#if selectedDate && selectedLoadingDay}
+        <div class="loading-day-info">
+          <Truck size={16} />
+          <span>Loading Day</span>
+          {#if selectedLoadingDay.carrier}
+            <span class="carrier-badge">{selectedLoadingDay.carrier}</span>
+          {/if}
+        </div>
+      {/if}
+      
       <div class="schedule-body">
         {#if selectedDate}
           {#if selectedDayOrders.length === 0}
             <div class="empty-state">
               <Calendar size={48} />
               <p>No orders scheduled for this date</p>
-              <button class="btn-secondary">
+              <button class="btn-secondary" on:click={openAddOrderModal}>
                 <Plus size={18} />
                 Add Order to Schedule
               </button>
@@ -245,13 +352,11 @@
               {#each selectedDayOrders as order}
                 <div class="order-card">
                   <div class="order-header">
-                    <span class="order-id">{order.id}</span>
-                    <div class="order-badges">
-                      {#each order.badges as badge}
-                        <Badge tone={badgeTone(badge)} label={badge}>
-                          <span class="badge-text">{badge}</span>
-                        </Badge>
-                      {/each}
+                    <span class="order-id">{order.poNumber || order.id}</span>
+                    <div class="order-actions">
+                      <button class="btn-icon-sm" on:click={() => removeOrderFromLoadingDate(order.id)} title="Remove from schedule">
+                        <X size={14} />
+                      </button>
                     </div>
                   </div>
                   <h4 class="order-title">{order.title}</h4>
@@ -262,6 +367,10 @@
                 </div>
               {/each}
             </div>
+            <button class="btn-secondary add-more-btn" on:click={openAddOrderModal}>
+              <Plus size={16} />
+              Add More Orders
+            </button>
           {/if}
         {:else}
           <div class="empty-state">
@@ -315,6 +424,73 @@
     </div>
   </div>
 </div>
+
+<!-- Add Order Modal -->
+{#if showAddOrderModal}
+  <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
+  <div class="modal-overlay" on:click={() => showAddOrderModal = false}>
+    <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
+    <div class="modal" on:click|stopPropagation role="dialog" aria-modal="true" aria-labelledby="add-order-title">
+      <div class="modal-header">
+        <h3 id="add-order-title">Add Order to {selectedDate}</h3>
+        <button class="btn-icon" on:click={() => showAddOrderModal = false} aria-label="Close">
+          <X size={20} />
+        </button>
+      </div>
+      <div class="modal-body">
+        {#if availableOrders.length === 0}
+          <p class="empty-text">No unscheduled orders available</p>
+        {:else}
+          <div class="available-orders">
+            {#each availableOrders as order}
+              <button class="available-order" on:click={() => assignOrderToLoadingDate(order.id)}>
+                <div class="order-info">
+                  <span class="order-po">{order.poNumber || order.id}</span>
+                  <span class="order-client">{order.client}</span>
+                </div>
+                <span class="order-due">Due: {order.due}</span>
+                <Check size={18} class="add-icon" />
+              </button>
+            {/each}
+          </div>
+        {/if}
+      </div>
+    </div>
+  </div>
+{/if}
+
+<!-- New Loading Day Modal -->
+{#if showNewLoadingDayModal}
+  <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
+  <div class="modal-overlay" on:click={() => showNewLoadingDayModal = false}>
+    <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
+    <div class="modal" on:click|stopPropagation role="dialog" aria-modal="true" aria-labelledby="loading-day-title">
+      <div class="modal-header">
+        <h3 id="loading-day-title">Mark Loading Day - {selectedDate}</h3>
+        <button class="btn-icon" on:click={() => showNewLoadingDayModal = false} aria-label="Close">
+          <X size={20} />
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="carrier">Carrier (optional)</label>
+          <input type="text" id="carrier" bind:value={newLoadingDayCarrier} placeholder="e.g., DPD, DHL, Own transport" />
+        </div>
+        <div class="form-group">
+          <label for="note">Note (optional)</label>
+          <textarea id="note" bind:value={newLoadingDayNote} placeholder="Any special instructions..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-ghost" on:click={() => showNewLoadingDayModal = false}>{$t('actions.cancel', { default: 'Cancel' })}</button>
+        <button class="btn-secondary" on:click={createLoadingDay}>
+          <Truck size={16} />
+          Create Loading Day
+        </button>
+      </div>
+    </div>
+  </div>
+{/if}
 
 <style>
   .calendar-page {
@@ -733,5 +909,225 @@
       grid-template-columns: 1fr;
       gap: var(--space-xs);
     }
+  }
+
+  /* Loading Day Info */
+  .loading-day-info {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
+    background: color-mix(in oklab, var(--accent-1) 15%, var(--bg-1));
+    border: 1px solid var(--accent-1);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-md);
+    font-size: 0.875rem;
+    color: var(--accent-1);
+    font-weight: 500;
+  }
+
+  .carrier-badge {
+    padding: 2px 8px;
+    background: var(--accent-1);
+    color: white;
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+  }
+
+  .add-more-btn {
+    margin-top: var(--space-md);
+    width: 100%;
+    justify-content: center;
+  }
+
+  .order-actions {
+    display: flex;
+    gap: var(--space-xs);
+  }
+
+  .btn-icon-sm {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    color: var(--muted);
+    transition: all 0.15s;
+  }
+
+  .btn-icon-sm:hover {
+    background: var(--danger);
+    color: white;
+    border-color: var(--danger);
+  }
+
+  /* Modal Styles */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+  }
+
+  .modal {
+    background: var(--bg-1);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    width: 100%;
+    max-width: 480px;
+    max-height: 80vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-md) var(--space-lg);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .modal-header h3 {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 600;
+  }
+
+  .modal-body {
+    padding: var(--space-lg);
+    overflow-y: auto;
+    flex: 1;
+  }
+
+  .modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--space-sm);
+    padding: var(--space-md) var(--space-lg);
+    border-top: 1px solid var(--border);
+  }
+
+  .btn-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    color: var(--muted);
+    transition: all 0.15s;
+  }
+
+  .btn-icon:hover {
+    background: var(--bg-2);
+    color: var(--text);
+  }
+
+  .available-orders {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+
+  .available-order {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-md);
+    background: var(--bg-0);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: left;
+    width: 100%;
+  }
+
+  .available-order:hover {
+    border-color: var(--accent-1);
+    background: color-mix(in oklab, var(--accent-1) 5%, var(--bg-0));
+  }
+
+  .available-order .order-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .available-order .order-po {
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .available-order .order-client {
+    font-size: 0.875rem;
+    color: var(--muted);
+  }
+
+  .available-order .order-due {
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+
+  .available-order :global(.add-icon) {
+    color: var(--success, #22c55e);
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+
+  .available-order:hover :global(.add-icon) {
+    opacity: 1;
+  }
+
+  .empty-text {
+    text-align: center;
+    color: var(--muted);
+    padding: var(--space-xl);
+  }
+
+  .form-group {
+    margin-bottom: var(--space-md);
+  }
+
+  .form-group label {
+    display: block;
+    margin-bottom: var(--space-xs);
+    font-weight: 500;
+    font-size: 0.875rem;
+    color: var(--text);
+  }
+
+  .form-group input,
+  .form-group textarea {
+    width: 100%;
+    padding: var(--space-sm) var(--space-md);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--bg-0);
+    color: var(--text);
+    font-size: 0.875rem;
+  }
+
+  .form-group textarea {
+    min-height: 80px;
+    resize: vertical;
+  }
+
+  .form-group input:focus,
+  .form-group textarea:focus {
+    outline: none;
+    border-color: var(--accent-1);
   }
 </style>

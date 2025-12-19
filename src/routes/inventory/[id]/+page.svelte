@@ -1,4 +1,5 @@
 <script lang="ts">
+  export let params = {};
   import { items, move, updateItem, removeItem, type Item } from '$lib/inventory/store';
   import { onDestroy } from 'svelte';
   import { base } from '$app/paths';
@@ -73,13 +74,13 @@
     {#if item}
       <div class="header-actions">
         {#if editMode}
-          <button class="btn-secondary" on:click={() => editMode = false}>Cancel</button>
+          <button class="btn-secondary" on:click={() => editMode = false}>{$t('actions.cancel', { default: 'Cancel' })}</button>
           <button class="btn-primary" on:click={saveChanges}>
             <Save size={16} />
             Save Changes
           </button>
         {:else}
-          <button class="btn-secondary" on:click={() => editMode = true}>Edit</button>
+          <button class="btn-secondary" on:click={() => editMode = true}>{$t('inventory.editItem', { default: 'Edit' })}</button>
           <button class="btn-danger" on:click={deleteItem}>
             <Trash size={16} />
             Delete

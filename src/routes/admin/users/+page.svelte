@@ -1,4 +1,5 @@
 <script lang="ts">
+  export let params = {};
   import { onMount } from 'svelte';
   import { base } from '$app/paths';
   import { currentUser } from '$lib/auth/user-store';

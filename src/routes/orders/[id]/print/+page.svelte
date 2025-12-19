@@ -1,17 +1,28 @@
 <script lang="ts">
+  export let params = {};
   import { base } from '$app/paths';
+  import { page } from '$app/stores';
+  import { onMount } from 'svelte';
   import { getOrder } from '$lib/order/signage-store';
   import { STATIONS, STATE_LABEL } from '$lib/order/stages';
   import { t } from 'svelte-i18n';
+  import type { Order } from '$lib/order/types.signage';
   
-  export let params;
-  const id = params.id;
-  const o = getOrder(id);
+  $: id = $page.params.id;
+  
+  let o: Order | null = null;
+  
+  onMount(async () => {
+    o = await getOrder(id);
+  });
   
   $: materials = o?.materials || [];
   $: stages = o?.stages ? STATIONS.map(s => ({ station: s, state: o.stages[s] })) : [];
 </script>
 
+{#if !o}
+  <p>Loading...</p>
+{:else}
 <article class="print-pack">
   <header>
     <img src="{base}/static/brand/logo.png" alt="Reclame Fabriek" height="42" />
@@ -53,6 +64,7 @@
     </ul>
   </section>
 </article>
+{/if}
 
 <style>
   @media print {

@@ -6,6 +6,71 @@ All notable changes to Reclame OMS are documented in this file.
 
 ### Added
 
+#### Server Hooks
+- **hooks.server.ts** - Server-side hook for session management
+  - Automatically populates `locals.user` from session cookies
+  - Provides backward-compatible `role` property for API routes
+  - Enables proper authentication across all API endpoints
+
+#### Orders Page Improvements
+- **Page Header** with prominent "Create Draft Order" button (SuperAdmin only)
+- **Status Filters** - Filter by All/Active/Draft orders
+- **Search** - Full-text search across PO, client, and title
+- **Pagination** - Configurable items per page (10/20/50/100)
+- **Refresh Button** with loading spinner
+- **Export to CSV** functionality
+- **Actions Column** with view/edit quick actions
+- **Draft Badge** highlighting for draft orders
+- **KPI Cards** showing Total/Active/Draft/Urgent order counts
+
+#### Notifications System (NEW)
+- **Full Notifications Page** (`/notifications`)
+- Filter by All/Unread/Read status
+- Filter by type (Orders, Messages, System, Inventory)
+- Mark individual or all notifications as read
+- Dismiss notifications
+- Real-time unread count badge
+- Notification icons by type
+- Relative time formatting (Just now, 5m ago, 2h ago, etc.)
+
+#### Chat System (NEW)
+- **Full Chat Page** (`/chat`)
+- Channel-based rooms (General, Workstations, Logistics)
+- Room creation with channel names
+- @mention support with autocomplete
+- Message threading with date separators
+- User presence indicators
+- Room search functionality
+- Real-time message polling (5 second intervals)
+- Station badges for users
+- System message support
+
+#### Navigation Updates
+- Added Chat link to main navigation
+- Chat icon in navbar
+- Improved mobile menu with all routes
+
+#### Order Workflow System
+- **Draft Order Creation Form** with comprehensive features:
+  - File upload with drag & drop (PDF, CDR, AI, EPS, JPG, PNG)
+  - Image preview for uploaded files
+  - Delivery address presets for major customers
+  - Manual address input option
+  - Priority selection (Low, Normal, High, Urgent)
+  - Loading date assignment (can be set later by admin)
+  - Multiple profile support per order
+  - Profile duplication and collapse functionality
+- **Delivery Presets System**:
+  - Pre-configured addresses for major customers (Rimi, Maxima, Circle K, etc.)
+  - Group presets by client name
+  - Contact person and phone fields
+  - Default preset marking per client
+- **File Upload API** (`/api/files/upload`):
+  - Secure file storage with UUID naming
+  - Organized by category and date
+  - Database tracking of uploads
+  - User attribution for uploads
+
 #### User Management & Authentication
 - **SuperAdmin user** (`slav` / `181188`) with full system access
 - Complete user CRUD API with bcrypt password hashing
@@ -81,6 +146,9 @@ All notable changes to Reclame OMS are documented in this file.
 - Navbar settings panel layout
 - SectionIndicator null reference error
 - Preferences API 401 errors (now gracefully handles unauthenticated)
+- Order detail page null reference errors (proper guards for async loading)
+- Cyclical dependency in order detail page (redoStage initialization)
+- Removed redundant floating action button (duplicated navbar functionality)
 
 ### Removed
 - Guest login functionality (login required)
@@ -139,10 +207,20 @@ Current schema includes 51+ tables:
 
 ### Orders
 - `GET /api/draft-orders` - List orders
-- `POST /api/draft-orders` - Create order
+- `POST /api/draft-orders` - Create order (with profiles, files, delivery)
 - `GET /api/draft-orders/[id]` - Get order
 - `PUT /api/draft-orders/[id]` - Update order
 - `DELETE /api/draft-orders/[id]` - Delete order
+- `GET /api/draft-orders/generate-po` - Generate PO number
+
+### Delivery Presets
+- `GET /api/delivery-presets` - List delivery presets (filter by client)
+- `POST /api/delivery-presets` - Create delivery preset
+
+### Files
+- `GET /api/files` - List files
+- `POST /api/files` - Upload file
+- `POST /api/files/upload` - Simple upload endpoint
 
 ### Inventory
 - `GET /api/inventory` - List inventory

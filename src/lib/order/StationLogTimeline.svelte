@@ -2,7 +2,7 @@
   import type { StationLog } from './types.signage';
   import { t } from 'svelte-i18n';
   export let logs: StationLog[] = [];
-  export let id: string | undefined;
+  export let id: string | undefined = undefined;
 </script>
 
 <section class="card" id={id} aria-label={$t('terms.stationLogs')}>

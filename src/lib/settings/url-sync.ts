@@ -1,4 +1,5 @@
 import { browser } from '$app/environment';
+import { replaceState } from '$app/navigation';
 import { locale } from 'svelte-i18n';
 import { theme, type ThemeName } from '$lib/stores/theme';
 import { scale, type Scale } from '$lib/stores/scale';
@@ -32,7 +33,7 @@ function updateQueryParam<K extends PrefKey>(key: K, value: PrefValueMap[K] | nu
     params.set(key, value);
     const query = params.toString();
     const next = `${url.pathname}${query ? `?${query}` : ''}${url.hash}`;
-    history.replaceState(history.state, '', next);
+    replaceState(next, {});
     return { changed: true, present: true };
   }
 
@@ -43,7 +44,7 @@ function updateQueryParam<K extends PrefKey>(key: K, value: PrefValueMap[K] | nu
   params.delete(key);
   const query = params.toString();
   const next = `${url.pathname}${query ? `?${query}` : ''}${url.hash}`;
-  history.replaceState(history.state, '', next);
+  replaceState(next, {});
   return { changed: true, present: false };
 }
 

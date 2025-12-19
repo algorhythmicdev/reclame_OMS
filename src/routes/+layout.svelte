@@ -2,7 +2,7 @@
   import { base } from '$app/paths';
   import { page } from '$app/stores';
   import { onMount } from 'svelte';
-  import { goto } from '$app/navigation';
+  import { goto, replaceState } from '$app/navigation';
   
   import Logo from '$lib/brand/Logo.svelte';
   import NotificationsBell from '$lib/topbar/NotificationsBell.svelte';
@@ -22,8 +22,11 @@
   import { startPreferenceUrlSync } from '$lib/settings/url-sync';
   import { ui } from '$lib/state/ui';
   import { setLocale } from '$lib/i18n';
-  import { Menu, X, LayoutDashboard, ClipboardList, Calendar, Package, HelpCircle, Settings, Users, Boxes } from 'lucide-svelte';
+  import { Menu, X, LayoutDashboard, ClipboardList, Calendar, Package, HelpCircle, Settings, Users, Boxes, MessageSquare, Bell } from 'lucide-svelte';
   import { currentUser, loadCurrentUser } from '$lib/auth/user-store';
+
+  // Accept params prop to silence SvelteKit warning
+  export let params = {};
 
   let searchOpen = false;
   let showKb = false;
@@ -71,15 +74,14 @@
       fontScale: font ? Math.max(0.85, Math.min(1.3, +font)) : p.fontScale
     }));
     
-    // Use pushState from $app/navigation instead of history.replaceState if needed, 
-    // but here we just want to clean up the URL without reloading
+    // Clean up URL params using SvelteKit's replaceState
     if (theme || density || lang || font) {
       const newUrl = new URL(location.href);
       newUrl.searchParams.delete('theme');
       newUrl.searchParams.delete('density');
       newUrl.searchParams.delete('lang');
       newUrl.searchParams.delete('font');
-      history.replaceState(history.state, '', newUrl.toString());
+      replaceState(newUrl.pathname + newUrl.search + newUrl.hash, {});
     }
     
     const stopPreferenceSync = startPreferenceUrlSync();
@@ -154,7 +156,7 @@
 
   {#if $currentUser}
     <header class="rf-topbar">
-      <a href="{base}/orders" class="brand"><Logo /></a>
+      <a href="{base}/" class="brand"><Logo /></a>
       <button class="mobile-menu-btn" on:click={() => mobileMenuOpen = !mobileMenuOpen} aria-label={$t('header.toggle_menu')} aria-expanded={mobileMenuOpen}>
         {#if mobileMenuOpen}
           <X size={24} />
@@ -163,6 +165,10 @@
         {/if}
       </button>
       <nav class="main" class:mobile-open={mobileMenuOpen}>
+        <a href="{base}/" class:active={currentPath === base || currentPath === base + '/'} on:click={() => mobileMenuOpen = false}>
+          <LayoutDashboard size={18} />
+          <span>{$t('nav.dashboard', { default: 'Dashboard' })}</span>
+        </a>
         <a href="{base}/orders" class:active={currentPath.includes('/orders')} on:click={() => mobileMenuOpen = false}>
           <ClipboardList size={18} />
           <span>{$t('nav.orders', { default: 'Orders' })}</span>
@@ -174,6 +180,10 @@
         <a href="{base}/inventory" class:active={currentPath.includes('/inventory')} on:click={() => mobileMenuOpen = false}>
           <Package size={18} />
           <span>{$t('nav.inventory', { default: 'Inventory' })}</span>
+        </a>
+        <a href="{base}/chat" class:active={currentPath.includes('/chat')} on:click={() => mobileMenuOpen = false}>
+          <MessageSquare size={18} />
+          <span>{$t('nav.chat', { default: 'Chat' })}</span>
         </a>
         <a href="{base}/faq" class:active={currentPath.includes('/faq')} on:click={() => mobileMenuOpen = false}>
           <HelpCircle size={18} />
@@ -192,6 +202,7 @@
         {/if}
       </nav>
       <div class="actions">
+        <div class="action-btn" title={$t('topbar.language', { default: 'Language' })}><LangSwitch /></div>
         <div class="action-group text-size-group" title={$t('topbar.textSize', { default: 'Text Size' })}><TextSizeSwitch /></div>
         <div class="action-btn" title={$t('topbar.density', { default: 'Density' })}><DensitySwitch /></div>
         <div class="action-btn" title={$t('topbar.theme', { default: 'Theme' })}><ThemeSwitch /></div>

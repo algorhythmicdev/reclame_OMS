@@ -1,4 +1,5 @@
 <script lang="ts">
+  export let params = {};
   import { onMount } from 'svelte';
   import { items, loadItems, lowStock } from '$lib/inventory/store';
   import { Package, Plus, Search, AlertCircle } from 'lucide-svelte';
