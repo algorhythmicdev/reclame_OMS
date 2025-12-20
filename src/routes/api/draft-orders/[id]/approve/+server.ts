@@ -12,14 +12,14 @@ export const POST: RequestHandler = async ({ params, locals }) => {
     return json({ message: 'Admin access required' }, { status: 403 });
   }
 
-  const orderId = parseInt(params.id);
+  const idParam = params.id;
 
   try {
     const result = await transaction(async (client) => {
-      // Check order exists and is draft
+      // Check order exists and is draft - support both numeric ID and PO number
       const orderResult = await client.query(
-        'SELECT * FROM draft_orders WHERE id = $1',
-        [orderId]
+        'SELECT * FROM draft_orders WHERE po_number = $1 OR id::text = $1',
+        [idParam]
       );
 
       if (orderResult.rowCount === 0) {
@@ -27,12 +27,13 @@ export const POST: RequestHandler = async ({ params, locals }) => {
       }
 
       const order = orderResult.rows[0];
+      const orderId = order.id;
       
       if (order.status !== 'draft') {
         throw { status: 400, message: 'Only draft orders can be approved' };
       }
 
-      // Update status
+      // Update status to approved (moves to production)
       await client.query(
         `UPDATE draft_orders 
          SET status = 'approved', 
@@ -56,7 +57,7 @@ export const POST: RequestHandler = async ({ params, locals }) => {
             [
               admin.id,
               `Order ${order.po_number} has been approved and moved to production`,
-              `/orders/${orderId}`,
+              `/orders/${order.po_number}`,
               orderId.toString()
             ]
           );
@@ -66,13 +67,17 @@ export const POST: RequestHandler = async ({ params, locals }) => {
       }
 
       // Log audit
-      await client.query(
-        `INSERT INTO audit_log (user_id, username, action, entity_type, entity_id, details)
-         VALUES ($1, $2, 'APPROVE_ORDER', 'order', $3, $4)`,
-        [user.id, user.username, orderId.toString(), JSON.stringify({ po_number: order.po_number })]
-      );
+      try {
+        await client.query(
+          `INSERT INTO audit_log (user_id, username, action, entity_type, entity_id, details)
+           VALUES ($1, $2, 'APPROVE_ORDER', 'order', $3, $4)`,
+          [user.id, user.username, orderId.toString(), JSON.stringify({ po_number: order.po_number })]
+        );
+      } catch (auditErr) {
+        console.warn('Failed to log audit:', auditErr);
+      }
 
-      return { success: true, message: 'Order approved successfully' };
+      return { success: true, message: 'Order approved successfully', poNumber: order.po_number };
     });
 
     return json(result);

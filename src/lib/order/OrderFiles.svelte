@@ -127,7 +127,8 @@
   }
 
   function downloadFile(file: OrderFile) {
-    window.open(`${base}/uploads/${file.storedName}`, '_blank');
+    // Use the API endpoint with download flag for proper file retrieval
+    window.open(`${base}/api/files/${file.id}?download=true`, '_blank');
   }
 
   onMount(loadFiles);

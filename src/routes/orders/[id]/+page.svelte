@@ -11,7 +11,7 @@
   import { 
     Save, FileText, MapPin, Calendar, Activity, Boxes, MessageSquare, 
     FolderOpen, ChevronDown, ChevronLeft, ChevronRight, X, ZoomIn, ZoomOut,
-    Plus, Trash2, Upload, Eye, AlertCircle, ArrowLeft, FlaskConical
+    Plus, Trash2, Upload, Eye, AlertCircle, ArrowLeft, FlaskConical, Check, XCircle, Download
   } from 'lucide-svelte';
   
   // Components
@@ -23,6 +23,7 @@
   import RevisionsList from '$lib/order/RevisionsList.svelte';
   import BranchesTable from '$lib/order/BranchesTable.svelte';
   import { role } from '$lib/ui/RoleSwitch.svelte';
+  import { currentUser } from '$lib/auth/user-store';
   import BadgesManager from '$lib/order/BadgesManager.svelte';
   import { announce as announceToast } from '$lib/stores/toast';
   import { announce } from '$lib/a11y/live';
@@ -51,6 +52,10 @@
   let isLoading = true;
   let saving = false;
   let error = '';
+  let approving = false;
+  let rejecting = false;
+  let showRejectModal = false;
+  let rejectReason = '';
 
   // Tabs
   let tab = 'overview';
@@ -360,6 +365,69 @@
   $: completedStages = o ? Object.entries(o.stages)
     .filter(([_, state]) => state === 'COMPLETED')
     .map(([station]) => station) : [];
+
+  // Admin access check
+  $: isSuperAdmin = $currentUser?.roles?.Admin === 'SuperAdmin';
+  $: isAdmin = $currentUser?.primarySection === 'Admin' || isSuperAdmin;
+
+  // Draft order approval
+  async function approveDraftOrder() {
+    if (!o || !o.isDraft) return;
+    approving = true;
+    error = '';
+    
+    try {
+      const res = await fetch(`${base}/api/draft-orders/${o.id}/approve`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      
+      if (res.ok) {
+        o.isDraft = false;
+        o.badges = o.badges.filter(b => b !== 'DRAFT');
+        o.badges.push('OPEN');
+        announceToast({ message: 'Order approved and moved to production', type: 'success' });
+      } else {
+        const data = await res.json();
+        error = data.message || 'Failed to approve order';
+        announceToast({ message: error, type: 'error' });
+      }
+    } catch (err: any) {
+      error = err.message || 'Failed to approve order';
+      announceToast({ message: error, type: 'error' });
+    } finally {
+      approving = false;
+    }
+  }
+
+  async function rejectDraftOrder() {
+    if (!o || !o.isDraft || !rejectReason.trim()) return;
+    rejecting = true;
+    error = '';
+    
+    try {
+      const res = await fetch(`${base}/api/draft-orders/${o.id}/reject`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason: rejectReason })
+      });
+      
+      if (res.ok) {
+        announceToast({ message: 'Order rejected', type: 'success' });
+        showRejectModal = false;
+        goto(`${base}/orders`);
+      } else {
+        const data = await res.json();
+        error = data.message || 'Failed to reject order';
+        announceToast({ message: error, type: 'error' });
+      }
+    } catch (err: any) {
+      error = err.message || 'Failed to reject order';
+      announceToast({ message: error, type: 'error' });
+    } finally {
+      rejecting = false;
+    }
+  }
 </script>
 
 <svelte:head>
@@ -406,6 +474,21 @@
       </div>
     </div>
     <div class="header-actions">
+      {#if o.isDraft && isAdmin}
+        <button class="btn-success" on:click={approveDraftOrder} disabled={approving}>
+          {#if approving}
+            <span class="spinner"></span>
+            Approving...
+          {:else}
+            <Check size={18} />
+            Approve Order
+          {/if}
+        </button>
+        <button class="btn-danger" on:click={() => showRejectModal = true} disabled={rejecting}>
+          <XCircle size={18} />
+          Reject
+        </button>
+      {/if}
       <button class="btn-secondary" on:click={() => goto(`${base}/orders`)}>
         {$t('actions.cancel', { default: 'Cancel' })}
       </button>
@@ -420,6 +503,13 @@
       </button>
     </div>
   </header>
+
+  {#if o.isDraft}
+    <div class="draft-banner">
+      <AlertCircle size={18} />
+      <span><strong>Draft Order</strong> - This order is pending approval and not yet in production.</span>
+    </div>
+  {/if}
 
   {#if error}
     <div class="error-banner">
@@ -708,6 +798,48 @@
           po={o.id}
           onPick={(d) => setLoading(d)}
         />
+      </div>
+    </div>
+  {/if}
+
+  <!-- Reject Order Modal -->
+  {#if showRejectModal}
+    <div 
+      class="modal-backdrop" 
+      on:click={() => showRejectModal = false}
+      on:keydown={(e) => e.key === 'Escape' && (showRejectModal = false)}
+      role="button"
+      tabindex="-1"
+    >
+      <div class="modal reject-modal" on:click|stopPropagation on:keydown|stopPropagation role="dialog" aria-modal="true">
+        <header>
+          <h3>Reject Draft Order</h3>
+          <button on:click={() => showRejectModal = false}><X size={20} /></button>
+        </header>
+        <div class="modal-body">
+          <p>Please provide a reason for rejecting order <strong>{o.id}</strong>:</p>
+          <textarea
+            bind:value={rejectReason}
+            placeholder="Enter rejection reason..."
+            rows="4"
+          ></textarea>
+        </div>
+        <div class="modal-actions">
+          <button class="btn-secondary" on:click={() => showRejectModal = false}>Cancel</button>
+          <button 
+            class="btn-danger" 
+            on:click={rejectDraftOrder} 
+            disabled={rejecting || !rejectReason.trim()}
+          >
+            {#if rejecting}
+              <span class="spinner"></span>
+              Rejecting...
+            {:else}
+              <XCircle size={18} />
+              Reject Order
+            {/if}
+          </button>
+        </div>
       </div>
     </div>
   {/if}
@@ -1186,5 +1318,84 @@
     border-radius: 8px;
     cursor: pointer;
     color: var(--text-muted);
+  }
+
+  /* Draft Order Styles */
+  .draft-banner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: var(--warning-bg, #fef3c7);
+    color: var(--warning, #d97706);
+    border: 1px solid var(--warning, #f59e0b);
+    border-radius: 8px;
+    margin-bottom: 16px;
+    font-size: 0.9rem;
+  }
+
+  .btn-success {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: var(--success, #22c55e);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-success:hover { filter: brightness(1.1); }
+  .btn-success:disabled { opacity: 0.7; cursor: not-allowed; }
+
+  .btn-danger {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: var(--danger, #ef4444);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-danger:hover { filter: brightness(1.1); }
+  .btn-danger:disabled { opacity: 0.7; cursor: not-allowed; }
+
+  /* Reject Modal */
+  .reject-modal {
+    max-width: 500px;
+  }
+  .modal-body {
+    padding: 20px;
+  }
+  .modal-body p {
+    margin: 0 0 12px 0;
+    color: var(--text);
+  }
+  .modal-body textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.95rem;
+    resize: vertical;
+    min-height: 100px;
+  }
+  .modal-body textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+  }
+  .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 16px 20px;
+    border-top: 1px solid var(--border);
+    background: var(--bg-2);
   }
 </style>

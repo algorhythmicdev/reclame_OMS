@@ -12,16 +12,16 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
     return json({ message: 'Admin access required' }, { status: 403 });
   }
 
-  const orderId = parseInt(params.id);
+  const idParam = params.id;
   const body = await request.json();
   const reason = body.reason || 'No reason provided';
 
   try {
     const result = await transaction(async (client) => {
-      // Check order exists and is draft
+      // Check order exists and is draft - support both numeric ID and PO number
       const orderResult = await client.query(
-        'SELECT * FROM draft_orders WHERE id = $1',
-        [orderId]
+        'SELECT * FROM draft_orders WHERE po_number = $1 OR id::text = $1',
+        [idParam]
       );
 
       if (orderResult.rowCount === 0) {
@@ -29,6 +29,7 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
       }
 
       const order = orderResult.rows[0];
+      const orderId = order.id;
       
       if (order.status !== 'draft') {
         throw { status: 400, message: 'Only draft orders can be rejected' };
@@ -59,7 +60,7 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
             [
               admin.id,
               `Order ${order.po_number} was rejected: ${reason}`,
-              `/orders/${orderId}/edit`,
+              `/orders/${order.po_number}/edit`,
               orderId.toString()
             ]
           );
@@ -69,11 +70,15 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
       }
 
       // Log audit
-      await client.query(
-        `INSERT INTO audit_log (user_id, username, action, entity_type, entity_id, details)
-         VALUES ($1, $2, 'REJECT_ORDER', 'order', $3, $4)`,
-        [user.id, user.username, orderId.toString(), JSON.stringify({ po_number: order.po_number, reason })]
-      );
+      try {
+        await client.query(
+          `INSERT INTO audit_log (user_id, username, action, entity_type, entity_id, details)
+           VALUES ($1, $2, 'REJECT_ORDER', 'order', $3, $4)`,
+          [user.id, user.username, orderId.toString(), JSON.stringify({ po_number: order.po_number, reason })]
+        );
+      } catch (auditErr) {
+        console.warn('Failed to log audit:', auditErr);
+      }
 
       return { success: true, message: 'Order rejected' };
     });

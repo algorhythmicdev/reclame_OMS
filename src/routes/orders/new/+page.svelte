@@ -516,6 +516,10 @@
   }
 </script>
 
+<svelte:head>
+  <script src="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+</svelte:head>
+
 <div class="page-container">
   <header class="page-header">
     <div class="header-left">
